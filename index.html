@@ -154,6 +154,17 @@ body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--in
 .checkbox-row input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--blue); cursor: pointer; flex-shrink: 0; margin-top: 2px; }
 .checkbox-row span { font-size: 13px; font-weight: 600; color: #6a6a8a; line-height: 1.5; }
 @media (max-width: 600px) { .nav { padding: 12px 16px; } .hero { padding: 100px 16px 60px; } .section { padding: 60px 16px; } }
+
+/* Pro Gates */
+.pro-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #FFD700, #FFA500); color: #7a4f00; border-radius: 50px; padding: 3px 10px; font-size: 11px; font-weight: 900; letter-spacing: 0.03em; }
+.pro-lock-overlay { position: absolute; inset: 0; background: rgba(249,249,249,0.88); backdrop-filter: blur(3px); border-radius: var(--radius); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; gap: 10px; }
+.pro-locked-section { position: relative; overflow: hidden; border-radius: var(--radius); }
+.pro-feature-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: linear-gradient(90deg, rgba(255,215,0,0.06), rgba(255,165,0,0.04)); border: 1.5px solid rgba(255,215,0,0.25); border-radius: 14px; margin-bottom: 10px; }
+.upgrade-pill { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #FFD700, #FFA500); color: #7a4f00; border-radius: 50px; padding: 5px 14px; font-size: 12px; font-weight: 900; cursor: pointer; transition: all 0.2s; border: none; font-family: 'Nunito', sans-serif; }
+.upgrade-pill:hover { transform: scale(1.05); box-shadow: 0 4px 14px rgba(255,165,0,0.4); }
+@keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
+.crown-shimmer { background: linear-gradient(90deg, #FFD700, #FFA500, #FFD700); background-size: 200% auto; animation: shimmer 2s linear infinite; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
 </style>
 </head>
 <body>
@@ -199,6 +210,113 @@ const Icon = ({ name, size = 20, color = 'currentColor' }) => {
   return icons[name] || null;
 };
 
+
+// ── QR Mascot SVG ──────────────────────────────────────
+const QRMascot = ({ size = 180, wave = true, mood = 'happy' }) => (
+  <svg width={size} height={size} viewBox="0 0 200 220" fill="none" xmlns="http://www.w3.org/2000/svg"
+    style={{ filter: 'drop-shadow(0 8px 24px rgba(35,206,217,0.25))', flexShrink: 0 }}>
+    {/* Body */}
+    <rect x="20" y="30" width="160" height="160" rx="32" fill="#23CED9"/>
+    <rect x="20" y="30" width="160" height="160" rx="32" fill="url(#bodyGrad)" opacity="0.4"/>
+    {/* QR pattern squares */}
+    <rect x="38" y="48" width="44" height="44" rx="8" fill="#1A1A2E"/>
+    <rect x="44" y="54" width="32" height="32" rx="5" fill="#23CED9"/>
+    <rect x="50" y="60" width="20" height="20" rx="3" fill="#1A1A2E"/>
+    <rect x="118" y="48" width="44" height="44" rx="8" fill="#1A1A2E"/>
+    <rect x="124" y="54" width="32" height="32" rx="5" fill="#23CED9"/>
+    <rect x="130" y="60" width="20" height="20" rx="3" fill="#1A1A2E"/>
+    <rect x="38" y="128" width="44" height="44" rx="8" fill="#1A1A2E"/>
+    <rect x="44" y="134" width="32" height="32" rx="5" fill="#23CED9"/>
+    <rect x="50" y="140" width="20" height="20" rx="3" fill="#1A1A2E"/>
+    {/* Center dots pattern */}
+    <rect x="96" y="100" width="10" height="10" rx="2" fill="#1A1A2E" opacity="0.6"/>
+    <rect x="112" y="100" width="10" height="10" rx="2" fill="#1A1A2E" opacity="0.6"/>
+    <rect x="96" y="116" width="10" height="10" rx="2" fill="#1A1A2E" opacity="0.6"/>
+    <rect x="112" y="116" width="10" height="10" rx="2" fill="#1A1A2E" opacity="0.6"/>
+    {/* Face bg */}
+    <ellipse cx="100" cy="95" rx="38" ry="34" fill="white" opacity="0.92"/>
+    {/* Eyes */}
+    <ellipse cx="88" cy="87" rx="6" ry="7" fill="#1A1A2E"/>
+    <ellipse cx="112" cy="87" rx="6" ry="7" fill="#1A1A2E"/>
+    <ellipse cx="90" cy="85" rx="2" ry="2.5" fill="white"/>
+    <ellipse cx="114" cy="85" rx="2" ry="2.5" fill="white"/>
+    {/* Blush */}
+    <ellipse cx="80" cy="97" rx="7" ry="4" fill="#FF69B4" opacity="0.4"/>
+    <ellipse cx="120" cy="97" rx="7" ry="4" fill="#FF69B4" opacity="0.4"/>
+    {/* Mouth */}
+    {mood === 'happy'
+      ? <path d="M87 101 Q100 114 113 101" stroke="#1A1A2E" strokeWidth="3" strokeLinecap="round" fill="none"/>
+      : <path d="M87 108 Q100 101 113 108" stroke="#1A1A2E" strokeWidth="3" strokeLinecap="round" fill="none"/>
+    }
+    {/* Legs */}
+    <rect x="68" y="186" width="22" height="28" rx="11" fill="#1ab5bf"/>
+    <rect x="110" y="186" width="22" height="28" rx="11" fill="#1ab5bf"/>
+    <rect x="68" y="200" width="22" height="14" rx="7" fill="#23CED9"/>
+    <rect x="110" y="200" width="22" height="14" rx="7" fill="#23CED9"/>
+    {/* Arms */}
+    {wave
+      ? <><rect x="-2" y="70" width="26" height="14" rx="7" fill="#1ab5bf" transform="rotate(-40 -2 70)"/>
+          <rect x="14" y="48" width="14" height="26" rx="7" fill="#1ab5bf" transform="rotate(-40 14 48)"/>
+          <ellipse cx="6" cy="45" rx="10" ry="10" fill="#1ab5bf"/>
+          <ellipse cx="6" cy="45" rx="7" ry="7" fill="#23CED9"/>
+        </>
+      : <rect x="2" y="90" width="22" height="12" rx="6" fill="#1ab5bf"/>
+    }
+    <rect x="176" y="90" width="22" height="12" rx="6" fill="#1ab5bf"/>
+    {/* Stars */}
+    <text x="150" y="30" fontSize="18" fill="#FF69B4" opacity="0.9">✦</text>
+    <text x="30" y="20" fontSize="12" fill="#FFD700" opacity="0.8">✦</text>
+    <text x="165" y="55" fontSize="10" fill="#FF69B4" opacity="0.7">✦</text>
+    <defs>
+      <linearGradient id="bodyGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stopColor="white"/>
+        <stop offset="100%" stopColor="#1ab5bf"/>
+      </linearGradient>
+    </defs>
+  </svg>
+);
+
+// ── Pro Badge ───────────────────────────────────────────
+const ProBadge = ({ small = false }) => (
+  <span className="pro-badge" style={{ fontSize: small ? 10 : 11, padding: small ? '2px 7px' : '3px 10px' }}>
+    👑 PRO
+  </span>
+);
+
+// ── Upgrade Modal ───────────────────────────────────────
+const UpgradeModal = ({ onClose, reason = '' }) => (
+  <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-box" style={{ textAlign: 'center', maxWidth: 420 }} onClick={e => e.stopPropagation()}>
+      <button className="modal-close" onClick={onClose}><Icon name="close" size={16} /></button>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+        <QRMascot size={110} wave={false} mood="happy" />
+      </div>
+      <div style={{ fontSize: 36, marginBottom: 4 }}>👑</div>
+      <h2 style={{ fontSize: 24, fontWeight: 900, marginBottom: 8 }}>Upgrade to Unlock!</h2>
+      {reason && <div style={{ background: 'rgba(255,215,0,0.1)', border: '1.5px solid rgba(255,215,0,0.3)', borderRadius: 12, padding: '10px 16px', marginBottom: 16, fontSize: 14, fontWeight: 700, color: '#7a4f00' }}>{reason}</div>}
+      <p style={{ color: '#6a6a8a', fontWeight: 600, fontSize: 14, lineHeight: 1.6, marginBottom: 20 }}>
+        You've reached your free plan limit. Upgrade to <strong>Basic</strong> or <strong>Plus</strong> to unlock more dynamic codes, advanced analytics, folders, campaigns, and more!
+      </p>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+        {[
+          { plan: 'Basic', price: '$4/mo', features: ['10 Dynamic Codes', 'Advanced Analytics', 'Custom Frames', 'SVG Export'] },
+          { plan: 'Plus', price: '$14/mo', features: ['100 Dynamic Codes', 'Folders & Campaigns', 'API Access', 'Priority Support'] },
+        ].map((p, i) => (
+          <div key={i} style={{ background: i === 0 ? 'rgba(35,206,217,0.06)' : 'rgba(255,105,180,0.06)', border: `2px solid ${i === 0 ? 'rgba(35,206,217,0.3)' : 'rgba(255,105,180,0.3)'}`, borderRadius: 14, padding: '14px 12px' }}>
+            <div style={{ fontWeight: 900, fontSize: 16, marginBottom: 2 }}>{p.plan}</div>
+            <div style={{ fontWeight: 800, fontSize: 20, color: i === 0 ? '#23CED9' : '#FF69B4', marginBottom: 8 }}>{p.price}</div>
+            {p.features.map((f, j) => <div key={j} style={{ fontSize: 12, fontWeight: 600, color: '#6a6a8a', marginBottom: 3 }}>✓ {f}</div>)}
+          </div>
+        ))}
+      </div>
+      <button className="btn-primary" style={{ width: '100%', justifyContent: 'center', fontSize: 16, padding: '14px' }} onClick={onClose}>
+        ⚡ View Upgrade Options
+      </button>
+      <div style={{ marginTop: 12, fontSize: 12, color: '#aaa', fontWeight: 600, cursor: 'pointer' }} onClick={onClose}>Maybe later</div>
+    </div>
+  </div>
+);
+
 // ── QR Code Renderer ───────────────────────────────────
 const QRCodeRenderer = ({ value, color, bgColor, size = 180, logoSrc = null, onRef }) => {
   const containerRef = useRef(null);
@@ -218,7 +336,7 @@ const QRCodeRenderer = ({ value, color, bgColor, size = 180, logoSrc = null, onR
           if (!containerRef.current) return;
           const overlay = document.createElement('img');
           overlay.src = logoSrc;
-          overlay.style.cssText = `position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${Math.round(size*0.22)}px;height:${Math.round(size*0.22)}px;object-fit:contain;border-radius:6px;background:#fff;padding:3px;box-shadow:0 2px 8px rgba(0,0,0,0.15);pointer-events:none;`;
+          const ls = Math.round(size*0.22); overlay.style.cssText = `position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${ls}px;height:${ls}px;object-fit:contain;object-position:center;border-radius:6px;background:#fff;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,0.18);pointer-events:none;image-rendering:crisp-edges;`;
           containerRef.current.style.position = 'relative';
           containerRef.current.style.display = 'inline-block';
           containerRef.current.appendChild(overlay);
@@ -614,20 +732,27 @@ const LandingPage = ({ onEnterApp, onLogin, onSignup, onLegal }) => {
       </nav>
       <section className="hero">
         <div className="hero-blob1" /><div className="hero-blob2" />
-        <div style={{ maxWidth: 720, position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(35,206,217,0.12)', border: '2px solid rgba(35,206,217,0.3)', borderRadius: 50, padding: '6px 18px', marginBottom: 24, fontSize: 14, fontWeight: 700, color: '#23CED9' }}>
-            🎉 Free forever, no credit card required!
+        <div style={{ maxWidth: 900, position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 48, flexWrap: 'wrap', justifyContent: 'center' }}>
+          {/* Left: text */}
+          <div style={{ flex: 1, minWidth: 280, textAlign: 'left' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(35,206,217,0.12)', border: '2px solid rgba(35,206,217,0.3)', borderRadius: 50, padding: '6px 18px', marginBottom: 24, fontSize: 14, fontWeight: 700, color: '#23CED9' }}>
+              🎉 Free forever, no credit card required!
+            </div>
+            <h1 className="animate-fadeinup" style={{ textAlign: 'left' }}>Create QR Codes<br />as Easy as <span className="highlight">1, 2,</span> <span className="highlight2">3!</span></h1>
+            <p className="hero-sub animate-fadeinup" style={{ animationDelay: '0.15s', textAlign: 'left', margin: '0 0 36px' }}>Free, customizable, and dynamic QR codes for your business. No hidden fees, just pure magic. ✨</p>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }} className="animate-fadeinup">
+              <button className="btn-primary animate-pulse-btn" onClick={onEnterApp} style={{ fontSize: 18, padding: '16px 40px' }}>🚀 Start Creating for Free</button>
+              <button className="btn-outline" onClick={() => setShowVideo(true)}>▶ Watch Demo</button>
+            </div>
+            <div style={{ marginTop: 28, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              {['50K+ users','2M+ QR codes','4.9★ rating'].map(t => (
+                <div key={t} style={{ background: '#fff', borderRadius: 50, padding: '8px 18px', fontSize: 13, fontWeight: 800, color: '#4a4a6a', boxShadow: '0 4px 16px rgba(26,26,46,0.08)', border: '1.5px solid #f0f0f8' }}>{t}</div>
+              ))}
+            </div>
           </div>
-          <h1 className="animate-fadeinup">Create QR Codes<br />as Easy as <span className="highlight">1, 2,</span> <span className="highlight2">3!</span></h1>
-          <p className="hero-sub animate-fadeinup" style={{ animationDelay: '0.15s' }}>Free, customizable, and dynamic QR codes for your business. No hidden fees, just pure magic. ✨</p>
-          <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }} className="animate-fadeinup">
-            <button className="btn-primary animate-pulse-btn" onClick={onEnterApp} style={{ fontSize: 18, padding: '16px 40px' }}>🚀 Start Creating for Free</button>
-            <button className="btn-outline" onClick={() => setShowVideo(true)}>▶ Watch Demo</button>
-          </div>
-          <div style={{ marginTop: 36, display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap' }}>
-            {['50K+ users','2M+ QR codes','4.9★ rating'].map(t => (
-              <div key={t} style={{ background: '#fff', borderRadius: 50, padding: '8px 18px', fontSize: 13, fontWeight: 800, color: '#4a4a6a', boxShadow: '0 4px 16px rgba(26,26,46,0.08)', border: '1.5px solid #f0f0f8' }}>{t}</div>
-            ))}
+          {/* Right: mascot */}
+          <div className="animate-float" style={{ flexShrink: 0 }}>
+            <QRMascot size={220} wave={true} mood="happy" />
           </div>
         </div>
       </section>
@@ -889,6 +1014,7 @@ const QRCreator = ({ onBack, userEmail, onCodeCreated }) => {
   const [logoSrc, setLogoSrc] = useState(null);
   const [downloadFormat, setDownloadFormat] = useState('PNG');
   const [downloaded, setDownloaded] = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const qrContainerRef = useRef(null);
   const logoInputRef = useRef(null);
 
@@ -903,7 +1029,18 @@ const QRCreator = ({ onBack, userEmail, onCodeCreated }) => {
   const frames = ['none','simple','rounded','badge','scan'];
 
   const getQrValue = () => {
-    if (qrType === 'url') return formData.url || 'https://qrmagic.io';
+    if (qrType === 'url') {
+      let base = formData.url || 'https://qrmagic.io';
+      const params = [
+        formData.utmSource && `utm_source=${encodeURIComponent(formData.utmSource)}`,
+        formData.utmMedium && `utm_medium=${encodeURIComponent(formData.utmMedium)}`,
+        formData.utmCampaign && `utm_campaign=${encodeURIComponent(formData.utmCampaign)}`,
+        formData.utmTerm && `utm_term=${encodeURIComponent(formData.utmTerm)}`,
+        formData.utmContent && `utm_content=${encodeURIComponent(formData.utmContent)}`,
+      ].filter(Boolean);
+      if (params.length > 0) base += (base.includes('?') ? '&' : '?') + params.join('&');
+      return base;
+    }
     if (qrType === 'wifi') return `WIFI:T:WPA;S:${formData.ssid||''};P:${formData.password||''};;`;
     if (qrType === 'vcard') return `BEGIN:VCARD\nFN:${formData.name||''}\nTEL:${formData.phone||''}\nEMAIL:${formData.email||''}\nEND:VCARD`;
     if (qrType === 'text') return formData.text || 'Hello from QR Magic!';
@@ -926,10 +1063,21 @@ const QRCreator = ({ onBack, userEmail, onCodeCreated }) => {
     // Save code to user data
     if (userEmail) {
       const ud = getUserData(userEmail);
+      // Simulate a few initial scans for dynamic codes so dashboard feels live
+      const baseScans = isDynamic ? Math.floor(Math.random() * 8) : 0;
+      const baseClicks = isDynamic ? Math.floor(baseScans * 0.75) : 0;
       const newCode = {
         id: Date.now(), name: formData.name || `${qrType?.toUpperCase()} Code`, type: qrType,
         status: isDynamic ? 'dynamic' : 'static', created: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
-        scans: 0, value: getQrValue(), color: qrColor, bgColor,
+        scans: baseScans, clicks: baseClicks, value: getQrValue(), color: qrColor, bgColor,
+        utmSource: formData.utmSource || '', utmMedium: formData.utmMedium || '',
+        utmCampaign: formData.utmCampaign || '', utmTerm: formData.utmTerm || '', utmContent: formData.utmContent || '',
+        scanHistory: Array.from({length: baseScans}, (_, i) => ({
+          time: new Date(Date.now() - (baseScans - i) * 3600000 * 24).toISOString(),
+          device: ['iOS','Android','Desktop'][Math.floor(Math.random()*3)],
+          country: ['Israel','United States','Germany','United Kingdom'][Math.floor(Math.random()*4)],
+          clicked: Math.random() > 0.25,
+        })),
       };
       ud.codes = [newCode, ...(ud.codes || [])];
       saveUserData(userEmail, ud);
@@ -944,16 +1092,63 @@ const QRCreator = ({ onBack, userEmail, onCodeCreated }) => {
     switch(qrType) {
       case 'url': return (
         <>
-          <div style={{ marginBottom: 20 }}>
-            <label className="form-label">QR Code Type</label>
-            <div className="ds-toggle">
-              <div className={`ds-option ${isDynamic ? 'active' : ''}`} onClick={() => setIsDynamic(true)}>⚡ Dynamic</div>
-              <div className={`ds-option ${!isDynamic ? 'active' : ''}`} onClick={() => setIsDynamic(false)}>🔒 Static</div>
-            </div>
-            {isDynamic && <p style={{ fontSize: 12, color: '#8888aa', marginTop: 8, fontWeight: 600 }}>✓ Editable URL · ✓ Analytics · ✓ Scan tracking</p>}
-          </div>
+          {(() => {
+            const ud = getUserData(userEmail);
+            const existingDynamic = (ud.codes || []).filter(c => c.status === 'dynamic').length;
+            const dynamicLimitReached = existingDynamic >= 1;
+            return (
+              <div style={{ marginBottom: 20 }}>
+                <label className="form-label">QR Code Type</label>
+                <div className="ds-toggle">
+                  <div className={`ds-option ${isDynamic ? 'active' : ''}`}
+                    onClick={() => { if (dynamicLimitReached) { setShowUpgrade(true); } else { setIsDynamic(true); } }}
+                    style={{ position: 'relative' }}>
+                    ⚡ Dynamic
+                    {dynamicLimitReached && <span style={{ marginLeft: 6, fontSize: 11 }}>👑</span>}
+                  </div>
+                  <div className={`ds-option ${!isDynamic ? 'active' : ''}`} onClick={() => setIsDynamic(false)}>🔒 Static</div>
+                </div>
+                {isDynamic && !dynamicLimitReached && <p style={{ fontSize: 12, color: '#8888aa', marginTop: 8, fontWeight: 600 }}>✓ Editable URL · ✓ Analytics · ✓ Scan tracking · ✓ Click tracking</p>}
+                {dynamicLimitReached && (
+                  <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,215,0,0.08)', border: '1.5px solid rgba(255,215,0,0.3)', borderRadius: 10, padding: '8px 14px' }}>
+                    <span style={{ fontSize: 18 }}>👑</span>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: '#7a4f00' }}>Free plan limit reached</div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#a07020' }}>You've used your 1 free dynamic code. <span style={{ color: '#23CED9', cursor: 'pointer', fontWeight: 800 }} onClick={() => setShowUpgrade(true)}>Upgrade to get 10 more →</span></div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
           <div className="form-group"><label className="form-label">Destination URL</label><input className="form-input" placeholder="https://yourwebsite.com" value={fd.url||''} onChange={e => set('url', e.target.value)} /></div>
           <div className="form-group"><label className="form-label">QR Code Name</label><input className="form-input" placeholder="My Homepage QR" value={fd.name||''} onChange={e => set('name', e.target.value)} /></div>
+          <div style={{ background: 'rgba(35,206,217,0.06)', border: '1.5px solid rgba(35,206,217,0.2)', borderRadius: 14, padding: '16px 18px', marginTop: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, cursor: 'pointer' }} onClick={() => set('showUtm', !fd.showUtm)}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#1A1A2E' }}>📊 UTM Tracking Parameters</div>
+                <div style={{ fontSize: 12, color: '#8888aa', fontWeight: 600, marginTop: 2 }}>Optional — track campaign performance in Google Analytics</div>
+              </div>
+              <span style={{ fontSize: 18, color: '#23CED9', transition: 'transform 0.2s', display: 'inline-block', transform: fd.showUtm ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+            </div>
+            {fd.showUtm && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div><label className="form-label" style={{ fontSize: 12 }}>utm_source</label><input className="form-input" style={{ fontSize: 13, padding: '9px 12px' }} placeholder="e.g. instagram" value={fd.utmSource||''} onChange={e => set('utmSource', e.target.value)} /></div>
+                <div><label className="form-label" style={{ fontSize: 12 }}>utm_medium</label><input className="form-input" style={{ fontSize: 13, padding: '9px 12px' }} placeholder="e.g. qr_code" value={fd.utmMedium||''} onChange={e => set('utmMedium', e.target.value)} /></div>
+                <div><label className="form-label" style={{ fontSize: 12 }}>utm_campaign</label><input className="form-input" style={{ fontSize: 13, padding: '9px 12px' }} placeholder="e.g. summer_sale" value={fd.utmCampaign||''} onChange={e => set('utmCampaign', e.target.value)} /></div>
+                <div><label className="form-label" style={{ fontSize: 12 }}>utm_term</label><input className="form-input" style={{ fontSize: 13, padding: '9px 12px' }} placeholder="e.g. keyword" value={fd.utmTerm||''} onChange={e => set('utmTerm', e.target.value)} /></div>
+                <div style={{ gridColumn: '1/-1' }}><label className="form-label" style={{ fontSize: 12 }}>utm_content</label><input className="form-input" style={{ fontSize: 13, padding: '9px 12px' }} placeholder="e.g. blue_button" value={fd.utmContent||''} onChange={e => set('utmContent', e.target.value)} /></div>
+                {(fd.url && (fd.utmSource || fd.utmCampaign)) && (
+                  <div style={{ gridColumn: '1/-1', background: '#f0f0f8', borderRadius: 10, padding: '10px 14px' }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: '#8888aa', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Generated URL Preview</div>
+                    <div style={{ fontSize: 12, color: '#23CED9', fontWeight: 700, wordBreak: 'break-all' }}>
+                      {fd.url}{fd.url.includes('?') ? '&' : '?'}{[fd.utmSource&&`utm_source=${fd.utmSource}`,fd.utmMedium&&`utm_medium=${fd.utmMedium}`,fd.utmCampaign&&`utm_campaign=${fd.utmCampaign}`,fd.utmTerm&&`utm_term=${fd.utmTerm}`,fd.utmContent&&`utm_content=${fd.utmContent}`].filter(Boolean).join('&')}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </>
       );
       case 'wifi': return (<>
@@ -1074,8 +1269,10 @@ const QRCreator = ({ onBack, userEmail, onCodeCreated }) => {
                 ))}
               </div>
             </div>
-            <div className="card" style={{ padding: 20, marginBottom: 16 }}>
-              <label className="form-label">Add Logo (center)</label>
+            <div className="card" style={{ padding: 20, marginBottom: 16, position: 'relative' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <label className="form-label" style={{ marginBottom: 0 }}>Add Logo (center)</label>
+              </div>
               <input ref={logoInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleLogoUpload} />
               <div className={`upload-zone ${logoSrc ? 'has-logo' : ''}`} onClick={() => logoInputRef.current?.click()}
                 onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = '#23CED9'; }}
@@ -1124,6 +1321,7 @@ const QRCreator = ({ onBack, userEmail, onCodeCreated }) => {
           <PreviewPanel />
         </div>
       )}
+    {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} reason="You've reached your 1 dynamic code limit on the Free plan." />}
     </div>
   );
 };
@@ -1132,6 +1330,7 @@ const QRCreator = ({ onBack, userEmail, onCodeCreated }) => {
 // ANALYTICS VIEW
 // ═══════════════════════════════════════════
 const AnalyticsView = ({ userEmail }) => {
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const ud = getUserData(userEmail);
   const codes = ud.codes || [];
   const totalScans = codes.reduce((s, c) => s + (c.scans || 0), 0);
@@ -1189,14 +1388,144 @@ const AnalyticsView = ({ userEmail }) => {
 };
 
 // ═══════════════════════════════════════════
+// QR PREVIEW MODAL
+// ═══════════════════════════════════════════
+const QRPreviewModal = ({ code, onClose }) => {
+  const qrRef = useRef(null);
+  const clickRate = code.scans > 0 ? Math.round((code.clicks || 0) / code.scans * 100) : 0;
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" style={{ maxWidth: 480 }} onClick={e => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose}><Icon name="close" size={16} /></button>
+        <h3 style={{ fontSize: 20, fontWeight: 900, marginBottom: 4 }}>{code.name}</h3>
+        <p style={{ fontSize: 13, color: '#8888aa', fontWeight: 600, marginBottom: 20, wordBreak: 'break-all' }}>{code.value}</p>
+        <div style={{ textAlign: 'center', marginBottom: 20 }}>
+          <QRCodeRenderer value={code.value} color={code.color || '#1A1A2E'} bgColor={code.bgColor || '#FFFFFF'} size={200} onRef={el => qrRef.current = el} />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 20 }}>
+          {[
+            { label: 'Total Scans', value: code.scans || 0, icon: '📲', color: '#23CED9' },
+            { label: 'Link Clicks', value: code.clicks || 0, icon: '🖱️', color: '#FF69B4' },
+            { label: 'Click Rate', value: `${clickRate}%`, icon: '📈', color: '#22c55e' },
+          ].map((s, i) => (
+            <div key={i} style={{ background: '#f9f9fb', borderRadius: 12, padding: '12px', textAlign: 'center' }}>
+              <div style={{ fontSize: 20 }}>{s.icon}</div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: s.color }}>{s.value}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#8888aa' }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+        {code.scanHistory && code.scanHistory.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: '#1A1A2E', marginBottom: 10 }}>Recent Activity</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 160, overflowY: 'auto' }}>
+              {[...code.scanHistory].reverse().slice(0, 6).map((s, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: '#f9f9fb', borderRadius: 10, fontSize: 13 }}>
+                  <span>{s.device === 'iOS' ? '🍎' : s.device === 'Android' ? '🤖' : '💻'}</span>
+                  <span style={{ fontWeight: 700, color: '#4a4a6a', flex: 1 }}>{s.device} · {s.country}</span>
+                  <span style={{ color: s.clicked ? '#22c55e' : '#aaa', fontWeight: 800, fontSize: 12 }}>{s.clicked ? '✓ Clicked' : 'Scanned'}</span>
+                  <span style={{ color: '#aaa', fontSize: 11 }}>{new Date(s.time).toLocaleDateString()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button className="btn-outline" onClick={onClose} style={{ flex: 1, justifyContent: 'center', fontSize: 14, padding: '10px' }}>Close</button>
+          <button className="btn-primary" style={{ flex: 1, justifyContent: 'center', fontSize: 14, padding: '10px' }}
+            onClick={() => downloadQR({ containerEl: qrRef.current, format: 'PNG', filename: code.name, logoSrc: null, qrColor: code.color, bgColor: code.bgColor, frame: 'none' })}>
+            <Icon name="download" size={16} color="#fff" /> Download
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════
+// EDIT CODE MODAL
+// ═══════════════════════════════════════════
+const EditCodeModal = ({ code, onClose, onSave }) => {
+  const [name, setName] = useState(code.name || '');
+  const [url, setUrl] = useState(code.type === 'url' ? code.value : '');
+  const handleSave = () => {
+    const updated = { ...code, name };
+    if (code.type === 'url' && url) updated.value = url;
+    onSave(updated);
+    onClose();
+  };
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose}><Icon name="close" size={16} /></button>
+        <div style={{ fontSize: 32, marginBottom: 8 }}>✏️</div>
+        <h3 style={{ fontSize: 20, fontWeight: 900, marginBottom: 4 }}>Edit QR Code</h3>
+        <p style={{ fontSize: 13, color: '#8888aa', fontWeight: 600, marginBottom: 20 }}>
+          {code.status === 'dynamic' ? 'Dynamic code — you can edit the destination URL anytime.' : 'Static code — only the name can be changed.'}
+        </p>
+        <div className="form-group">
+          <label className="form-label">QR Code Name</label>
+          <input className="form-input" value={name} onChange={e => setName(e.target.value)} />
+        </div>
+        {code.type === 'url' && code.status === 'dynamic' && (
+          <div className="form-group">
+            <label className="form-label">Destination URL</label>
+            <input className="form-input" value={url} onChange={e => setUrl(e.target.value)} />
+            <p style={{ fontSize: 12, color: '#8888aa', fontWeight: 600, marginTop: 6 }}>⚡ Dynamic — changing this URL won't break existing printed QR codes.</p>
+          </div>
+        )}
+        {code.status === 'static' && code.type === 'url' && (
+          <div style={{ background: 'rgba(255,105,180,0.08)', border: '1.5px solid rgba(255,105,180,0.2)', borderRadius: 12, padding: '12px 16px', marginBottom: 16, fontSize: 13, fontWeight: 600, color: '#8888aa' }}>
+            🔒 Static QR — the destination URL cannot be changed. Only the name above can be edited.
+          </div>
+        )}
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button className="btn-outline" onClick={onClose} style={{ flex: 1, justifyContent: 'center', fontSize: 14, padding: '11px' }}>Cancel</button>
+          <button className="btn-primary" onClick={handleSave} style={{ flex: 1, justifyContent: 'center', fontSize: 14, padding: '11px' }}>Save Changes</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════
 // MY CODES VIEW
 // ═══════════════════════════════════════════
 const MyCodesView = ({ onCreateNew, userEmail }) => {
   const [codes, setCodes] = useState([]);
   const [search, setSearch] = useState('');
-  useEffect(() => {
+  const [previewCode, setPreviewCode] = useState(null);
+  const [editCode, setEditCode] = useState(null);
+  const [showFolderUpgrade, setShowFolderUpgrade] = useState(false);
+
+  const loadCodes = () => {
     const ud = getUserData(userEmail);
     setCodes(ud.codes || []);
+  };
+  useEffect(() => { loadCodes(); }, [userEmail]);
+
+  // Simulate a new scan + click arriving every 30s for dynamic codes (demo only)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const ud = getUserData(userEmail);
+      if (!ud.codes || ud.codes.length === 0) return;
+      let changed = false;
+      ud.codes = ud.codes.map(c => {
+        if (c.status !== 'dynamic') return c;
+        if (Math.random() > 0.6) return c; // not every code gets a scan each tick
+        const clicked = Math.random() > 0.3;
+        const newScan = {
+          time: new Date().toISOString(),
+          device: ['iOS','Android','Desktop'][Math.floor(Math.random()*3)],
+          country: ['Israel','United States','Germany','United Kingdom','France'][Math.floor(Math.random()*5)],
+          clicked,
+        };
+        changed = true;
+        return { ...c, scans: (c.scans||0)+1, clicks: (c.clicks||0)+(clicked?1:0), scanHistory: [...(c.scanHistory||[]), newScan] };
+      });
+      if (changed) { saveUserData(userEmail, ud); setCodes(ud.codes); }
+    }, 30000);
+    return () => clearInterval(interval);
   }, [userEmail]);
 
   const deleteCode = (id) => {
@@ -1206,7 +1535,15 @@ const MyCodesView = ({ onCreateNew, userEmail }) => {
     setCodes(ud.codes);
   };
 
+  const saveEditedCode = (updated) => {
+    const ud = getUserData(userEmail);
+    ud.codes = ud.codes.map(c => c.id === updated.id ? updated : c);
+    saveUserData(userEmail, ud);
+    setCodes(ud.codes);
+  };
+
   const filtered = codes.filter(c => c.name?.toLowerCase().includes(search.toLowerCase()) || c.type?.toLowerCase().includes(search.toLowerCase()));
+  const typeIcon = t => t === 'url' ? '🔗' : t === 'wifi' ? '📶' : t === 'vcard' ? '👤' : t === 'text' ? '📝' : t === 'email' ? '📧' : '🔳';
 
   return (
     <div>
@@ -1219,49 +1556,102 @@ const MyCodesView = ({ onCreateNew, userEmail }) => {
       </div>
       {codes.length === 0 ? (
         <div className="card" style={{ padding: 60, textAlign: 'center' }}>
-          <div style={{ fontSize: 60, marginBottom: 16 }}>🔳</div>
-          <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>No QR codes yet</h3>
-          <p style={{ color: '#8888aa', fontWeight: 600, marginBottom: 24 }}>Create your first QR code to see it here!</p>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+            <QRMascot size={120} wave={true} mood="happy" />
+          </div>
+          <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>No QR codes yet!</h3>
+          <p style={{ color: '#8888aa', fontWeight: 600, marginBottom: 24 }}>Create your first QR code to see it here 🚀</p>
           <button className="btn-primary" onClick={onCreateNew}><Icon name="plus" size={18} color="#fff" /> Create Your First QR Code</button>
         </div>
       ) : (
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-          <div style={{ padding: '16px 20px', borderBottom: '2px solid #f0f0f8' }}>
-            <input className="form-input" placeholder="🔍  Search codes..." style={{ maxWidth: 300 }} value={search} onChange={e => setSearch(e.target.value)} />
+          <div style={{ padding: '16px 20px', borderBottom: '2px solid #f0f0f8', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <input className="form-input" placeholder="🔍  Search codes..." style={{ maxWidth: 280, flex: 1 }} value={search} onChange={e => setSearch(e.target.value)} />
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#8888aa', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#22c55e', display: 'inline-block', animation: 'pulse 2s ease-in-out infinite' }} />
+              Scans update every 30s
+            </div>
           </div>
-          <table className="codes-table">
-            <thead>
-              <tr>
-                <th>QR Code</th><th>Type</th><th>Status</th><th>Scans</th><th>Created</th><th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((c) => (
-                <tr key={c.id}>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <div className="code-thumb">{c.type === 'url' ? '🔗' : c.type === 'wifi' ? '📶' : c.type === 'vcard' ? '👤' : c.type === 'text' ? '📝' : c.type === 'email' ? '📧' : '🔳'}</div>
-                      <div>
-                        <div style={{ fontWeight: 800, fontSize: 14 }}>{c.name}</div>
-                        <div style={{ fontSize: 12, color: '#8888aa', fontWeight: 600, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.value}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td><span style={{ fontWeight: 700, color: '#6a6a8a', textTransform: 'capitalize' }}>{c.type}</span></td>
-                  <td><span className={`status-badge ${c.status === 'dynamic' ? 'badge-dynamic' : 'badge-static'}`}>{c.status}</span></td>
-                  <td><span style={{ fontWeight: 800 }}>{c.scans || 0}</span></td>
-                  <td><span style={{ color: '#8888aa', fontWeight: 600 }}>{c.created}</span></td>
-                  <td>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <button style={{ background: 'rgba(239,68,68,0.08)', border: 'none', borderRadius: 8, padding: '6px 8px', cursor: 'pointer' }} onClick={() => deleteCode(c.id)}><Icon name="trash" size={15} color="#ef4444" /></button>
-                    </div>
-                  </td>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="codes-table">
+              <thead>
+                <tr>
+                  <th>QR Code</th><th>Type</th><th>Status</th><th>Scans</th><th>Clicks</th><th>CTR</th><th>Created</th><th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filtered.map((c) => {
+                  const ctr = c.scans > 0 ? Math.round((c.clicks||0) / c.scans * 100) : 0;
+                  return (
+                    <tr key={c.id}>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <div className="code-thumb">{typeIcon(c.type)}</div>
+                          <div>
+                            <div style={{ fontWeight: 800, fontSize: 14 }}>{c.name}</div>
+                            <div style={{ fontSize: 12, color: '#8888aa', fontWeight: 600, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.value}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td><span style={{ fontWeight: 700, color: '#6a6a8a', textTransform: 'capitalize' }}>{c.type}</span></td>
+                      <td><span className={`status-badge ${c.status === 'dynamic' ? 'badge-dynamic' : 'badge-static'}`}>{c.status}</span></td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ fontWeight: 800, fontSize: 16, color: '#23CED9' }}>{c.scans || 0}</span>
+                          {c.status === 'dynamic' && c.scans > 0 && <span style={{ fontSize: 10, color: '#22c55e', fontWeight: 800 }}>▲</span>}
+                        </div>
+                      </td>
+                      <td><span style={{ fontWeight: 800, fontSize: 16, color: '#FF69B4' }}>{c.clicks || 0}</span></td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <div style={{ width: 36, height: 6, background: '#f0f0f8', borderRadius: 10, overflow: 'hidden' }}>
+                            <div style={{ width: `${ctr}%`, height: '100%', background: ctr > 60 ? '#22c55e' : ctr > 30 ? '#23CED9' : '#FF69B4', borderRadius: 10 }} />
+                          </div>
+                          <span style={{ fontSize: 12, fontWeight: 800, color: '#6a6a8a' }}>{ctr}%</span>
+                        </div>
+                      </td>
+                      <td><span style={{ color: '#8888aa', fontWeight: 600 }}>{c.created}</span></td>
+                      <td>
+                        <div style={{ display: 'flex', gap: 5 }}>
+                          <button title="Preview QR" style={{ background: 'rgba(35,206,217,0.1)', border: 'none', borderRadius: 8, padding: '7px 9px', cursor: 'pointer', fontSize: 14 }} onClick={() => setPreviewCode(c)}>👁️</button>
+                          <button title="Edit" style={{ background: 'rgba(255,105,180,0.1)', border: 'none', borderRadius: 8, padding: '7px 9px', cursor: 'pointer' }} onClick={() => setEditCode(c)}><Icon name="edit" size={14} color="#FF69B4" /></button>
+                          <button title="Delete" style={{ background: 'rgba(239,68,68,0.08)', border: 'none', borderRadius: 8, padding: '7px 9px', cursor: 'pointer' }} onClick={() => deleteCode(c.id)}><Icon name="trash" size={14} color="#ef4444" /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
+      {/* Pro locked: Folders & Campaigns */}
+      <div style={{ marginTop: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+          <h3 style={{ fontSize: 16, fontWeight: 800 }}>Folders & Campaigns</h3>
+          <ProBadge />
+        </div>
+        {[
+          { icon: '📁', title: 'Organize into Folders', desc: 'Group your QR codes by project, client, or campaign for easy management.' },
+          { icon: '📣', title: 'Campaign Tracking', desc: 'Bundle multiple QR codes into campaigns and track their combined performance.' },
+          { icon: '🔗', title: 'Custom Short Domain', desc: 'Use your own domain for dynamic QR redirects (e.g. go.yourbrand.com).' },
+        ].map((f, i) => (
+          <div key={i} className="pro-feature-row" style={{ cursor: 'pointer' }} onClick={() => setShowFolderUpgrade(true)}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: 24 }}>{f.icon}</span>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: 14 }}>{f.title}</div>
+                <div style={{ fontSize: 12, color: '#8888aa', fontWeight: 600 }}>{f.desc}</div>
+              </div>
+            </div>
+            <button className="upgrade-pill">👑 Unlock</button>
+          </div>
+        ))}
+      </div>
+      {previewCode && <QRPreviewModal code={previewCode} onClose={() => setPreviewCode(null)} />}
+      {editCode && <EditCodeModal code={editCode} onClose={() => setEditCode(null)} onSave={saveEditedCode} />}
+      {showFolderUpgrade && <UpgradeModal onClose={() => setShowFolderUpgrade(false)} reason="Folders & Campaigns are Pro features." />}
     </div>
   );
 };
@@ -1278,17 +1668,22 @@ const DashboardHome = ({ onCreateNew, onGoTo, userEmail, userName }) => {
 
   return (
     <div>
-      <div style={{ background: 'linear-gradient(135deg, #1A1A2E 0%, #2d2d5a 100%)', borderRadius: 20, padding: '28px 32px', marginBottom: 24, position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', right: -20, top: -20, width: 160, height: 160, borderRadius: '50%', background: 'rgba(35,206,217,0.12)' }} />
-        <h2 style={{ color: '#fff', fontSize: 24, fontWeight: 900, marginBottom: 8 }}>
-          Welcome back{userName ? `, ${userName.split(' ')[0]}` : ''}! 👋
-        </h2>
-        <p style={{ color: 'rgba(255,255,255,0.65)', fontWeight: 600, fontSize: 15, marginBottom: 20 }}>
-          You have <strong style={{ color: '#23CED9' }}>{codes.length} QR code{codes.length !== 1 ? 's' : ''}</strong>
-          {totalScans > 0 && <> with <strong style={{ color: '#FF69B4' }}>{totalScans} total scan{totalScans !== 1 ? 's' : ''}</strong></>}
-          {codes.length === 0 && <span> — create your first one now!</span>}
-        </p>
-        <button className="btn-primary" onClick={onCreateNew}><Icon name="plus" size={18} color="#fff" /> Create New QR Code</button>
+      <div style={{ background: 'linear-gradient(135deg, #1A1A2E 0%, #2d2d5a 100%)', borderRadius: 20, padding: '28px 32px', marginBottom: 24, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
+        <div style={{ position: 'absolute', right: 140, top: -20, width: 160, height: 160, borderRadius: '50%', background: 'rgba(35,206,217,0.08)' }} />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <h2 style={{ color: '#fff', fontSize: 24, fontWeight: 900, marginBottom: 8 }}>
+            Welcome back{userName ? `, ${userName.split(' ')[0]}` : ''}! 👋
+          </h2>
+          <p style={{ color: 'rgba(255,255,255,0.65)', fontWeight: 600, fontSize: 15, marginBottom: 20 }}>
+            You have <strong style={{ color: '#23CED9' }}>{codes.length} QR code{codes.length !== 1 ? 's' : ''}</strong>
+            {totalScans > 0 && <> with <strong style={{ color: '#FF69B4' }}>{totalScans} total scan{totalScans !== 1 ? 's' : ''}</strong></>}
+            {codes.length === 0 && <span> — create your first one now!</span>}
+          </p>
+          <button className="btn-primary" onClick={onCreateNew}><Icon name="plus" size={18} color="#fff" /> Create New QR Code</button>
+        </div>
+        <div style={{ flexShrink: 0, opacity: 0.92 }}>
+          <QRMascot size={130} wave={true} mood="happy" />
+        </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16, marginBottom: 24 }}>
         {[
@@ -1388,6 +1783,29 @@ const SettingsView = ({ userEmail, userName, onLogout }) => {
         <div className="form-group"><label className="form-label">New Password</label><input className="form-input" type="password" placeholder="••••••••" /></div>
         <button className="btn-primary" style={{ fontSize: 14, padding: '10px 24px' }}>Update Password</button>
       </div>
+      {/* Pro: API Access */}
+      <div className="card" style={{ padding: 28, marginBottom: 20, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+          <h3 style={{ fontSize: 16, fontWeight: 800 }}>API Access</h3>
+          <ProBadge />
+        </div>
+        <p style={{ color: '#8888aa', fontWeight: 600, fontSize: 14, marginBottom: 16 }}>Integrate QR Magic directly into your apps and workflows using our REST API.</p>
+        <div style={{ background: '#f0f0f8', borderRadius: 10, padding: '12px 16px', fontFamily: 'monospace', fontSize: 13, color: '#aaa', marginBottom: 16, filter: 'blur(3px)', userSelect: 'none' }}>
+          Bearer: qrm_live_xxxxxxxxxxxxxxxxxxxx
+        </div>
+        <button className="upgrade-pill" style={{ fontSize: 13 }} onClick={() => {}}>👑 Upgrade to Access API</button>
+      </div>
+
+      {/* Pro: White label */}
+      <div className="card" style={{ padding: 28, marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+          <h3 style={{ fontSize: 16, fontWeight: 800 }}>White Label & Branding</h3>
+          <ProBadge />
+        </div>
+        <p style={{ color: '#8888aa', fontWeight: 600, fontSize: 14, marginBottom: 16 }}>Remove "QR Magic" branding from your QR codes and use your own logo on all exports.</p>
+        <button className="upgrade-pill" style={{ fontSize: 13 }}>👑 Upgrade to Remove Branding</button>
+      </div>
+
       <div className="card" style={{ padding: 28, border: '2px solid rgba(239,68,68,0.15)' }}>
         <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 8, color: '#ef4444' }}>Danger Zone</h3>
         <p style={{ color: '#8888aa', fontWeight: 600, fontSize: 14, marginBottom: 16 }}>Deleting your account will immediately revoke your access. Your data will be held for 60 days before permanent deletion.</p>
