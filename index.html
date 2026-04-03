@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QRMagic – QR Code Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.5.0/Recharts.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #23CED9;
+    --pink: #FF69B4;
+    --bg: #F9F9F9;
+    --mint: #E0F7FA;
+    --indigo: #1A1A2E;
+    --blue-dark: #1ab5bf;
+    --pink-dark: #e55ba0;
+    --shadow: 0 8px 32px rgba(26,26,46,0.10);
+    --shadow-lg: 0 16px 48px rgba(26,26,46,0.15);
+    --radius: 20px;
+    --radius-sm: 12px;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--indigo); overflow-x: hidden; }
+  #root { min-height: 100vh; }
+
+  /* Animations */
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  @keyframes bounce { 0%,100%{transform:scale(1)} 40%{transform:scale(1.12)} 60%{transform:scale(0.96)} }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  @keyframes slideInRight { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes confetti { 0%{transform:translateY(-10px) rotate(0deg);opacity:1} 100%{transform:translateY(120px) rotate(720deg);opacity:0} }
+  @keyframes popIn { 0%{transform:scale(0.5);opacity:0} 80%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+
+  .animate-float { animation: float 3s ease-in-out infinite; }
+  .animate-pulse-btn { animation: pulse 2s ease-in-out infinite; }
+  .animate-fadeinup { animation: fadeInUp 0.6s ease both; }
+  .animate-popin { animation: popIn 0.5s cubic-bezier(.34,1.56,.64,1) both; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--mint); }
+  ::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 8px; }
+
+  /* Buttons */
+  .btn-primary {
+    background: var(--blue); color: #fff; border: none; border-radius: 50px;
+    padding: 14px 32px; font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 800;
+    cursor: pointer; box-shadow: 0 6px 20px rgba(35,206,217,0.4);
+    transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-primary:hover { background: var(--blue-dark); transform: translateY(-2px) scale(1.04); box-shadow: 0 10px 28px rgba(35,206,217,0.5); }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-pink {
+    background: var(--pink); color: #fff; border: none; border-radius: 50px;
+    padding: 14px 32px; font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 800;
+    cursor: pointer; box-shadow: 0 6px 20px rgba(255,105,180,0.4);
+    transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-pink:hover { background: var(--pink-dark); transform: translateY(-2px) scale(1.04); }
+  .btn-outline {
+    background: transparent; color: var(--indigo); border: 2.5px solid var(--indigo); border-radius: 50px;
+    padding: 12px 28px; font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-outline:hover { background: var(--indigo); color: #fff; transform: translateY(-2px); }
+
+  /* Cards */
+  .card {
+    background: #fff; border-radius: var(--radius); box-shadow: var(--shadow);
+    border: 2px solid transparent; transition: all 0.25s;
+  }
+  .card:hover { border-color: var(--blue); box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+  .card-mint { background: var(--mint); border-radius: var(--radius); box-shadow: var(--shadow); }
+
+  /* Nav */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(249,249,249,0.92); backdrop-filter: blur(12px);
+    border-bottom: 2px solid rgba(35,206,217,0.15);
+    padding: 14px 40px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo { font-size: 26px; font-weight: 900; color: var(--indigo); display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .nav-logo span { color: var(--blue); }
+  .nav-links { display: flex; gap: 28px; align-items: center; }
+  .nav-link { font-weight: 700; color: var(--indigo); cursor: pointer; transition: color 0.2s; font-size: 15px; }
+  .nav-link:hover { color: var(--blue); }
+
+  /* Hero */
+  .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 120px 24px 80px; position: relative; overflow: hidden;
+    background: radial-gradient(ellipse at 60% 0%, rgba(35,206,217,0.13) 0%, transparent 60%),
+                radial-gradient(ellipse at 10% 80%, rgba(255,105,180,0.10) 0%, transparent 55%), var(--bg);
+  }
+  .hero h1 { font-size: clamp(36px, 7vw, 72px); font-weight: 900; line-height: 1.1; color: var(--indigo); margin-bottom: 20px; }
+  .hero h1 .highlight { color: var(--blue); }
+  .hero h1 .highlight2 { color: var(--pink); }
+  .hero-sub { font-size: clamp(16px, 2.5vw, 21px); color: #5a5a7a; max-width: 580px; margin: 0 auto 36px; font-weight: 600; line-height: 1.6; }
+  .hero-blob1 { position: absolute; top: -60px; right: -80px; width: 350px; height: 350px; border-radius: 50%; background: rgba(35,206,217,0.12); filter: blur(40px); pointer-events: none; }
+  .hero-blob2 { position: absolute; bottom: -40px; left: -60px; width: 280px; height: 280px; border-radius: 50%; background: rgba(255,105,180,0.10); filter: blur(40px); pointer-events: none; }
+
+  /* Steps */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 900px; margin: 0 auto; }
+  @media (max-width: 700px) { .steps { grid-template-columns: 1fr; } }
+  .step-card { padding: 32px 24px; text-align: center; position: relative; }
+  .step-icon { width: 70px; height: 70px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 16px; }
+  .step-num { position: absolute; top: 20px; left: 20px; width: 28px; height: 28px; background: var(--indigo); color: #fff; border-radius: 50%; font-size: 13px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+  .step-card h3 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+  .step-card p { font-size: 14px; color: #6b6b8a; font-weight: 600; }
+
+  /* Video placeholder */
+  .video-box { background: linear-gradient(135deg, var(--indigo) 0%, #2d2d5a 100%); border-radius: var(--radius); aspect-ratio: 16/9; max-width: 700px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; box-shadow: var(--shadow-lg); }
+  .play-btn { width: 80px; height: 80px; border-radius: 50%; background: var(--blue); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; box-shadow: 0 0 0 16px rgba(35,206,217,0.2); animation: pulse 2s ease-in-out infinite; cursor: pointer; transition: transform 0.2s; }
+  .play-btn:hover { transform: scale(1.1); }
+
+  /* Pricing */
+  .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 1000px; margin: 0 auto; }
+  @media (max-width: 800px) { .pricing-grid { grid-template-columns: 1fr; max-width: 400px; } }
+  .plan-card { padding: 36px 28px; text-align: center; position: relative; }
+  .plan-card.featured { border-color: var(--blue); background: linear-gradient(160deg, #fff 0%, rgba(35,206,217,0.07) 100%); }
+  .plan-badge { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: var(--blue); color: #fff; border-radius: 50px; padding: 5px 18px; font-size: 13px; font-weight: 800; white-space: nowrap; display: flex; align-items: center; gap: 5px; }
+  .plan-price { font-size: 48px; font-weight: 900; color: var(--indigo); line-height: 1; }
+  .plan-price sup { font-size: 22px; vertical-align: super; }
+  .plan-price .period { font-size: 15px; color: #8888aa; font-weight: 600; }
+  .plan-feature { padding: 8px 0; font-size: 14px; font-weight: 600; color: #4a4a6a; display: flex; align-items: center; gap: 8px; text-align: left; }
+  .plan-divider { border: none; border-top: 1.5px solid rgba(35,206,217,0.2); margin: 20px 0; }
+  .check { color: var(--blue); font-size: 16px; flex-shrink: 0; }
+
+  /* Toggle */
+  .toggle-bar { display: flex; align-items: center; gap: 12px; justify-content: center; margin-bottom: 40px; }
+  .toggle-switch { width: 56px; height: 30px; background: var(--blue); border-radius: 30px; position: relative; cursor: pointer; transition: background 0.3s; }
+  .toggle-knob { position: absolute; top: 4px; width: 22px; height: 22px; background: #fff; border-radius: 50%; transition: left 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.18); }
+  .badge-save { background: var(--pink); color: #fff; border-radius: 50px; padding: 2px 10px; font-size: 12px; font-weight: 800; }
+
+  /* Section */
+  .section { padding: 80px 24px; }
+  .section-title { font-size: clamp(28px, 5vw, 44px); font-weight: 900; text-align: center; color: var(--indigo); margin-bottom: 12px; }
+  .section-sub { text-align: center; color: #7a7a9a; font-size: 17px; font-weight: 600; margin-bottom: 52px; }
+
+  /* Dashboard */
+  .dash-layout { display: flex; min-height: 100vh; background: var(--bg); }
+  .sidebar { width: 240px; background: var(--indigo); min-height: 100vh; padding: 24px 16px; display: flex; flex-direction: column; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 50; }
+  .sidebar-logo { font-size: 22px; font-weight: 900; color: #fff; margin-bottom: 36px; padding: 8px 12px; display: flex; align-items: center; gap: 8px; }
+  .sidebar-logo span { color: var(--blue); }
+  .sidebar-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--radius-sm); cursor: pointer; color: rgba(255,255,255,0.65); font-weight: 700; font-size: 15px; transition: all 0.2s; }
+  .sidebar-item:hover { background: rgba(35,206,217,0.12); color: #fff; }
+  .sidebar-item.active { background: var(--blue); color: #fff; box-shadow: 0 4px 16px rgba(35,206,217,0.4); }
+  .sidebar-item svg { flex-shrink: 0; }
+  .dash-main { margin-left: 240px; flex: 1; padding: 32px; }
+  @media (max-width: 900px) { .sidebar { width: 64px; } .sidebar-logo, .sidebar-item span { display: none; } .dash-main { margin-left: 64px; } .sidebar-item { justify-content: center; } }
+
+  /* QR Step Wizard */
+  .wizard-steps { display: flex; gap: 0; margin-bottom: 36px; }
+  .wstep { display: flex; align-items: center; gap: 0; flex: 1; }
+  .wstep-circle { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; flex-shrink: 0; border: 2.5px solid; transition: all 0.3s; }
+  .wstep-circle.done { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .wstep-circle.active { background: #fff; border-color: var(--blue); color: var(--blue); }
+  .wstep-circle.inactive { background: #fff; border-color: #ddd; color: #bbb; }
+  .wstep-label { font-size: 13px; font-weight: 700; margin-left: 10px; }
+  .wstep-label.active { color: var(--blue); }
+  .wstep-label.inactive { color: #bbb; }
+  .wstep-line { flex: 1; height: 2.5px; margin: 0 8px; border-radius: 2px; transition: background 0.3s; }
+
+  /* QR Type Grid */
+  .type-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 16px; }
+  .type-card { background: #fff; border: 2.5px solid transparent; border-radius: var(--radius-sm); padding: 20px 12px; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(26,26,46,0.07); }
+  .type-card:hover { border-color: var(--blue); transform: translateY(-3px); }
+  .type-card.selected { border-color: var(--blue); background: linear-gradient(135deg, rgba(35,206,217,0.08), rgba(35,206,217,0.02)); }
+  .type-icon { font-size: 34px; margin-bottom: 8px; }
+  .type-label { font-size: 13px; font-weight: 800; color: var(--indigo); }
+
+  /* Form */
+  .form-group { margin-bottom: 20px; }
+  .form-label { display: block; font-size: 14px; font-weight: 800; color: var(--indigo); margin-bottom: 8px; }
+  .form-input { width: 100%; padding: 12px 16px; border: 2.5px solid #e8e8f0; border-radius: var(--radius-sm); font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 600; color: var(--indigo); background: #fff; transition: border-color 0.2s; outline: none; }
+  .form-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(35,206,217,0.12); }
+
+  /* Color Picker */
+  .color-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .color-dot { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.2s; }
+  .color-dot.selected { border-color: var(--indigo); transform: scale(1.2); }
+  .color-dot:hover { transform: scale(1.15); }
+
+  /* QR Preview */
+  .qr-preview-box { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 32px; text-align: center; position: sticky; top: 20px; }
+  .qr-canvas-wrap { display: inline-block; border-radius: 12px; overflow: hidden; }
+
+  /* Toggle Dynamic/Static */
+  .ds-toggle { display: flex; background: #f0f0f8; border-radius: 50px; padding: 4px; gap: 4px; width: fit-content; }
+  .ds-option { padding: 8px 20px; border-radius: 50px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; color: #8888aa; }
+  .ds-option.active { background: var(--blue); color: #fff; box-shadow: 0 4px 12px rgba(35,206,217,0.35); }
+
+  /* Analytics */
+  .stat-card { padding: 24px; text-align: center; }
+  .stat-num { font-size: 40px; font-weight: 900; color: var(--blue); line-height: 1; }
+  .stat-label { font-size: 14px; font-weight: 700; color: #7a7a9a; margin-top: 6px; }
+  .stat-change { font-size: 13px; font-weight: 700; margin-top: 4px; }
+  .up { color: #22c55e; }
+  .down { color: #ef4444; }
+
+  /* Modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(26,26,46,0.55); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; animation: fadeIn 0.2s ease; }
+  .modal-box { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 40px; max-width: 440px; width: 100%; position: relative; animation: popIn 0.35s cubic-bezier(.34,1.56,.64,1) both; }
+  .modal-close { position: absolute; top: 16px; right: 16px; background: #f0f0f8; border: none; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; color: #8888aa; transition: all 0.2s; }
+  .modal-close:hover { background: var(--mint); color: var(--blue); }
+
+  /* Confetti */
+  .confetti-piece { position: absolute; width: 10px; height: 10px; border-radius: 2px; animation: confetti 2s ease forwards; }
+
+  /* Frame previews */
+  .frame-opt { border: 2.5px solid transparent; border-radius: 10px; padding: 6px; cursor: pointer; font-size: 11px; font-weight: 700; text-align: center; transition: all 0.2s; color: #6a6a8a; }
+  .frame-opt:hover, .frame-opt.sel { border-color: var(--blue); color: var(--blue); background: rgba(35,206,217,0.07); }
+
+  /* My Codes table */
+  .codes-table { width: 100%; border-collapse: collapse; }
+  .codes-table th { text-align: left; padding: 12px 16px; font-size: 13px; font-weight: 800; color: #8888aa; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid #f0f0f8; }
+  .codes-table td { padding: 16px; font-size: 14px; font-weight: 600; border-bottom: 1.5px solid #f0f0f8; vertical-align: middle; }
+  .codes-table tr:last-child td { border-bottom: none; }
+  .codes-table tr:hover td { background: rgba(35,206,217,0.04); }
+  .code-thumb { width: 44px; height: 44px; border-radius: 8px; background: #f5f5fb; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .status-badge { border-radius: 50px; padding: 4px 12px; font-size: 12px; font-weight: 800; }
+  .badge-dynamic { background: rgba(35,206,217,0.15); color: var(--blue); }
+  .badge-static { background: rgba(255,105,180,0.15); color: var(--pink); }
+
+  /* Responsive */
+  @media (max-width: 600px) { .nav { padding: 12px 16px; } .hero { padding: 100px 16px 60px; } .section { padding: 60px 16px; } .nav-links .btn-outline { display: none; } }
+
+  /* Disco blobs in hero */
+  .deco-blob { position: absolute; border-radius: 50%; pointer-events: none; }
+
+  /* Scrollable main */
+  .app-scroll { overflow-y: auto; }
+
+  /* Footer */
+  .footer { background: var(--indigo); color: rgba(255,255,255,0.7); text-align: center; padding: 36px 24px; font-size: 14px; font-weight: 600; }
+  .footer a { color: var(--blue); text-decoration: none; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ── Icons (inline SVG) ─────────────────────────────────
+const Icon = ({ name, size = 20, color = 'currentColor' }) => {
+  const icons = {
+    home: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+    plus: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+    grid: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>,
+    bar: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+    settings: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
+    download: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+    eye: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+    check: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+    close: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+    zap: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+    edit: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+    trash: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>,
+    qr: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/><rect x="3" y="16" width="5" height="5"/><path d="M21 16h-3v3"/><path d="M21 21v-1"/><path d="M12 3v3"/><path d="M12 10v2"/><path d="M12 16v5"/><path d="M16 12h5"/></svg>,
+  };
+  return icons[name] || null;
+};
+
+// ── Simple QR code rendered as canvas via library ──────
+const QRCodeRenderer = ({ value, color, bgColor, size = 180 }) => {
+  const containerRef = useRef(null);
+  const qrRef = useRef(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    containerRef.current.innerHTML = '';
+    if (!value) return;
+    try {
+      qrRef.current = new QRCode(containerRef.current, {
+        text: value || 'https://qrmagic.io',
+        width: size, height: size,
+        colorDark: color || '#1A1A2E',
+        colorLight: bgColor || '#FFFFFF',
+        correctLevel: QRCode.CorrectLevel.H,
+      });
+    } catch(e) {}
+  }, [value, color, bgColor, size]);
+
+  return <div ref={containerRef} className="qr-canvas-wrap" style={{ borderRadius: 8 }} />;
+};
+
+// ── Recharts placeholder charts ────────────────────────
+const SimpleBarChart = () => {
+  const data = [
+    { name: 'Mon', scans: 42 }, { name: 'Tue', scans: 78 },
+    { name: 'Wed', scans: 55 }, { name: 'Thu', scans: 120 },
+    { name: 'Fri', scans: 95 }, { name: 'Sat', scans: 140 },
+    { name: 'Sun', scans: 88 },
+  ];
+  const max = 140;
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height: 160, padding: '0 8px' }}>
+      {data.map((d, i) => (
+        <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+          <div style={{ width: '100%', borderRadius: '8px 8px 0 0', height: (d.scans / max) * 130,
+            background: `linear-gradient(180deg, #23CED9, #1ab5bf)`,
+            boxShadow: '0 4px 12px rgba(35,206,217,0.3)', transition: 'height 0.5s ease', minHeight: 4 }} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#8888aa' }}>{d.name}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const DonutChart = ({ data }) => {
+  const total = data.reduce((s, d) => s + d.value, 0);
+  let offset = 0;
+  const r = 60, cx = 80, cy = 80, stroke = 28;
+  const circumference = 2 * Math.PI * r;
+  const segments = data.map(d => {
+    const pct = d.value / total;
+    const seg = { ...d, pct, offset, dashArray: `${pct * circumference} ${circumference}` };
+    offset += pct;
+    return seg;
+  });
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+      <svg width={160} height={160} viewBox="0 0 160 160">
+        {segments.map((seg, i) => (
+          <circle key={i} cx={cx} cy={cy} r={r} fill="none" stroke={seg.color}
+            strokeWidth={stroke} strokeDasharray={seg.dashArray}
+            strokeDashoffset={-seg.offset * circumference}
+            transform="rotate(-90 80 80)" style={{ transition: 'all 0.5s ease' }} />
+        ))}
+        <circle cx={cx} cy={cy} r={r - stroke / 2 - 2} fill="white" />
+        <text x={cx} y={cy - 8} textAnchor="middle" fontSize="22" fontWeight="900" fill="#1A1A2E">{total}</text>
+        <text x={cx} y={cy + 14} textAnchor="middle" fontSize="11" fontWeight="700" fill="#8888aa">total</text>
+      </svg>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {data.map((d, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 12, height: 12, borderRadius: 3, background: d.color, flexShrink: 0 }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#4a4a6a' }}>{d.label}</span>
+            <span style={{ fontSize: 13, fontWeight: 800, color: '#1A1A2E', marginLeft: 'auto', paddingLeft: 12 }}>{d.value}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ── Confetti burst ────────────────────────────────────
+const Confetti = () => {
+  const colors = ['#23CED9','#FF69B4','#FFD700','#7C3AED','#22c55e','#f97316'];
+  const pieces = Array.from({ length: 20 }, (_, i) => ({
+    id: i, color: colors[i % colors.length],
+    left: Math.random() * 100, delay: Math.random() * 1.2,
+    rotate: Math.random() * 360, size: 8 + Math.random() * 8,
+  }));
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 10 }}>
+      {pieces.map(p => (
+        <div key={p.id} className="confetti-piece" style={{
+          left: `${p.left}%`, top: '-10px', background: p.color,
+          width: p.size, height: p.size, borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+          animationDelay: `${p.delay}s`, animationDuration: `${1.5 + Math.random()}s`,
+        }} />
+      ))}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════
+// LANDING PAGE
+// ═══════════════════════════════════════════
+const LandingPage = ({ onEnterApp, onLogin, onSignup }) => {
+  const [annual, setAnnual] = useState(true);
+  const [showVideo, setShowVideo] = useState(false);
+
+  const plans = [
+    {
+      name: 'Free', price: 0, features: ['1 Dynamic Code', '50 Static Codes', 'Basic Analytics', 'PNG Download', 'Community Support'],
+      cta: 'Get Started Free', featured: false,
+    },
+    {
+      name: 'Basic', price: annual ? 4 : 5, features: ['10 Dynamic Codes', 'Unlimited Static', 'Advanced Analytics', 'SVG + PNG Download', 'Custom Frames', 'Email Support'],
+      cta: 'Start Free Trial', featured: true,
+    },
+    {
+      name: 'Plus', price: annual ? 14 : 18, features: ['100 Dynamic Codes', 'Folder Organization', 'Campaign Tracking', 'API Access', 'Team Collaboration', 'Priority Support'],
+      cta: 'Go Plus', featured: false,
+    },
+  ];
+
+  return (
+    <div>
+      {/* Nav */}
+      <nav className="nav">
+        <div className="nav-logo">✨ <span>QR</span>Magic</div>
+        <div className="nav-links">
+          <a className="nav-link" onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}>Pricing</a>
+          <a className="nav-link">Features</a>
+          <button className="btn-outline" onClick={onLogin} style={{ padding: '10px 22px', fontSize: 14 }}>Log In</button>
+          <button className="btn-primary" onClick={onSignup} style={{ padding: '10px 22px', fontSize: 14 }}>Sign Up Free</button>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section className="hero">
+        <div className="hero-blob1" />
+        <div className="hero-blob2" />
+        <div className="deco-blob" style={{ top: '30%', left: '8%', width: 80, height: 80, background: 'rgba(255,105,180,0.15)', filter: 'blur(16px)' }} />
+        <div className="deco-blob" style={{ top: '60%', right: '10%', width: 60, height: 60, background: 'rgba(35,206,217,0.2)', filter: 'blur(12px)' }} />
+
+        <div style={{ maxWidth: 720, position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(35,206,217,0.12)', border: '2px solid rgba(35,206,217,0.3)', borderRadius: 50, padding: '6px 18px', marginBottom: 24, fontSize: 14, fontWeight: 700, color: '#23CED9' }}>
+            🎉 Free forever, no credit card required!
+          </div>
+          <h1 className="animate-fadeinup">
+            Create QR Codes<br />
+            as Easy as <span className="highlight">1, 2,</span> <span className="highlight2">3!</span>
+          </h1>
+          <p className="hero-sub animate-fadeinup" style={{ animationDelay: '0.15s' }}>
+            Free, customizable, and dynamic QR codes for your business. No hidden fees, just pure magic. ✨
+          </p>
+          <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap', animationDelay: '0.3s' }} className="animate-fadeinup">
+            <button className="btn-primary animate-pulse-btn" onClick={onEnterApp} style={{ fontSize: 18, padding: '16px 40px' }}>
+              🚀 Start Creating for Free
+            </button>
+            <button className="btn-outline" onClick={() => setShowVideo(true)}>
+              ▶ Watch Demo
+            </button>
+          </div>
+          <div style={{ marginTop: 36, display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap' }}>
+            {['50K+ users', '2M+ QR codes', '4.9★ rating'].map(t => (
+              <div key={t} style={{ background: '#fff', borderRadius: 50, padding: '8px 18px', fontSize: 13, fontWeight: 800, color: '#4a4a6a', boxShadow: '0 4px 16px rgba(26,26,46,0.08)', border: '1.5px solid #f0f0f8' }}>
+                {t}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Video Section */}
+      <section className="section" style={{ paddingTop: 0, background: 'linear-gradient(180deg, var(--bg) 0%, var(--mint) 100%)' }}>
+        <div style={{ maxWidth: 760, margin: '0 auto' }}>
+          <h2 className="section-title" style={{ marginBottom: 8 }}>See How it Works</h2>
+          <p className="section-sub">Watch our 30-second explainer and get started in minutes</p>
+          <div className="video-box" onClick={() => setShowVideo(true)}>
+            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 50%, rgba(35,206,217,0.15) 0%, transparent 70%)' }} />
+            <div className="play-btn animate-float">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </div>
+            <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 16, fontWeight: 700 }}>See how it works in 30 seconds</p>
+            <div style={{ position: 'absolute', bottom: 24, display: 'flex', gap: 12 }}>
+              {['URL', 'Wi-Fi', 'vCard', 'More...'].map(t => (
+                <span key={t} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 50, padding: '4px 14px', color: '#fff', fontSize: 12, fontWeight: 700 }}>{t}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Steps */}
+      <section className="section">
+        <h2 className="section-title">Three Simple Steps</h2>
+        <p className="section-sub">From idea to scannable QR code in under a minute</p>
+        <div className="steps">
+          {[
+            { icon: '🎯', bg: 'rgba(35,206,217,0.15)', title: 'Choose Destination', desc: 'Pick from URL, Wi-Fi, vCard, Image, or plain text. The choice is yours!' },
+            { icon: '🎨', bg: 'rgba(255,105,180,0.15)', title: 'Customize Design', desc: 'Match your brand colors, add a logo, pick a frame. Make it uniquely yours.' },
+            { icon: '📲', bg: 'rgba(255,215,0,0.2)', title: 'Download & Track', desc: 'Get your QR in PNG or SVG. Track every scan with real-time analytics.' },
+          ].map((s, i) => (
+            <div key={i} className="card step-card">
+              <div className="step-num">{i + 1}</div>
+              <div className="step-icon" style={{ background: s.bg }}>{s.icon}</div>
+              <h3>{s.title}</h3>
+              <p>{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section className="section" id="pricing" style={{ background: 'linear-gradient(180deg, var(--mint) 0%, var(--bg) 100%)' }}>
+        <h2 className="section-title">Simple, Honest Pricing</h2>
+        <p className="section-sub">Start free, upgrade when you need more magic</p>
+
+        {/* Toggle */}
+        <div className="toggle-bar">
+          <span style={{ fontWeight: 700, color: annual ? '#8888aa' : '#1A1A2E' }}>Monthly</span>
+          <div className="toggle-switch" onClick={() => setAnnual(!annual)}>
+            <div className="toggle-knob" style={{ left: annual ? 30 : 4 }} />
+          </div>
+          <span style={{ fontWeight: 700, color: annual ? '#1A1A2E' : '#8888aa' }}>Annually</span>
+          {annual && <span className="badge-save">Save 20%</span>}
+        </div>
+
+        <div className="pricing-grid">
+          {plans.map((plan, i) => (
+            <div key={i} className={`card plan-card ${plan.featured ? 'featured' : ''}`}>
+              {plan.featured && <div className="plan-badge">🔥 Most Popular</div>}
+              <div style={{ marginBottom: 8, marginTop: plan.featured ? 16 : 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#8888aa', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>{plan.name}</div>
+                <div className="plan-price">
+                  {plan.price === 0 ? 'Free' : <><sup>$</sup>{plan.price}<span className="period">/mo</span></>}
+                </div>
+                {annual && plan.price > 0 && <div style={{ fontSize: 12, color: '#8888aa', fontWeight: 600, marginTop: 4 }}>billed annually</div>}
+              </div>
+              <hr className="plan-divider" />
+              <div style={{ marginBottom: 28 }}>
+                {plan.features.map((f, j) => (
+                  <div key={j} className="plan-feature">
+                    <span className="check"><Icon name="check" size={16} color="#23CED9" /></span>
+                    {f}
+                  </div>
+                ))}
+              </div>
+              <button className={plan.featured ? 'btn-primary' : 'btn-outline'} onClick={onEnterApp} style={{ width: '100%', justifyContent: 'center' }}>
+                {plan.cta}
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="footer">
+        <div style={{ marginBottom: 8 }}>✨ <strong style={{ color: '#fff' }}>QRMagic</strong> — Made with 💙 and a sprinkle of magic</div>
+        <div>© 2025 QRMagic Inc. · <a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Contact</a></div>
+      </footer>
+
+      {/* Video Modal */}
+      {showVideo && (
+        <div className="modal-overlay" onClick={() => setShowVideo(false)}>
+          <div className="modal-box" style={{ maxWidth: 560, padding: 0, overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
+            <div style={{ background: '#1A1A2E', aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 12 }}>
+              <div style={{ fontSize: 48 }}>🎬</div>
+              <p style={{ color: '#fff', fontWeight: 700, fontSize: 16 }}>Video Tutorial Coming Soon!</p>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>Our team is working on an amazing explainer video.</p>
+            </div>
+            <div style={{ padding: 20, textAlign: 'center' }}>
+              <button className="btn-primary" onClick={() => { setShowVideo(false); onEnterApp(); }}>
+                Try it Now Instead! 🚀
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════
+// AUTH MODAL
+// ═══════════════════════════════════════════
+const AuthModal = ({ mode, onClose, onSuccess }) => {
+  const [isLogin, setIsLogin] = useState(mode === 'login');
+  const [email, setEmail] = useState('');
+  const [pass, setPass] = useState('');
+  const [name, setName] = useState('');
+
+  const handleSubmit = () => {
+    if (!email) return;
+    onSuccess();
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={e => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose}><Icon name="close" size={16} /></button>
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div style={{ fontSize: 40, marginBottom: 8 }}>✨</div>
+          <h2 style={{ fontSize: 26, fontWeight: 900 }}>{isLogin ? 'Welcome Back!' : 'Join QRMagic!'}</h2>
+          <p style={{ color: '#8888aa', fontWeight: 600, marginTop: 6, fontSize: 14 }}>
+            {isLogin ? "We've missed you 💙" : 'Free forever. No credit card needed.'}
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {!isLogin && (
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label">Your Name</label>
+              <input className="form-input" placeholder="Alex Smith" value={name} onChange={e => setName(e.target.value)} />
+            </div>
+          )}
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label">Email</label>
+            <input className="form-input" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} />
+          </div>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label">Password</label>
+            <input className="form-input" type="password" placeholder="••••••••" value={pass} onChange={e => setPass(e.target.value)} />
+          </div>
+        </div>
+
+        <button className="btn-primary" onClick={handleSubmit} style={{ width: '100%', justifyContent: 'center', marginTop: 24, fontSize: 17, padding: '16px' }}>
+          {isLogin ? '🚀 Log In' : '✨ Create Free Account'}
+        </button>
+
+        <div style={{ textAlign: 'center', marginTop: 16, color: '#8888aa', fontSize: 14, fontWeight: 600 }}>
+          {isLogin ? "Don't have an account? " : "Already have one? "}
+          <span style={{ color: '#23CED9', cursor: 'pointer', fontWeight: 800 }} onClick={() => setIsLogin(!isLogin)}>
+            {isLogin ? 'Sign up free' : 'Log in'}
+          </span>
+        </div>
+
+        {!isLogin && (
+          <div style={{ marginTop: 20, background: 'rgba(35,206,217,0.08)', border: '1.5px dashed rgba(35,206,217,0.3)', borderRadius: 12, padding: '12px 16px', fontSize: 13, fontWeight: 600, color: '#4a4a6a', textAlign: 'center' }}>
+            🔒 Your data is safe. We never sell your info.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════
+// WELCOME / DISCOUNT MODAL
+// ═══════════════════════════════════════════
+const WelcomeModal = ({ onClose }) => {
+  const [timeLeft, setTimeLeft] = useState(48 * 60 * 60);
+  useEffect(() => {
+    const t = setInterval(() => setTimeLeft(x => x > 0 ? x - 1 : 0), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={e => e.stopPropagation()} style={{ textAlign: 'center', overflow: 'hidden', position: 'relative' }}>
+        <Confetti />
+        <button className="modal-close" onClick={onClose}><Icon name="close" size={16} /></button>
+        <div style={{ fontSize: 60, marginBottom: 8 }}>🎉</div>
+        <h2 style={{ fontSize: 28, fontWeight: 900, color: '#1A1A2E', marginBottom: 8 }}>Newcomer Special!</h2>
+        <p style={{ color: '#6b6b8a', fontWeight: 600, lineHeight: 1.5, marginBottom: 20, fontSize: 15 }}>
+          Welcome to QRMagic! As a new member, you get an exclusive<br />
+          <strong style={{ color: '#FF69B4', fontSize: 22 }}>30% OFF</strong> all paid plans — for the next 48 hours only!
+        </p>
+
+        {/* Countdown */}
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 24 }}>
+          {[{ v: String(h).padStart(2,'0'), l: 'hrs' }, { v: String(m).padStart(2,'0'), l: 'min' }, { v: String(s).padStart(2,'0'), l: 'sec' }].map(({ v, l }) => (
+            <div key={l} style={{ background: '#1A1A2E', color: '#fff', borderRadius: 12, padding: '12px 16px', minWidth: 64 }}>
+              <div style={{ fontSize: 28, fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{v}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#8888aa', marginTop: 2 }}>{l}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ background: 'rgba(255,105,180,0.08)', border: '2px dashed rgba(255,105,180,0.3)', borderRadius: 12, padding: '10px 16px', marginBottom: 20, fontSize: 14, fontWeight: 800, color: '#FF69B4', letterSpacing: '0.1em' }}>
+          COUPON: MAGIC30
+        </div>
+
+        <button className="btn-pink" onClick={onClose} style={{ width: '100%', justifyContent: 'center', fontSize: 16 }}>
+          🎁 Claim My 30% Discount
+        </button>
+        <div style={{ marginTop: 12, color: '#aaaacc', fontSize: 12, fontWeight: 600, cursor: 'pointer' }} onClick={onClose}>
+          No thanks, I'll pay full price
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════
+// QR CREATOR WIZARD
+// ═══════════════════════════════════════════
+const QRCreator = ({ onBack }) => {
+  const [step, setStep] = useState(1);
+  const [qrType, setQrType] = useState(null);
+  const [formData, setFormData] = useState({});
+  const [qrColor, setQrColor] = useState('#1A1A2E');
+  const [bgColor, setBgColor] = useState('#FFFFFF');
+  const [isDynamic, setIsDynamic] = useState(true);
+  const [frame, setFrame] = useState('none');
+  const [downloaded, setDownloaded] = useState(false);
+
+  const types = [
+    { id: 'url', icon: '🔗', label: 'URL' },
+    { id: 'image', icon: '🖼️', label: 'Image' },
+    { id: 'wifi', icon: '📶', label: 'Wi-Fi' },
+    { id: 'vcard', icon: '👤', label: 'vCard' },
+    { id: 'text', icon: '📝', label: 'Text' },
+    { id: 'email', icon: '📧', label: 'Email' },
+    { id: 'sms', icon: '💬', label: 'SMS' },
+    { id: 'phone', icon: '📞', label: 'Phone' },
+  ];
+
+  const qrColors = ['#1A1A2E','#23CED9','#FF69B4','#7C3AED','#ef4444','#f97316','#22c55e','#000000'];
+  const bgColors = ['#FFFFFF','#F9F9F9','#E0F7FA','#FFF3E0','#F3E8FF','#FFE4E6','#DCFCE7','#1A1A2E'];
+  const frames = ['none','simple','rounded','badge','scan'];
+
+  const getQrValue = () => {
+    if (!formData.url && !formData.text && !formData.ssid) return 'https://qrmagic.io';
+    if (qrType === 'url') return formData.url || 'https://qrmagic.io';
+    if (qrType === 'wifi') return `WIFI:T:WPA;S:${formData.ssid || ''};P:${formData.password || ''};;`;
+    if (qrType === 'vcard') return `BEGIN:VCARD\nFN:${formData.name||''}\nTEL:${formData.phone||''}\nEMAIL:${formData.email||''}\nEND:VCARD`;
+    if (qrType === 'text') return formData.text || 'Hello from QRMagic!';
+    if (qrType === 'email') return `mailto:${formData.email||''}?subject=${formData.subject||''}`;
+    if (qrType === 'phone') return `tel:${formData.phone||''}`;
+    if (qrType === 'sms') return `sms:${formData.phone||''}?body=${formData.message||''}`;
+    return 'https://qrmagic.io';
+  };
+
+  const renderForm = () => {
+    switch(qrType) {
+      case 'url': return (
+        <>
+          {qrType === 'url' && (
+            <div style={{ marginBottom: 20 }}>
+              <label className="form-label">QR Code Type</label>
+              <div className="ds-toggle">
+                <div className={`ds-option ${isDynamic ? 'active' : ''}`} onClick={() => setIsDynamic(true)}>⚡ Dynamic</div>
+                <div className={`ds-option ${!isDynamic ? 'active' : ''}`} onClick={() => setIsDynamic(false)}>🔒 Static</div>
+              </div>
+              {isDynamic && <p style={{ fontSize: 12, color: '#8888aa', marginTop: 8, fontWeight: 600 }}>✓ Editable URL · ✓ Analytics · ✓ Scan tracking</p>}
+            </div>
+          )}
+          <div className="form-group">
+            <label className="form-label">Destination URL</label>
+            <input className="form-input" placeholder="https://yourwebsite.com" value={formData.url||''} onChange={e => setFormData({...formData, url: e.target.value})} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">QR Code Name (optional)</label>
+            <input className="form-input" placeholder="My Homepage QR" value={formData.name||''} onChange={e => setFormData({...formData, name: e.target.value})} />
+          </div>
+        </>
+      );
+      case 'wifi': return (
+        <>
+          <div className="form-group"><label className="form-label">Network Name (SSID)</label><input className="form-input" placeholder="MyHomeNetwork" value={formData.ssid||''} onChange={e=>setFormData({...formData,ssid:e.target.value})} /></div>
+          <div className="form-group"><label className="form-label">Password</label><input className="form-input" type="password" placeholder="••••••••" value={formData.password||''} onChange={e=>setFormData({...formData,password:e.target.value})} /></div>
+          <div className="form-group"><label className="form-label">Security</label>
+            <select className="form-input" value={formData.security||'WPA'} onChange={e=>setFormData({...formData,security:e.target.value})}>
+              <option>WPA</option><option>WEP</option><option>None</option>
+            </select>
+          </div>
+        </>
+      );
+      case 'vcard': return (
+        <>
+          <div className="form-group"><label className="form-label">Full Name</label><input className="form-input" placeholder="Alex Smith" value={formData.name||''} onChange={e=>setFormData({...formData,name:e.target.value})} /></div>
+          <div className="form-group"><label className="form-label">Phone</label><input className="form-input" placeholder="+1 (555) 000-0000" value={formData.phone||''} onChange={e=>setFormData({...formData,phone:e.target.value})} /></div>
+          <div className="form-group"><label className="form-label">Email</label><input className="form-input" type="email" placeholder="alex@example.com" value={formData.email||''} onChange={e=>setFormData({...formData,email:e.target.value})} /></div>
+          <div className="form-group"><label className="form-label">Company</label><input className="form-input" placeholder="Acme Inc." value={formData.company||''} onChange={e=>setFormData({...formData,company:e.target.value})} /></div>
+        </>
+      );
+      case 'text': return (
+        <div className="form-group"><label className="form-label">Your Text</label><textarea className="form-input" rows={5} placeholder="Type anything..." value={formData.text||''} onChange={e=>setFormData({...formData,text:e.target.value})} /></div>
+      );
+      case 'email': return (
+        <>
+          <div className="form-group"><label className="form-label">Email Address</label><input className="form-input" type="email" placeholder="recipient@example.com" value={formData.email||''} onChange={e=>setFormData({...formData,email:e.target.value})} /></div>
+          <div className="form-group"><label className="form-label">Subject (optional)</label><input className="form-input" placeholder="Hello there!" value={formData.subject||''} onChange={e=>setFormData({...formData,subject:e.target.value})} /></div>
+          <div className="form-group"><label className="form-label">Body (optional)</label><textarea className="form-input" rows={3} value={formData.body||''} onChange={e=>setFormData({...formData,body:e.target.value})} /></div>
+        </>
+      );
+      default: return (
+        <div className="form-group"><label className="form-label">Value</label><input className="form-input" placeholder="Enter value..." value={formData.text||''} onChange={e=>setFormData({...formData,text:e.target.value})} /></div>
+      );
+    }
+  };
+
+  const steps = ['Select Type', 'Input Data', 'Customize'];
+
+  return (
+    <div>
+      <div style={{ marginBottom: 28 }}>
+        <button onClick={onBack} style={{ background: 'none', border: 'none', color: '#8888aa', cursor: 'pointer', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
+          ← Back to Dashboard
+        </button>
+        <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 4 }}>Create QR Code ✨</h1>
+        <p style={{ color: '#8888aa', fontWeight: 600 }}>Follow the steps below to create your perfect QR code</p>
+      </div>
+
+      {/* Step indicators */}
+      <div className="wizard-steps" style={{ marginBottom: 36 }}>
+        {steps.map((s, i) => {
+          const n = i + 1;
+          const state = n < step ? 'done' : n === step ? 'active' : 'inactive';
+          return (
+            <div key={i} className="wstep">
+              <div className={`wstep-circle ${state}`}>
+                {state === 'done' ? <Icon name="check" size={14} color="#fff" /> : n}
+              </div>
+              <span className={`wstep-label ${state === 'active' ? 'active' : 'inactive'}`}>{s}</span>
+              {i < steps.length - 1 && (
+                <div className="wstep-line" style={{ background: n < step ? '#23CED9' : '#e8e8f0' }} />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {step === 1 && (
+        <div>
+          <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 16 }}>What type of QR code?</h3>
+          <div className="type-grid">
+            {types.map(t => (
+              <div key={t.id} className={`type-card ${qrType === t.id ? 'selected' : ''}`} onClick={() => setQrType(t.id)}>
+                <div className="type-icon">{t.icon}</div>
+                <div className="type-label">{t.label}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 28, display: 'flex', justifyContent: 'flex-end' }}>
+            <button className="btn-primary" onClick={() => qrType && setStep(2)} style={{ opacity: qrType ? 1 : 0.5 }}>
+              Next Step →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === 2 && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 28 }}>
+          <div>
+            <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20 }}>Enter your details</h3>
+            {renderForm()}
+            <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+              <button className="btn-outline" onClick={() => setStep(1)}>← Back</button>
+              <button className="btn-primary" onClick={() => setStep(3)}>Next: Customize →</button>
+            </div>
+          </div>
+          <div className="qr-preview-box">
+            <p style={{ fontSize: 13, fontWeight: 800, color: '#8888aa', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Live Preview</p>
+            <QRCodeRenderer value={getQrValue()} color={qrColor} bgColor={bgColor} size={200} />
+            <p style={{ fontSize: 12, color: '#aaaacc', marginTop: 12, fontWeight: 600 }}>Preview updates in real-time</p>
+          </div>
+        </div>
+      )}
+
+      {step === 3 && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 28 }}>
+          <div>
+            <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20 }}>Customize your QR code</h3>
+
+            <div className="card" style={{ padding: 20, marginBottom: 16 }}>
+              <label className="form-label">QR Code Color</label>
+              <div className="color-row">
+                {qrColors.map(c => (
+                  <div key={c} className={`color-dot ${qrColor === c ? 'selected' : ''}`} style={{ background: c }} onClick={() => setQrColor(c)} />
+                ))}
+              </div>
+            </div>
+
+            <div className="card" style={{ padding: 20, marginBottom: 16 }}>
+              <label className="form-label">Background Color</label>
+              <div className="color-row">
+                {bgColors.map(c => (
+                  <div key={c} className={`color-dot ${bgColor === c ? 'selected' : ''}`} style={{ background: c, border: c === '#FFFFFF' ? '2px solid #e8e8f0' : 'none' }} onClick={() => setBgColor(c)} />
+                ))}
+              </div>
+            </div>
+
+            <div className="card" style={{ padding: 20, marginBottom: 16 }}>
+              <label className="form-label" style={{ marginBottom: 12 }}>Frame Style</label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
+                {frames.map(f => (
+                  <div key={f} className={`frame-opt ${frame === f ? 'sel' : ''}`} onClick={() => setFrame(f)}>
+                    <div style={{ fontSize: 20, marginBottom: 4 }}>
+                      {f === 'none' ? '⊡' : f === 'simple' ? '□' : f === 'rounded' ? '▢' : f === 'badge' ? '🏷️' : '📲'}
+                    </div>
+                    <div>{f}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="card" style={{ padding: 20, marginBottom: 24 }}>
+              <label className="form-label">Add Logo (center)</label>
+              <div style={{ border: '2px dashed #e8e8f0', borderRadius: 12, padding: '20px', textAlign: 'center', cursor: 'pointer', color: '#aaaacc', fontWeight: 600, fontSize: 14 }}
+                onClick={() => {}}>
+                📎 Click to upload logo (PNG, SVG)
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button className="btn-outline" onClick={() => setStep(2)}>← Back</button>
+              <button className="btn-pink" onClick={() => setDownloaded(true)} style={{ gap: 8 }}>
+                <Icon name="download" size={18} color="#fff" /> Download QR Code
+              </button>
+            </div>
+
+            {downloaded && (
+              <div style={{ marginTop: 16, background: 'rgba(34,197,94,0.1)', border: '1.5px solid rgba(34,197,94,0.3)', borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, fontWeight: 700, color: '#16a34a' }}>
+                <span>✅</span> Your QR code has been downloaded! Check your Downloads folder.
+              </div>
+            )}
+          </div>
+
+          <div className="qr-preview-box">
+            <p style={{ fontSize: 13, fontWeight: 800, color: '#8888aa', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Live Preview</p>
+            <div style={{ border: frame !== 'none' ? `3px solid ${qrColor}` : 'none', borderRadius: frame === 'rounded' ? 16 : frame !== 'none' ? 8 : 0, padding: frame !== 'none' ? 12 : 0, display: 'inline-block' }}>
+              <QRCodeRenderer value={getQrValue()} color={qrColor} bgColor={bgColor} size={200} />
+              {frame === 'badge' && <div style={{ background: qrColor, color: '#fff', fontSize: 11, fontWeight: 800, padding: '4px 12px', textAlign: 'center', borderRadius: '0 0 6px 6px', letterSpacing: '0.08em' }}>SCAN ME</div>}
+              {frame === 'scan' && <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 6, color: qrColor, fontSize: 11, fontWeight: 800 }}>📲 SCAN TO VISIT</div>}
+            </div>
+            <div style={{ marginTop: 16, textAlign: 'left' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#8888aa', marginBottom: 6 }}>Format:</div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {['PNG','SVG','PDF'].map(f => (
+                  <div key={f} style={{ background: '#f0f0f8', borderRadius: 6, padding: '4px 10px', fontSize: 12, fontWeight: 800, color: '#6a6a8a', cursor: 'pointer' }}>{f}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════
+// ANALYTICS VIEW
+// ═══════════════════════════════════════════
+const AnalyticsView = () => {
+  const stats = [
+    { num: '2,847', label: 'Total Scans', change: '+18%', up: true, icon: '📲' },
+    { num: '1,209', label: 'Unique Visitors', change: '+12%', up: true, icon: '👥' },
+    { num: '94%', label: 'Scan Success', change: '+2%', up: true, icon: '✅' },
+    { num: '3.2', label: 'Avg. Daily Scans', change: '-5%', up: false, icon: '📊' },
+  ];
+  const deviceData = [
+    { label: 'iOS', value: 48, color: '#23CED9' },
+    { label: 'Android', value: 36, color: '#FF69B4' },
+    { label: 'Desktop', value: 11, color: '#7C3AED' },
+    { label: 'Other', value: 5, color: '#FFD700' },
+  ];
+  const locationData = [
+    { label: 'United States', value: 42, color: '#23CED9' },
+    { label: 'United Kingdom', value: 18, color: '#FF69B4' },
+    { label: 'Germany', value: 15, color: '#7C3AED' },
+    { label: 'Other', value: 25, color: '#f97316' },
+  ];
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 4 }}>Analytics 📊</h1>
+          <p style={{ color: '#8888aa', fontWeight: 600 }}>Track how your QR codes are performing</p>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {['7 days','30 days','90 days'].map((r, i) => (
+            <button key={r} style={{ background: i === 1 ? '#23CED9' : '#f0f0f8', color: i === 1 ? '#fff' : '#8888aa', border: 'none', borderRadius: 50, padding: '8px 16px', fontFamily: 'Nunito', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>{r}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Stat Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 16, marginBottom: 24 }}>
+        {stats.map((s, i) => (
+          <div key={i} className="card stat-card">
+            <div style={{ fontSize: 28, marginBottom: 4 }}>{s.icon}</div>
+            <div className="stat-num">{s.num}</div>
+            <div className="stat-label">{s.label}</div>
+            <div className={`stat-change ${s.up ? 'up' : 'down'}`}>{s.change} vs last period</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+        <div className="card" style={{ padding: 24 }}>
+          <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 20 }}>Scans Over Time</h3>
+          <SimpleBarChart />
+        </div>
+        <div className="card" style={{ padding: 24 }}>
+          <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 16 }}>Device Breakdown</h3>
+          <DonutChart data={deviceData} />
+        </div>
+      </div>
+
+      <div className="card" style={{ padding: 24 }}>
+        <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 16 }}>Top Locations</h3>
+        <DonutChart data={locationData} />
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════
+// MY CODES
+// ═══════════════════════════════════════════
+const MyCodesView = ({ onCreateNew }) => {
+  const codes = [
+    { name: 'Homepage Link', type: 'URL', scans: 1847, status: 'dynamic', created: 'Jan 15', icon: '🔗' },
+    { name: 'Office WiFi', type: 'Wi-Fi', scans: 320, status: 'static', created: 'Jan 22', icon: '📶' },
+    { name: 'My vCard', type: 'vCard', scans: 98, status: 'static', created: 'Feb 3', icon: '👤' },
+    { name: 'Menu PDF', type: 'URL', scans: 562, status: 'dynamic', created: 'Feb 14', icon: '📄' },
+    { name: 'Instagram Page', type: 'URL', scans: 2103, status: 'dynamic', created: 'Mar 1', icon: '📸' },
+  ];
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 4 }}>My QR Codes 🗂️</h1>
+          <p style={{ color: '#8888aa', fontWeight: 600 }}>Manage all your QR codes in one place</p>
+        </div>
+        <button className="btn-primary" onClick={onCreateNew}>
+          <Icon name="plus" size={18} color="#fff" /> Create New
+        </button>
+      </div>
+
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{ padding: '16px 20px', borderBottom: '2px solid #f0f0f8', display: 'flex', gap: 12 }}>
+          <input className="form-input" placeholder="🔍  Search codes..." style={{ maxWidth: 280 }} />
+          <select className="form-input" style={{ maxWidth: 140 }}>
+            <option>All types</option><option>URL</option><option>Wi-Fi</option><option>vCard</option>
+          </select>
+        </div>
+        <table className="codes-table">
+          <thead>
+            <tr>
+              <th>QR Code</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Scans</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {codes.map((c, i) => (
+              <tr key={i}>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div className="code-thumb">{c.icon}</div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 14 }}>{c.name}</div>
+                      <div style={{ fontSize: 12, color: '#8888aa', fontWeight: 600 }}>{c.type}</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span style={{ fontWeight: 700, color: '#6a6a8a' }}>{c.type}</span></td>
+                <td><span className={`status-badge ${c.status === 'dynamic' ? 'badge-dynamic' : 'badge-static'}`}>{c.status}</span></td>
+                <td><span style={{ fontWeight: 800, color: '#1A1A2E' }}>{c.scans.toLocaleString()}</span></td>
+                <td><span style={{ color: '#8888aa', fontWeight: 600 }}>{c.created}</span></td>
+                <td>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button style={{ background: 'rgba(35,206,217,0.1)', border: 'none', borderRadius: 8, padding: '6px 8px', cursor: 'pointer', color: '#23CED9' }}><Icon name="eye" size={15} color="#23CED9" /></button>
+                    <button style={{ background: 'rgba(255,105,180,0.1)', border: 'none', borderRadius: 8, padding: '6px 8px', cursor: 'pointer' }}><Icon name="edit" size={15} color="#FF69B4" /></button>
+                    <button style={{ background: 'rgba(239,68,68,0.08)', border: 'none', borderRadius: 8, padding: '6px 8px', cursor: 'pointer' }}><Icon name="trash" size={15} color="#ef4444" /></button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════
+// DASHBOARD HOME
+// ═══════════════════════════════════════════
+const DashboardHome = ({ onCreateNew, onGoTo }) => {
+  const recentCodes = [
+    { name: 'Homepage Link', scans: 1847, icon: '🔗', color: '#23CED9' },
+    { name: 'Office Wi-Fi', scans: 320, icon: '📶', color: '#FF69B4' },
+    { name: 'My vCard', scans: 98, icon: '👤', color: '#7C3AED' },
+  ];
+
+  return (
+    <div>
+      {/* Welcome banner */}
+      <div style={{ background: 'linear-gradient(135deg, #1A1A2E 0%, #2d2d5a 100%)', borderRadius: 20, padding: '28px 32px', marginBottom: 24, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', right: -20, top: -20, width: 160, height: 160, borderRadius: '50%', background: 'rgba(35,206,217,0.12)' }} />
+        <div style={{ position: 'absolute', right: 40, bottom: -30, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255,105,180,0.1)' }} />
+        <h2 style={{ color: '#fff', fontSize: 24, fontWeight: 900, marginBottom: 8 }}>Welcome back! 👋</h2>
+        <p style={{ color: 'rgba(255,255,255,0.65)', fontWeight: 600, fontSize: 15, marginBottom: 20 }}>
+          You have <strong style={{ color: '#23CED9' }}>5 active QR codes</strong> with <strong style={{ color: '#FF69B4' }}>2,847 total scans</strong> this month!
+        </p>
+        <button className="btn-primary" onClick={onCreateNew}>
+          <Icon name="plus" size={18} color="#fff" /> Create New QR Code
+        </button>
+      </div>
+
+      {/* Quick stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16, marginBottom: 24 }}>
+        {[
+          { label: 'Total QR Codes', value: '5', icon: '🔳', color: '#23CED9' },
+          { label: 'Total Scans', value: '2,847', icon: '📲', color: '#FF69B4' },
+          { label: 'This Month', value: '+340', icon: '📈', color: '#22c55e' },
+          { label: 'Countries', value: '12', icon: '🌍', color: '#7C3AED' },
+        ].map((s, i) => (
+          <div key={i} className="card" style={{ padding: '20px', textAlign: 'center' }}>
+            <div style={{ fontSize: 28, marginBottom: 6 }}>{s.icon}</div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: s.color }}>{s.value}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#8888aa', marginTop: 4 }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Two columns */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        {/* Recent codes */}
+        <div className="card" style={{ padding: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 800 }}>Recent Codes</h3>
+            <span style={{ color: '#23CED9', fontSize: 13, fontWeight: 700, cursor: 'pointer' }} onClick={() => onGoTo('codes')}>View all →</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {recentCodes.map((c, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px', background: '#f9f9fb', borderRadius: 12 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: `${c.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{c.icon}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 800, fontSize: 14 }}>{c.name}</div>
+                  <div style={{ fontSize: 12, color: '#8888aa', fontWeight: 600 }}>{c.scans} scans</div>
+                </div>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: c.color }} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Scans chart */}
+        <div className="card" style={{ padding: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 800 }}>Weekly Scans</h3>
+            <span style={{ color: '#23CED9', fontSize: 13, fontWeight: 700, cursor: 'pointer' }} onClick={() => onGoTo('analytics')}>Analytics →</span>
+          </div>
+          <SimpleBarChart />
+        </div>
+      </div>
+
+      {/* Quick create types */}
+      <div style={{ marginTop: 20 }}>
+        <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 16 }}>Quick Create</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 12 }}>
+          {[
+            { icon: '🔗', label: 'URL' },
+            { icon: '📶', label: 'Wi-Fi' },
+            { icon: '👤', label: 'vCard' },
+            { icon: '📝', label: 'Text' },
+            { icon: '📧', label: 'Email' },
+            { icon: '📞', label: 'Phone' },
+          ].map(t => (
+            <div key={t.label} className="type-card" onClick={onCreateNew} style={{ padding: '16px 8px' }}>
+              <div style={{ fontSize: 26, marginBottom: 6 }}>{t.icon}</div>
+              <div style={{ fontSize: 12, fontWeight: 800 }}>{t.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════
+// SETTINGS VIEW
+// ═══════════════════════════════════════════
+const SettingsView = () => (
+  <div>
+    <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 4 }}>Settings ⚙️</h1>
+    <p style={{ color: '#8888aa', fontWeight: 600, marginBottom: 28 }}>Manage your account and preferences</p>
+
+    {[
+      { title: 'Profile', fields: [{ l: 'Full Name', v: 'Alex Smith', t: 'text' }, { l: 'Email', v: 'alex@example.com', t: 'email' }] },
+      { title: 'Security', fields: [{ l: 'Current Password', v: '', t: 'password' }, { l: 'New Password', v: '', t: 'password' }] },
+    ].map((section, i) => (
+      <div key={i} className="card" style={{ padding: 28, marginBottom: 20 }}>
+        <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 20 }}>{section.title}</h3>
+        {section.fields.map((f, j) => (
+          <div key={j} className="form-group">
+            <label className="form-label">{f.l}</label>
+            <input className="form-input" type={f.t} defaultValue={f.v} />
+          </div>
+        ))}
+        <button className="btn-primary" style={{ fontSize: 14, padding: '10px 24px' }}>Save Changes</button>
+      </div>
+    ))}
+
+    <div className="card" style={{ padding: 28, border: '2px solid rgba(239,68,68,0.15)' }}>
+      <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 8, color: '#ef4444' }}>Danger Zone</h3>
+      <p style={{ color: '#8888aa', fontWeight: 600, fontSize: 14, marginBottom: 16 }}>Once you delete your account, there is no going back.</p>
+      <button style={{ background: 'rgba(239,68,68,0.08)', border: '1.5px solid rgba(239,68,68,0.3)', borderRadius: 50, padding: '10px 24px', color: '#ef4444', fontFamily: 'Nunito', fontWeight: 800, fontSize: 14, cursor: 'pointer' }}>
+        Delete Account
+      </button>
+    </div>
+  </div>
+);
+
+// ═══════════════════════════════════════════
+// DASHBOARD SHELL
+// ═══════════════════════════════════════════
+const Dashboard = ({ onLogout }) => {
+  const [view, setView] = useState('home');
+  const [mobileNav, setMobileNav] = useState(false);
+
+  const navItems = [
+    { id: 'home', icon: 'home', label: 'Dashboard' },
+    { id: 'create', icon: 'plus', label: 'Create QR' },
+    { id: 'codes', icon: 'grid', label: 'My Codes' },
+    { id: 'analytics', icon: 'bar', label: 'Analytics' },
+    { id: 'settings', icon: 'settings', label: 'Settings' },
+  ];
+
+  const renderView = () => {
+    switch(view) {
+      case 'home': return <DashboardHome onCreateNew={() => setView('create')} onGoTo={setView} />;
+      case 'create': return <QRCreator onBack={() => setView('home')} />;
+      case 'codes': return <MyCodesView onCreateNew={() => setView('create')} />;
+      case 'analytics': return <AnalyticsView />;
+      case 'settings': return <SettingsView />;
+      default: return null;
+    }
+  };
+
+  return (
+    <div className="dash-layout">
+      <aside className="sidebar">
+        <div className="sidebar-logo">✨ <span>QR</span>Magic</div>
+        <div className="sidebar-nav">
+          {navItems.map(item => (
+            <div key={item.id} className={`sidebar-item ${view === item.id ? 'active' : ''}`} onClick={() => setView(item.id)}>
+              <Icon name={item.icon} size={20} color={view === item.id ? '#fff' : 'rgba(255,255,255,0.65)'} />
+              <span>{item.label}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop: 'auto' }}>
+          <div style={{ padding: '12px 16px', borderRadius: 12, background: 'rgba(35,206,217,0.1)', marginBottom: 12 }}>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Free Plan</div>
+            <div style={{ height: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 10, marginBottom: 6 }}>
+              <div style={{ width: '30%', height: '100%', background: '#23CED9', borderRadius: 10 }} />
+            </div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>1 of 3 codes used</div>
+          </div>
+          <button style={{ width: '100%', background: 'linear-gradient(135deg, #23CED9, #FF69B4)', border: 'none', borderRadius: 12, padding: '11px', color: '#fff', fontFamily: 'Nunito', fontWeight: 800, fontSize: 14, cursor: 'pointer' }}>
+            ⚡ Upgrade
+          </button>
+          <div style={{ marginTop: 8, padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', borderRadius: 10, color: 'rgba(255,255,255,0.5)', fontWeight: 700, fontSize: 14 }} onClick={onLogout}>
+            <span>🚪</span><span>Log Out</span>
+          </div>
+        </div>
+      </aside>
+
+      <main className="dash-main" style={{ minHeight: '100vh', paddingBottom: 48 }}>
+        {renderView()}
+      </main>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════
+// APP ROOT
+// ═══════════════════════════════════════════
+const App = () => {
+  const [page, setPage] = useState('landing');
+  const [authModal, setAuthModal] = useState(null);
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  const handleAuth = () => {
+    setAuthModal(null);
+    setPage('dashboard');
+    setTimeout(() => setShowWelcome(true), 600);
+  };
+
+  return (
+    <div>
+      {page === 'landing' && (
+        <LandingPage
+          onEnterApp={() => setPage('dashboard')}
+          onLogin={() => setAuthModal('login')}
+          onSignup={() => setAuthModal('signup')}
+        />
+      )}
+      {page === 'dashboard' && (
+        <Dashboard onLogout={() => setPage('landing')} />
+      )}
+      {authModal && (
+        <AuthModal
+          mode={authModal}
+          onClose={() => setAuthModal(null)}
+          onSuccess={handleAuth}
+        />
+      )}
+      {showWelcome && (
+        <WelcomeModal onClose={() => setShowWelcome(false)} />
+      )}
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
