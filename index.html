@@ -202,32 +202,27 @@ const Icon = ({ name, size = 20, color = 'currentColor' }) => {
 // ── QR Code Renderer ───────────────────────────────────
 const QRCodeRenderer = ({ value, color, bgColor, size = 180, logoSrc = null, onRef }) => {
   const containerRef = useRef(null);
-  const canvasRef = useRef(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
     containerRef.current.innerHTML = '';
     const val = value || 'https://qrmagic.io';
     try {
-      const qr = new QRCode(containerRef.current, {
+      new QRCode(containerRef.current, {
         text: val, width: size, height: size,
         colorDark: color || '#1A1A2E', colorLight: bgColor || '#FFFFFF',
         correctLevel: QRCode.CorrectLevel.H,
       });
-      // After QR renders, overlay logo if provided
       if (logoSrc) {
         setTimeout(() => {
-          const img = containerRef.current?.querySelector('img');
-          const canvas = containerRef.current?.querySelector('canvas');
-          const target = canvas || img;
-          if (!target) return;
+          if (!containerRef.current) return;
           const overlay = document.createElement('img');
           overlay.src = logoSrc;
-          overlay.style.cssText = `position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${Math.round(size*0.22)}px;height:${Math.round(size*0.22)}px;object-fit:contain;border-radius:6px;background:#fff;padding:3px;box-shadow:0 2px 8px rgba(0,0,0,0.15);`;
+          overlay.style.cssText = `position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${Math.round(size*0.22)}px;height:${Math.round(size*0.22)}px;object-fit:contain;border-radius:6px;background:#fff;padding:3px;box-shadow:0 2px 8px rgba(0,0,0,0.15);pointer-events:none;`;
           containerRef.current.style.position = 'relative';
           containerRef.current.style.display = 'inline-block';
           containerRef.current.appendChild(overlay);
-        }, 100);
+        }, 120);
       }
       if (onRef) onRef(containerRef.current);
     } catch(e) {}
@@ -236,37 +231,113 @@ const QRCodeRenderer = ({ value, color, bgColor, size = 180, logoSrc = null, onR
   return <div ref={containerRef} style={{ borderRadius: 8, display: 'inline-block' }} />;
 };
 
-// ── Download QR ────────────────────────────────────────
-const downloadQR = (containerEl, format, filename) => {
-  if (!containerEl) return;
-  const canvas = containerEl.querySelector('canvas');
-  const img = containerEl.querySelector('img:not([style*="absolute"])');
+// ── Composite canvas builder: bakes QR + logo + frame + badge into one image ──
+const buildCompositeCanvas = ({ containerEl, logoSrc, qrColor, bgColor, frame }) => {
+  return new Promise((resolve) => {
+    const qrCanvas = containerEl && containerEl.querySelector('canvas');
+    const qrImg = containerEl && containerEl.querySelector('img:not([style*="absolute"])');
+    if (!qrCanvas && !qrImg) { resolve(null); return; }
 
-  if (format === 'PNG' || format === 'PDF') {
-    let src = null;
-    if (canvas) src = canvas.toDataURL('image/png');
-    else if (img) src = img.src;
-    if (!src) return;
-    if (format === 'PNG') {
-      const a = document.createElement('a');
-      a.href = src; a.download = `${filename || 'qrmagic'}.png`; a.click();
-    } else {
-      // PDF via print-friendly approach
-      const win = window.open('', '_blank');
-      win.document.write(`<html><body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;"><img src="${src}" style="max-width:400px;"/></body></html>`);
-      win.document.close();
-      setTimeout(() => { win.print(); win.close(); }, 500);
+    const qrSize = qrCanvas ? qrCanvas.width : 180;
+    const pad = frame !== 'none' ? 14 : 0;
+    const borderW = frame !== 'none' ? 4 : 0;
+    const badgeH = (frame === 'badge' || frame === 'scan') ? 36 : 0;
+    const totalW = qrSize + (pad + borderW) * 2;
+    const totalH = qrSize + (pad + borderW) * 2 + badgeH;
+    const qrX = pad + borderW;
+    const qrY = pad + borderW;
+
+    const off = document.createElement('canvas');
+    off.width = totalW; off.height = totalH;
+    const ctx = off.getContext('2d');
+
+    // background
+    ctx.fillStyle = bgColor || '#ffffff';
+    ctx.fillRect(0, 0, totalW, totalH);
+
+    // border
+    if (frame !== 'none') {
+      ctx.strokeStyle = qrColor || '#1A1A2E';
+      ctx.lineWidth = borderW;
+      const bx = borderW/2, by = borderW/2;
+      const bw = totalW - borderW, bh = totalH - borderW - badgeH;
+      const r = frame === 'rounded' ? 18 : 6;
+      ctx.beginPath();
+      ctx.moveTo(bx+r, by); ctx.lineTo(bx+bw-r, by); ctx.arcTo(bx+bw, by, bx+bw, by+r, r);
+      ctx.lineTo(bx+bw, by+bh-r); ctx.arcTo(bx+bw, by+bh, bx+bw-r, by+bh, r);
+      ctx.lineTo(bx+r, by+bh); ctx.arcTo(bx, by+bh, bx, by+bh-r, r);
+      ctx.lineTo(bx, by+r); ctx.arcTo(bx, by, bx+r, by, r);
+      ctx.closePath(); ctx.stroke();
     }
+
+    // badge
+    if (frame === 'badge') {
+      ctx.fillStyle = qrColor || '#1A1A2E';
+      ctx.fillRect(borderW, totalH - badgeH, totalW - borderW*2, badgeH);
+      ctx.fillStyle = '#ffffff'; ctx.font = 'bold 15px Arial';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('SCAN ME', totalW/2, totalH - badgeH/2);
+    }
+    if (frame === 'scan') {
+      ctx.fillStyle = qrColor || '#1A1A2E';
+      ctx.font = 'bold 13px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('SCAN TO VISIT', totalW/2, totalH - badgeH/2);
+    }
+
+    const drawOnCanvas = (qrSrc) => {
+      const qi = new Image();
+      qi.onload = () => {
+        ctx.drawImage(qi, qrX, qrY, qrSize, qrSize);
+        if (logoSrc) {
+          const li = new Image();
+          li.onload = () => {
+            const ls = Math.round(qrSize * 0.22);
+            const lx = qrX + (qrSize - ls) / 2;
+            const ly = qrY + (qrSize - ls) / 2;
+            const p = 5;
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.roundRect ? ctx.roundRect(lx-p, ly-p, ls+p*2, ls+p*2, 6) : ctx.rect(lx-p, ly-p, ls+p*2, ls+p*2);
+            ctx.fill();
+            ctx.drawImage(li, lx, ly, ls, ls);
+            resolve(off);
+          };
+          li.onerror = () => resolve(off);
+          li.src = logoSrc;
+        } else { resolve(off); }
+      };
+      qi.onerror = () => resolve(off);
+      qi.src = qrSrc;
+    };
+
+    if (qrCanvas) drawOnCanvas(qrCanvas.toDataURL('image/png'));
+    else { const tmp = new Image(); tmp.onload = () => drawOnCanvas(qrImg.src); tmp.src = qrImg.src; tmp.onload(); }
+  });
+};
+
+// ── Download QR ────────────────────────────────────────
+const downloadQR = async ({ containerEl, format, filename, logoSrc, qrColor, bgColor, frame }) => {
+  if (!containerEl) return;
+  const off = await buildCompositeCanvas({ containerEl, logoSrc, qrColor, bgColor, frame });
+  if (!off) return;
+  const dataUrl = off.toDataURL('image/png');
+
+  if (format === 'PNG') {
+    const a = document.createElement('a');
+    a.href = dataUrl; a.download = `${filename || 'qrmagic'}.png`; a.click();
   } else if (format === 'SVG') {
-    // Generate SVG from canvas data
-    let src = null;
-    if (canvas) src = canvas.toDataURL('image/png');
-    else if (img) src = img.src;
-    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="300"><image href="${src}" width="300" height="300"/></svg>`;
-    const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${off.width}" height="${off.height}"><image href="${dataUrl}" width="${off.width}" height="${off.height}"/></svg>`;
+    const blob = new Blob([svg], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = `${filename || 'qrmagic'}.svg`; a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } else if (format === 'PDF') {
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write(`<html><head><title>${filename||'QR Magic'}</title><style>body{margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#fff;}img{max-width:90vw;}</style></head><body><img src="${dataUrl}"/></body></html>`);
+      win.document.close();
+      setTimeout(() => { win.print(); }, 600);
+    }
   }
 };
 
@@ -851,7 +922,7 @@ const QRCreator = ({ onBack, userEmail, onCodeCreated }) => {
   };
 
   const handleDownload = () => {
-    downloadQR(qrContainerRef.current, downloadFormat, formData.name || qrType || 'qrmagic');
+    downloadQR({ containerEl: qrContainerRef.current, format: downloadFormat, filename: formData.name || qrType || 'qrmagic', logoSrc, qrColor, bgColor, frame });
     // Save code to user data
     if (userEmail) {
       const ud = getUserData(userEmail);
