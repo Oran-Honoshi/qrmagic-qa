@@ -3,605 +3,459 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Free QR code generator with real-time analytics. Create dynamic and static QR codes in seconds.">
+<meta name="theme-color" content="#23CED9">
 <title>QR Magic – Free QR Code Generator</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="styles.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
-.hero-blob1{position:absolute;top:-60px;right:-80px;width:340px;height:340px;border-radius:50%;background:rgba(35,206,217,0.12);filter:blur(40px);pointer-events:none;}
-.hero-blob2{position:absolute;bottom:-40px;left:-60px;width:270px;height:270px;border-radius:50%;background:rgba(255,105,180,0.10);filter:blur(40px);pointer-events:none;}
+/* Landing-specific */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:100px 40px 72px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 70% 0%,rgba(35,206,217,0.08) 0%,transparent 55%),radial-gradient(ellipse at 5% 90%,rgba(35,206,217,0.05) 0%,transparent 50%),var(--bg);}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;background:var(--blue-light);border:1px solid rgba(35,206,217,0.25);border-radius:50px;padding:5px 14px;font-size:12.5px;font-weight:500;color:var(--blue-dark);margin-bottom:20px;}
+.hero h1{font-size:clamp(32px,6vw,60px);font-weight:800;line-height:1.08;color:var(--indigo);margin-bottom:16px;letter-spacing:-0.04em;}
+.hero h1 .hl{color:var(--blue);}
+.hero h1 .hl2{color:var(--pink);}
+.hero-sub{font-size:clamp(14px,2vw,17px);color:var(--muted);max-width:460px;font-weight:400;line-height:1.65;margin-bottom:28px;}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:32px;}
+.hero-social-proof{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.proof-item{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--muted);}
+.proof-dot{width:4px;height:4px;border-radius:50%;background:var(--border);}
 
-/* Steps */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;max-width:860px;margin:0 auto;}
-@media(max-width:700px){.steps{grid-template-columns:1fr;}}
-.step-card{padding:28px 22px;text-align:center;position:relative;}
-.step-num{position:absolute;top:18px;left:18px;width:26px;height:26px;background:var(--indigo);color:#fff;border-radius:50%;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;}
-
-/* Video / tutorial */
-.tutorial-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:860px;margin:0 auto;align-items:stretch;}
+/* Tutorial cards */
+.tutorial-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:840px;margin:0 auto;align-items:stretch;}
 @media(max-width:700px){.tutorial-grid{grid-template-columns:1fr;}}
-.tutorial-card{background:linear-gradient(135deg,#1A1A2E,#2d2d5a);border-radius:var(--radius);padding:28px 22px;text-align:center;position:relative;overflow:hidden;height:100%;box-sizing:border-box;}
-.tutorial-step-badge{position:absolute;top:14px;left:14px;background:var(--blue);color:#fff;border-radius:50px;padding:3px 12px;font-size:11px;font-weight:800;}
-.tutorial-arrow{position:absolute;right:-14px;top:50%;transform:translateY(-50%);z-index:10;background:var(--blue);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;}
-@media(max-width:700px){.tutorial-arrow{display:none;}}
+.tutorial-card{background:var(--indigo-mid);border-radius:var(--radius);padding:24px 20px;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;}
+.tutorial-step{font-size:10.5px;font-weight:600;color:var(--blue);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.tutorial-screen{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:14px;margin-bottom:14px;flex:1;}
+.tutorial-title{color:#fff;font-size:14px;font-weight:600;margin-bottom:4px;letter-spacing:-0.01em;}
+.tutorial-desc{color:rgba(255,255,255,0.4);font-size:12.5px;font-weight:400;line-height:1.5;}
 
-/* Mini generator */
-.mini-qr-input{background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.2);color:#fff;border-radius:13px;width:100%;padding:12px 14px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;outline:none;transition:border-color 0.2s;}
-.mini-qr-input::placeholder{color:rgba(255,255,255,0.45);}
-.mini-qr-input:focus{border-color:var(--blue);}
-.swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all 0.2s;flex-shrink:0;}
-.swatch.active{border-color:#fff;transform:scale(1.25);}
-
-/* Feature comparison */
-.feat-table{width:100%;border-collapse:collapse;font-size:14px;}
-.feat-table th{padding:10px 14px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#8888aa;border-bottom:2px solid #f0f0f8;text-align:center;}
+/* Feature table */
+.feat-table{width:100%;border-collapse:collapse;font-size:13.5px;}
+.feat-table th{padding:10px 16px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);border-bottom:1.5px solid var(--border);text-align:center;background:var(--bg);}
 .feat-table th:first-child{text-align:left;}
-.feat-table td{padding:11px 14px;border-bottom:1.5px solid #f5f5fb;font-weight:600;color:#4a4a6a;text-align:center;}
-.feat-table td:first-child{text-align:left;font-weight:700;color:var(--indigo);}
+.feat-table td{padding:11px 16px;border-bottom:1px solid var(--border);color:var(--muted);text-align:center;font-weight:400;}
+.feat-table td:first-child{text-align:left;font-weight:500;color:var(--indigo);}
 .feat-table tr:last-child td{border-bottom:none;}
-.feat-table .yes{color:#22c55e;font-weight:800;}
-.feat-table .no{color:#e2e2e8;font-weight:700;}
-.feat-table .limited{color:#f59e0b;font-weight:800;}
-.feat-col-highlight{background:rgba(35,206,217,0.05);}
+.feat-table .yes{color:#16a34a;font-weight:600;}
+.feat-table .no{color:var(--border);}
+.feat-table .limited{color:#d97706;font-weight:600;}
+.feat-col-hl{background:rgba(35,206,217,0.04);}
+.feat-col-hl th{color:var(--blue-dark);}
 
-/* Pricing */
-.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;max-width:960px;margin:0 auto;align-items:stretch;}
-@media(max-width:800px){.pricing-grid{grid-template-columns:1fr;max-width:380px;}}
-.plan-card{padding:32px 26px 32px;text-align:center;position:relative;}
-.plan-card.featured{border-color:var(--blue);background:linear-gradient(160deg,#fff 0%,rgba(35,206,217,0.07) 100%);}
-.plan-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;border-radius:50px;padding:4px 16px;font-size:12px;font-weight:800;white-space:nowrap;}
-.plan-price{font-size:44px;font-weight:900;color:var(--indigo);line-height:1;}
-.plan-price sup{font-size:20px;vertical-align:super;}
-.plan-price .period{font-size:14px;color:#8888aa;font-weight:600;}
-.plan-feature{padding:7px 0;font-size:13px;font-weight:600;color:#4a4a6a;display:flex;align-items:center;gap:8px;text-align:left;}
-.plan-divider{border:none;border-top:1.5px solid rgba(35,206,217,0.2);margin:18px 0;}
-
-/* Video modal */
-.video-modal{display:none;position:fixed;inset:0;background:rgba(26,26,46,0.7);backdrop-filter:blur(6px);z-index:200;align-items:center;justify-content:center;padding:24px;}
-.video-modal.open{display:flex;animation:fadeIn 0.2s ease;}
-.video-modal-box{background:#1A1A2E;border-radius:var(--radius);overflow:hidden;max-width:560px;width:100%;position:relative;animation:popIn 0.35s cubic-bezier(.34,1.56,.64,1) both;}
+/* Why cards */
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:840px;margin:0 auto;}
+@media(max-width:700px){.why-grid{grid-template-columns:1fr;}}
+.why-card{padding:24px;}
+.why-icon{width:40px;height:40px;border-radius:10px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;margin-bottom:14px;color:var(--blue);}
+.why-title{font-size:15px;font-weight:700;color:var(--indigo);margin-bottom:6px;letter-spacing:-0.01em;}
+.why-desc{font-size:13.5px;color:var(--muted);line-height:1.6;}
 
 /* Mascot */
-.mascot-hero{width:260px;height:260px;object-fit:contain;filter:drop-shadow(0 12px 32px rgba(35,206,217,0.22));animation:float 3s ease-in-out infinite;}
-@media(max-width:600px){.mascot-hero{width:180px;height:180px;}}
-
-/* pill */
-.pill-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(35,206,217,0.12);border:2px solid rgba(35,206,217,0.3);border-radius:50px;padding:5px 16px;font-size:13px;font-weight:700;color:var(--blue);}
+.mascot-hero{width:240px;height:240px;object-fit:contain;filter:drop-shadow(0 16px 40px rgba(35,206,217,0.18));animation:float 3.5s ease-in-out infinite;}
+@media(max-width:600px){.mascot-hero{width:160px;height:160px;}}
 </style>
 </head>
 <body>
 
-<!-- ══ NAV ══ -->
 <nav class="nav">
-  <div class="nav-logo" onclick="window.location='landing.html'">✨ <span>QR</span> Magic</div>
+  <div class="nav-logo" onclick="window.location='landing.html'">
+    <img src="mascot.png" alt="QR Magic" onerror="this.style.display='none'">
+    <span>QR</span> Magic
+  </div>
   <div class="nav-links">
     <a class="nav-link" onclick="jumpTo('try')">Try Free</a>
     <a class="nav-link" onclick="jumpTo('how')">How it Works</a>
     <a class="nav-link" onclick="jumpTo('pricing')">Pricing</a>
-    <button class="btn-outline" onclick="window.location='step1-auth.html'" style="padding:9px 20px;font-size:13px;">Log In</button>
-    <button class="btn-primary" onclick="window.location='step1-auth.html'" style="padding:9px 20px;font-size:13px;">Sign Up Free</button>
+    <button class="btn-secondary" onclick="window.location='step1-auth.html'" style="padding:8px 18px;font-size:13px;">Log In</button>
+    <button class="btn-primary" onclick="window.location='step1-auth.html'" style="padding:8px 18px;font-size:13px;">Get Started Free</button>
   </div>
 </nav>
 
-<!-- ══ HERO ══ -->
+<!-- HERO -->
 <section class="hero" id="hero">
-  <div class="hero-blob1"></div>
-  <div class="hero-blob2"></div>
-  <div style="max-width:980px;position:relative;z-index:1;display:flex;align-items:center;gap:56px;flex-wrap:wrap;justify-content:center;width:100%;">
-    <div style="flex:1;min-width:270px;">
-      <div class="pill-badge" style="margin-bottom:22px;">
-        <i data-lucide="gift" style="width:14px;height:14px;"></i>
-        Free forever — no credit card required!
+  <div style="max-width:960px;position:relative;z-index:1;display:flex;align-items:center;gap:64px;flex-wrap:wrap;justify-content:center;width:100%;">
+    <div style="flex:1;min-width:260px;">
+      <div class="hero-tag">
+        <i data-lucide="zap" style="width:13px;height:13px;"></i>
+        Free forever — no credit card required
       </div>
       <h1 class="animate-fadeinup">
-        Create QR Codes<br>as Easy as <span class="hl">1, 2,</span> <span class="hl2">3!</span>
+        Create QR Codes<br>as Easy as <span class="hl">1,</span> <span class="hl2">2,</span> <span class="hl">3</span>
       </h1>
-      <p class="hero-sub animate-fadeinup" style="animation-delay:0.15s;">
-        Free, customizable, and dynamic QR codes for your business. No hidden fees, just pure magic. ✨
+      <p class="hero-sub animate-fadeinup" style="animation-delay:.1s;">
+        Dynamic and static QR codes with real-time analytics. Customize, download, and track — all from one dashboard.
       </p>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;" class="animate-fadeinup">
-        <button class="btn-primary animate-pulse-btn" onclick="window.location='step1-auth.html'" style="font-size:16px;padding:14px 34px;">
-          <i data-lucide="zap" style="width:18px;height:18px;"></i>
+      <div class="hero-actions animate-fadeinup" style="animation-delay:.2s;">
+        <button class="btn-primary animate-pulse-btn" onclick="window.location='step1-auth.html'" style="font-size:15px;padding:13px 28px;">
+          <i data-lucide="arrow-right" style="width:16px;height:16px;"></i>
           Start for Free
         </button>
-        <button class="btn-outline" onclick="jumpTo('try')" style="font-size:14px;">
-          <i data-lucide="play-circle" style="width:16px;height:16px;"></i>
+        <button class="btn-secondary" onclick="jumpTo('try')" style="font-size:14px;padding:12px 24px;">
+          <i data-lucide="play" style="width:15px;height:15px;"></i>
           Try it Now
         </button>
       </div>
+      <div class="hero-social-proof">
+        <div class="proof-item"><i data-lucide="check-circle" style="width:14px;height:14px;color:var(--blue);"></i>No credit card needed</div>
+        <div class="proof-dot"></div>
+        <div class="proof-item"><i data-lucide="check-circle" style="width:14px;height:14px;color:var(--blue);"></i>Free plan forever</div>
+        <div class="proof-dot"></div>
+        <div class="proof-item"><i data-lucide="check-circle" style="width:14px;height:14px;color:var(--blue);"></i>Cancel anytime</div>
+      </div>
     </div>
-    <!-- Real mascot -->
     <div style="flex-shrink:0;">
-      <img src="mascot.png" alt="QR Magic mascot waving" class="mascot-hero"
-        onerror="this.style.display='none'">
+      <img src="mascot.png" alt="QR Magic" class="mascot-hero" onerror="this.style.display='none'">
     </div>
   </div>
 </section>
 
-<!-- ══ TRY FREE + FEATURES ══ -->
-<section class="section" id="try" style="background:linear-gradient(180deg,var(--bg) 0%,var(--mint) 100%);padding-top:56px;">
-  <h2 class="section-title">Try it Right Now — No Signup Needed</h2>
-  <p class="section-sub">Paste any URL and your QR code appears instantly. Then see what's included free vs paid.</p>
+<!-- TRY FREE -->
+<section class="section" id="try" style="background:var(--indigo);padding-top:60px;padding-bottom:60px;">
+  <h2 class="section-title" style="color:#fff;">Try it — No Signup Needed</h2>
+  <p class="section-sub" style="color:rgba(255,255,255,0.45);">Paste any URL and your QR code appears instantly.</p>
 
-  <!-- Mini generator -->
-  <div style="background:linear-gradient(135deg,#1A1A2E 0%,#2d2d5a 100%);border-radius:var(--radius);padding:40px 36px;max-width:860px;margin:0 auto 40px;display:flex;align-items:center;gap:40px;flex-wrap:wrap;">
-    <!-- Controls -->
+  <div class="mini-gen">
     <div style="flex:1;min-width:240px;">
-      <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(35,206,217,0.15);border:1.5px solid rgba(35,206,217,0.3);border-radius:50px;padding:4px 13px;margin-bottom:14px;font-size:12px;font-weight:800;color:#23CED9;">
-        <i data-lucide="zap" style="width:13px;height:13px;"></i>
-        Live — no signup needed
-      </div>
-      <h3 style="color:#fff;font-size:20px;font-weight:900;margin-bottom:7px;">Your QR code updates as you type</h3>
-      <p style="color:rgba(255,255,255,0.55);font-size:13px;font-weight:600;margin-bottom:16px;line-height:1.6;">Paste a URL below. Choose a color. Download free.</p>
+      <label style="display:block;font-size:11.5px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;">Website URL</label>
+      <input class="mini-qr-input" id="mini-url" type="url" placeholder="https://yourwebsite.com" oninput="miniGenerate()">
 
-      <div style="margin-bottom:14px;">
-        <input class="mini-qr-input" id="mini-url" type="url" placeholder="https://yourwebsite.com" oninput="miniGenerate()">
-      </div>
-
-      <div style="margin-bottom:16px;">
-        <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">QR Color</div>
+      <div style="margin:16px 0 14px;">
+        <label style="display:block;font-size:11.5px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;">Color</label>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <div class="swatch active" style="background:#1A1A2E;" data-color="#1A1A2E" onclick="selectColor(this)"></div>
+          <div class="swatch active" style="background:#0f172a;" data-color="#0f172a" onclick="selectColor(this)"></div>
           <div class="swatch" style="background:#23CED9;" data-color="#23CED9" onclick="selectColor(this)"></div>
           <div class="swatch" style="background:#FF69B4;" data-color="#FF69B4" onclick="selectColor(this)"></div>
           <div class="swatch" style="background:#7C3AED;" data-color="#7C3AED" onclick="selectColor(this)"></div>
-          <div class="swatch" style="background:#22c55e;" data-color="#22c55e" onclick="selectColor(this)"></div>
-          <div class="swatch" style="background:#f97316;" data-color="#f97316" onclick="selectColor(this)"></div>
-          <div class="swatch" style="background:#ef4444;" data-color="#ef4444" onclick="selectColor(this)"></div>
-          <div class="swatch" style="background:#000000;" data-color="#000000" onclick="selectColor(this)"></div>
+          <div class="swatch" style="background:#16a34a;" data-color="#16a34a" onclick="selectColor(this)"></div>
+          <div class="swatch" style="background:#dc2626;" data-color="#dc2626" onclick="selectColor(this)"></div>
+          <div class="swatch" style="background:#d97706;" data-color="#d97706" onclick="selectColor(this)"></div>
+          <div class="swatch" style="background:#000;" data-color="#000000" onclick="selectColor(this)"></div>
         </div>
       </div>
 
-      <div style="display:flex;gap:9px;flex-wrap:wrap;">
-        <button class="btn-outline" id="mini-dl-btn" style="border-color:rgba(255,255,255,0.3);color:#fff;font-size:14px;display:none;" onclick="miniDownload()">
-          <i data-lucide="download" style="width:15px;height:15px;"></i>
-          Download Free PNG
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+        <button id="mini-dl-btn" class="btn-secondary" onclick="miniDownload()" style="display:none;font-size:13px;padding:9px 18px;background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.15);color:#fff;">
+          <i data-lucide="download" style="width:14px;height:14px;"></i>
+          Download PNG
         </button>
-        <button class="btn-primary" onclick="window.location='step1-auth.html'" style="font-size:14px;">
-          <i data-lucide="user-plus" style="width:15px;height:15px;"></i>
+        <button class="btn-primary" onclick="window.location='step1-auth.html'" style="font-size:13px;padding:9px 18px;">
+          <i data-lucide="user-plus" style="width:14px;height:14px;"></i>
           Sign Up for More
         </button>
       </div>
-      <div id="mini-hint" style="margin-top:11px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.4);">
-        Sign up free to unlock dynamic codes, analytics, logos & more →
-      </div>
+      <p style="margin-top:12px;font-size:12px;color:rgba(255,255,255,0.3);line-height:1.5;">Sign up free → dynamic codes, analytics, logo overlay, custom frames & more</p>
     </div>
 
-    <!-- QR Preview -->
-    <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:12px;">
-      <div style="background:#fff;border-radius:18px;padding:14px;box-shadow:0 8px 32px rgba(0,0,0,0.3);">
-        <div id="mini-qr-placeholder" style="width:170px;height:170px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:#c8c8e0;">
-          <i data-lucide="qr-code" style="width:52px;height:52px;"></i>
-          <div style="font-size:12px;font-weight:700;text-align:center;color:#c8c8e0;">Paste a URL above<br>to see your QR code</div>
+    <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:10px;">
+      <div style="background:#fff;border-radius:14px;padding:12px;box-shadow:0 16px 48px rgba(0,0,0,0.35);">
+        <div id="mini-placeholder" style="width:170px;height:170px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:rgba(15,23,42,0.2);">
+          <i data-lucide="qr-code" style="width:44px;height:44px;"></i>
+          <span style="font-size:12px;font-weight:500;text-align:center;line-height:1.4;">Paste a URL to<br>generate your QR code</span>
         </div>
         <div id="mini-qr-output" style="display:none;"></div>
       </div>
-      <div id="mini-scan-hint" style="display:none;font-size:11px;color:rgba(255,255,255,0.4);font-weight:600;text-align:center;">
-        <i data-lucide="smartphone" style="width:12px;height:12px;display:inline;"></i>
-        Scan with your phone to test!
-      </div>
+      <p id="mini-scan-hint" style="display:none;font-size:11.5px;color:rgba(255,255,255,0.3);text-align:center;">Scan with your phone to test</p>
     </div>
   </div>
 
-  <!-- Feature comparison table -->
-  <div style="max-width:860px;margin:0 auto;">
-    <h3 style="font-size:20px;font-weight:900;text-align:center;margin-bottom:6px;color:var(--indigo);">What's included in each plan?</h3>
-    <p style="text-align:center;color:#8888aa;font-weight:600;font-size:14px;margin-bottom:22px;">Everything you need to get started is free — forever.</p>
-    <div class="card" style="padding:0;overflow:hidden;">
+  <!-- Feature table -->
+  <div style="max-width:840px;margin:48px auto 0;">
+    <h3 style="font-size:17px;font-weight:700;text-align:center;color:#fff;margin-bottom:6px;letter-spacing:-0.02em;">What's included?</h3>
+    <p style="text-align:center;color:rgba(255,255,255,0.35);font-size:13.5px;margin-bottom:20px;">Start free, upgrade when you're ready.</p>
+    <div style="background:var(--surface);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);">
       <table class="feat-table">
         <thead>
           <tr>
-            <th style="width:36%;"></th>
+            <th></th>
             <th>Free</th>
-            <th class="feat-col-highlight" style="color:var(--blue);">Basic <span style="font-size:10px;font-weight:700;color:#8888aa;">$4/mo</span></th>
-            <th>Plus <span style="font-size:10px;font-weight:700;color:#8888aa;">$14/mo</span></th>
+            <th class="feat-col-hl" style="color:var(--blue-dark);">Basic <span style="font-weight:400;color:var(--muted);font-size:10px;">$4/mo</span></th>
+            <th>Plus <span style="font-weight:400;color:var(--muted);font-size:10px;">$14/mo</span></th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>Static QR Codes</td>
-            <td class="limited">50</td>
-            <td class="feat-col-highlight yes">Unlimited</td>
-            <td class="yes">Unlimited</td>
-          </tr>
-          <tr>
-            <td>Dynamic QR Codes</td>
-            <td class="limited">1</td>
-            <td class="feat-col-highlight limited">10</td>
-            <td class="yes">100</td>
-          </tr>
-          <tr>
-            <td>Custom Colors & Logo</td>
-            <td class="yes">✓</td>
-            <td class="feat-col-highlight yes">✓</td>
-            <td class="yes">✓</td>
-          </tr>
-          <tr>
-            <td>Download PNG</td>
-            <td class="yes">✓</td>
-            <td class="feat-col-highlight yes">✓</td>
-            <td class="yes">✓</td>
-          </tr>
-          <tr>
-            <td>Download SVG & PDF</td>
-            <td class="no">—</td>
-            <td class="feat-col-highlight yes">✓</td>
-            <td class="yes">✓</td>
-          </tr>
-          <tr>
-            <td>Scan Analytics</td>
-            <td class="limited">Basic</td>
-            <td class="feat-col-highlight yes">Advanced</td>
-            <td class="yes">Advanced</td>
-          </tr>
-          <tr>
-            <td>Custom Frames & Badges</td>
-            <td class="no">—</td>
-            <td class="feat-col-highlight yes">✓</td>
-            <td class="yes">✓</td>
-          </tr>
-          <tr>
-            <td>Folder Organization</td>
-            <td class="no">—</td>
-            <td class="no">—</td>
-            <td class="yes">✓</td>
-          </tr>
-          <tr>
-            <td>Campaign Tracking</td>
-            <td class="no">—</td>
-            <td class="no">—</td>
-            <td class="yes">✓</td>
-          </tr>
-          <tr>
-            <td>API Access</td>
-            <td class="no">—</td>
-            <td class="no">—</td>
-            <td class="yes">✓</td>
-          </tr>
-          <tr>
-            <td>Support</td>
-            <td>Community</td>
-            <td class="feat-col-highlight">Email</td>
-            <td>Priority</td>
-          </tr>
+          <tr><td>Static QR Codes</td><td class="limited">50</td><td class="feat-col-hl yes">Unlimited</td><td class="yes">Unlimited</td></tr>
+          <tr><td>Dynamic QR Codes</td><td class="limited">1</td><td class="feat-col-hl limited">10</td><td class="yes">100</td></tr>
+          <tr><td>Custom Colors & Logo</td><td class="yes">Yes</td><td class="feat-col-hl yes">Yes</td><td class="yes">Yes</td></tr>
+          <tr><td>PNG Download</td><td class="yes">Yes</td><td class="feat-col-hl yes">Yes</td><td class="yes">Yes</td></tr>
+          <tr><td>SVG & PDF Export</td><td class="no">—</td><td class="feat-col-hl yes">Yes</td><td class="yes">Yes</td></tr>
+          <tr><td>Scan Analytics</td><td class="limited">Basic</td><td class="feat-col-hl yes">Advanced</td><td class="yes">Advanced</td></tr>
+          <tr><td>Custom Frames</td><td class="no">—</td><td class="feat-col-hl yes">Yes</td><td class="yes">Yes</td></tr>
+          <tr><td>Folders & Campaigns</td><td class="no">—</td><td class="no">—</td><td class="yes">Yes</td></tr>
+          <tr><td>API Access</td><td class="no">—</td><td class="no">—</td><td class="yes">Yes</td></tr>
+          <tr><td>Support</td><td>Community</td><td class="feat-col-hl">Email</td><td>Priority</td></tr>
         </tbody>
       </table>
     </div>
     <div style="text-align:center;margin-top:20px;">
-      <button class="btn-primary" onclick="window.location='step1-auth.html'" style="font-size:15px;padding:13px 32px;">
-        <i data-lucide="zap" style="width:16px;height:16px;"></i>
-        Get Started Free — No Card Needed
+      <button class="btn-primary" onclick="window.location='step1-auth.html'" style="font-size:14px;padding:12px 28px;">
+        <i data-lucide="zap" style="width:15px;height:15px;"></i>
+        Get Started Free
       </button>
-      <div style="margin-top:10px;font-size:13px;color:#aaa;font-weight:600;">Upgrade anytime. Cancel anytime.</div>
     </div>
   </div>
 </section>
 
-<!-- ══ HOW IT WORKS / TUTORIAL ══ -->
-<section class="section" id="how" style="background:linear-gradient(180deg,var(--mint) 0%,var(--bg) 100%);">
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
   <h2 class="section-title">How it Works</h2>
   <p class="section-sub">Three steps from idea to scannable QR code</p>
 
-  <!-- Tutorial cards (step-by-step screenshots visual) -->
-  <div class="tutorial-grid" style="margin-bottom:40px;">
-    <!-- Step 1 -->
-    <div style="position:relative;">
-      <div class="tutorial-card">
-        <div class="tutorial-step-badge">Step 1</div>
-        <!-- Mock screen -->
-        <div style="background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:12px;padding:16px;margin:36px 0 14px;">
-          <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
-            <div style="background:rgba(35,206,217,0.2);border:1.5px solid rgba(35,206,217,0.4);border-radius:8px;padding:6px 10px;font-size:10px;font-weight:800;color:#23CED9;">🔗 URL</div>
-            <div style="background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 10px;font-size:10px;font-weight:800;color:rgba(255,255,255,0.5);">📶 Wi-Fi</div>
-            <div style="background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 10px;font-size:10px;font-weight:800;color:rgba(255,255,255,0.5);">👤 vCard</div>
-          </div>
-          <div style="background:rgba(255,255,255,0.08);border-radius:8px;padding:8px 10px;font-size:10px;color:rgba(255,255,255,0.4);font-weight:600;">https://yourwebsite.com</div>
-        </div>
-        <div style="color:#fff;font-size:15px;font-weight:800;margin-bottom:5px;">Choose your type</div>
-        <div style="color:rgba(255,255,255,0.55);font-size:12px;font-weight:600;line-height:1.5;">URL, Wi-Fi, vCard, Text, Email, SMS & more</div>
-      </div>
-      <!-- Arrow -->
-      <div class="tutorial-arrow" style="right:-14px;top:50%;transform:translateY(-50%);position:absolute;background:var(--blue);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;z-index:10;">
-        <i data-lucide="arrow-right" style="width:14px;height:14px;color:#fff;"></i>
-      </div>
-    </div>
-
-    <!-- Step 2 -->
-    <div style="position:relative;">
-      <div class="tutorial-card">
-        <div class="tutorial-step-badge" style="background:var(--pink);">Step 2</div>
-        <!-- Mock screen -->
-        <div style="background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:12px;padding:16px;margin:36px 0 14px;">
-          <div style="display:flex;gap:6px;margin-bottom:10px;">
-            <div style="width:18px;height:18px;border-radius:50%;background:#1A1A2E;border:2.5px solid #fff;"></div>
-            <div style="width:18px;height:18px;border-radius:50%;background:#23CED9;border:2.5px solid transparent;"></div>
-            <div style="width:18px;height:18px;border-radius:50%;background:#FF69B4;border:2.5px solid transparent;"></div>
-            <div style="width:18px;height:18px;border-radius:50%;background:#7C3AED;border:2.5px solid transparent;"></div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
-            <div style="background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.1);border-radius:6px;padding:5px;font-size:9px;color:rgba(255,255,255,0.5);text-align:center;">⊡ none</div>
-            <div style="background:rgba(35,206,217,0.15);border:1.5px solid rgba(35,206,217,0.4);border-radius:6px;padding:5px;font-size:9px;color:#23CED9;text-align:center;">🏷️ badge</div>
-          </div>
-        </div>
-        <div style="color:#fff;font-size:15px;font-weight:800;margin-bottom:5px;">Customize design</div>
-        <div style="color:rgba(255,255,255,0.55);font-size:12px;font-weight:600;line-height:1.5;">Colors, logo, frames, error correction</div>
-      </div>
-      <!-- Arrow -->
-      <div class="tutorial-arrow" style="right:-14px;top:50%;transform:translateY(-50%);position:absolute;background:var(--pink);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;z-index:10;">
-        <i data-lucide="arrow-right" style="width:14px;height:14px;color:#fff;"></i>
-      </div>
-    </div>
-
-    <!-- Step 3 -->
+  <div class="tutorial-grid" style="margin-bottom:36px;">
     <div>
       <div class="tutorial-card">
-        <div class="tutorial-step-badge" style="background:#f59e0b;">Step 3</div>
-        <!-- Mock screen -->
-        <div style="background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:12px;padding:16px;margin:36px 0 14px;">
-          <div style="display:flex;gap:5px;margin-bottom:8px;">
-            <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:6px;padding:6px;font-size:9px;text-align:center;color:rgba(255,255,255,0.5);">🖼️ PNG</div>
-            <div style="flex:1;background:rgba(35,206,217,0.15);border:1.5px solid rgba(35,206,217,0.3);border-radius:6px;padding:6px;font-size:9px;text-align:center;color:#23CED9;">✏️ SVG</div>
-            <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:6px;padding:6px;font-size:9px;text-align:center;color:rgba(255,255,255,0.5);">📄 PDF</div>
+        <div class="tutorial-step">
+          <i data-lucide="mouse-pointer-click" style="width:13px;height:13px;"></i>
+          Step 1
+        </div>
+        <div class="tutorial-screen">
+          <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+            <div style="background:rgba(35,206,217,0.2);border:1px solid rgba(35,206,217,0.35);border-radius:6px;padding:5px 9px;font-size:10px;font-weight:600;color:var(--blue);">URL</div>
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:5px 9px;font-size:10px;color:rgba(255,255,255,0.3);">Wi-Fi</div>
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:5px 9px;font-size:10px;color:rgba(255,255,255,0.3);">vCard</div>
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:5px 9px;font-size:10px;color:rgba(255,255,255,0.3);">Text</div>
           </div>
-          <div style="display:flex;gap:10px;margin-top:6px;">
-            <div style="text-align:center;">
-              <div style="font-size:14px;font-weight:900;color:#23CED9;">142</div>
-              <div style="font-size:8px;color:rgba(255,255,255,0.4);font-weight:700;">SCANS</div>
-            </div>
-            <div style="text-align:center;">
-              <div style="font-size:14px;font-weight:900;color:#FF69B4;">89</div>
-              <div style="font-size:8px;color:rgba(255,255,255,0.4);font-weight:700;">CLICKS</div>
-            </div>
-            <div style="text-align:center;">
-              <div style="font-size:14px;font-weight:900;color:#22c55e;">63%</div>
-              <div style="font-size:8px;color:rgba(255,255,255,0.4);font-weight:700;">CTR</div>
-            </div>
+          <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07);border-radius:6px;padding:7px 10px;font-size:10px;color:rgba(255,255,255,0.3);">https://yourwebsite.com</div>
+        </div>
+        <div class="tutorial-title">Choose your type</div>
+        <div class="tutorial-desc">URL, Wi-Fi, vCard, Text, Email, SMS, Phone</div>
+      </div>
+    </div>
+    <div>
+      <div class="tutorial-card">
+        <div class="tutorial-step" style="color:var(--pink);">
+          <i data-lucide="sliders" style="width:13px;height:13px;"></i>
+          Step 2
+        </div>
+        <div class="tutorial-screen">
+          <div style="display:flex;gap:5px;margin-bottom:10px;">
+            <div style="width:16px;height:16px;border-radius:50%;background:#0f172a;border:2px solid #fff;"></div>
+            <div style="width:16px;height:16px;border-radius:50%;background:var(--blue);"></div>
+            <div style="width:16px;height:16px;border-radius:50%;background:var(--pink);"></div>
+            <div style="width:16px;height:16px;border-radius:50%;background:#7C3AED;"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;padding:5px;font-size:9px;color:rgba(255,255,255,0.3);text-align:center;">None</div>
+            <div style="background:rgba(35,206,217,0.12);border:1px solid rgba(35,206,217,0.3);border-radius:5px;padding:5px;font-size:9px;color:var(--blue);text-align:center;">Badge</div>
           </div>
         </div>
-        <div style="color:#fff;font-size:15px;font-weight:800;margin-bottom:5px;">Download & track</div>
-        <div style="color:rgba(255,255,255,0.55);font-size:12px;font-weight:600;line-height:1.5;">PNG, SVG, PDF. Real-time scan analytics.</div>
+        <div class="tutorial-title">Customize design</div>
+        <div class="tutorial-desc">Colors, logo overlay, frames, error correction</div>
+      </div>
+    </div>
+    <div>
+      <div class="tutorial-card">
+        <div class="tutorial-step" style="color:#f59e0b;">
+          <i data-lucide="bar-chart-2" style="width:13px;height:13px;"></i>
+          Step 3
+        </div>
+        <div class="tutorial-screen">
+          <div style="display:flex;gap:5px;margin-bottom:10px;">
+            <div style="flex:1;background:rgba(35,206,217,0.15);border:1px solid rgba(35,206,217,0.25);border-radius:5px;padding:5px;font-size:9px;color:var(--blue);text-align:center;">PNG</div>
+            <div style="flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;padding:5px;font-size:9px;color:rgba(255,255,255,0.3);text-align:center;">SVG</div>
+            <div style="flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;padding:5px;font-size:9px;color:rgba(255,255,255,0.3);text-align:center;">PDF</div>
+          </div>
+          <div style="display:flex;gap:12px;">
+            <div><div style="font-size:13px;font-weight:700;color:var(--blue);">142</div><div style="font-size:8px;color:rgba(255,255,255,0.3);font-weight:500;">SCANS</div></div>
+            <div><div style="font-size:13px;font-weight:700;color:var(--pink);">89</div><div style="font-size:8px;color:rgba(255,255,255,0.3);font-weight:500;">CLICKS</div></div>
+            <div><div style="font-size:13px;font-weight:700;color:#16a34a;">63%</div><div style="font-size:8px;color:rgba(255,255,255,0.3);font-weight:500;">CTR</div></div>
+          </div>
+        </div>
+        <div class="tutorial-title">Download & track</div>
+        <div class="tutorial-desc">PNG, SVG, PDF. Real-time scan analytics.</div>
       </div>
     </div>
   </div>
 
-  <!-- Video section -->
-  <div style="max-width:720px;margin:0 auto;text-align:center;">
-    <div style="background:linear-gradient(135deg,#1A1A2E,#2d2d5a);border-radius:var(--radius);padding:36px;position:relative;overflow:hidden;">
-      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(35,206,217,0.1) 0%,transparent 70%);"></div>
-      <div style="position:relative;z-index:1;">
-        <div style="width:68px;height:68px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 0 0 14px rgba(35,206,217,0.15);animation:pulse 2s ease-in-out infinite;cursor:pointer;" onclick="openVideo()">
-          <i data-lucide="play" style="width:26px;height:26px;color:#fff;fill:#fff;"></i>
-        </div>
-        <p style="color:#fff;font-size:16px;font-weight:700;margin-bottom:6px;">Full video tutorial coming soon</p>
-        <p style="color:rgba(255,255,255,0.45);font-size:13px;font-weight:600;margin-bottom:18px;">In the meantime, the three steps above show exactly how it works.</p>
-        <div style="background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:12px;padding:14px 18px;text-align:left;">
-          <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Want to create your own demo?</div>
-          <div style="color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;line-height:1.7;">
-            We recommend <strong style="color:#23CED9;">Loom</strong> (free, loom.com) — record your screen, get a shareable link in seconds. Or use <strong style="color:#FF69B4;">Screen.studio</strong> for beautiful zoomed recordings with automatic highlights.
-          </div>
-        </div>
-      </div>
+  <!-- Video placeholder with tool recommendation -->
+  <div style="max-width:660px;margin:0 auto;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:28px 32px;display:flex;align-items:flex-start;gap:16px;">
+    <div style="width:40px;height:40px;border-radius:10px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <i data-lucide="video" style="width:20px;height:20px;color:var(--blue);"></i>
+    </div>
+    <div>
+      <div style="font-size:14px;font-weight:600;color:var(--indigo);margin-bottom:5px;">Full video walkthrough coming soon</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.65;">Want to create your own screen recording? We recommend <strong style="color:var(--indigo);">Loom</strong> <a href="https://loom.com" target="_blank" style="color:var(--blue);">loom.com</a> — free, records your screen, and gives you a shareable link in seconds. For polished zoomed recordings, try <strong style="color:var(--indigo);">Screen.studio</strong>.</div>
     </div>
   </div>
 </section>
 
-<!-- ══ THREE STEPS (simple cards) ══ -->
+<!-- WHY QR MAGIC -->
 <section class="section" style="padding-top:0;">
   <h2 class="section-title">Why QR Magic?</h2>
-  <p class="section-sub">Built for businesses that want results — not complexity</p>
-  <div class="steps">
-    <div class="card step-card">
-      <div class="step-num">1</div>
-      <div style="width:66px;height:66px;border-radius:18px;background:rgba(35,206,217,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
-        <i data-lucide="target" style="width:32px;height:32px;color:#23CED9;"></i>
-      </div>
-      <h3 style="font-size:17px;font-weight:800;margin-bottom:7px;color:var(--blue);">Instant Generation</h3>
-      <p style="font-size:13px;color:#6b6b8a;font-weight:600;line-height:1.6;">QR codes appear in real time as you type. No waiting, no reloading.</p>
+  <p class="section-sub">Built for businesses that want results, not complexity</p>
+  <div class="why-grid">
+    <div class="card why-card">
+      <div class="why-icon"><i data-lucide="zap" style="width:20px;height:20px;"></i></div>
+      <div class="why-title">Instant Generation</div>
+      <div class="why-desc">QR codes appear as you type. No waiting, no page reloads, no friction.</div>
     </div>
-    <div class="card step-card">
-      <div class="step-num">2</div>
-      <div style="width:66px;height:66px;border-radius:18px;background:rgba(255,105,180,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
-        <i data-lucide="edit-3" style="width:32px;height:32px;color:#FF69B4;"></i>
-      </div>
-      <h3 style="font-size:17px;font-weight:800;margin-bottom:7px;color:var(--pink);">Dynamic & Editable</h3>
-      <p style="font-size:13px;color:#6b6b8a;font-weight:600;line-height:1.6;">Change the destination URL anytime — without reprinting the QR code.</p>
+    <div class="card why-card">
+      <div class="why-icon" style="background:var(--pink-light);color:var(--pink);"><i data-lucide="refresh-cw" style="width:20px;height:20px;"></i></div>
+      <div class="why-title">Dynamic & Editable</div>
+      <div class="why-desc">Change the destination URL anytime without reprinting. Your QR code stays the same.</div>
     </div>
-    <div class="card step-card">
-      <div class="step-num">3</div>
-      <div style="width:66px;height:66px;border-radius:18px;background:rgba(255,215,0,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
-        <i data-lucide="trending-up" style="width:32px;height:32px;color:#f59e0b;"></i>
-      </div>
-      <h3 style="font-size:17px;font-weight:800;margin-bottom:7px;color:#f59e0b;">Real Scan Analytics</h3>
-      <p style="font-size:13px;color:#6b6b8a;font-weight:600;line-height:1.6;">See who scanned, when, and on what device — all in your dashboard.</p>
+    <div class="card why-card">
+      <div class="why-icon" style="background:rgba(245,158,11,0.1);color:#d97706;"><i data-lucide="trending-up" style="width:20px;height:20px;"></i></div>
+      <div class="why-title">Real Scan Analytics</div>
+      <div class="why-desc">See who scanned, when, on what device — all in your live dashboard.</div>
     </div>
   </div>
 </section>
 
-<!-- ══ PRICING ══ -->
-<section class="section" id="pricing" style="background:linear-gradient(180deg,var(--mint) 0%,var(--bg) 100%);">
-  <h2 class="section-title">Simple, Honest Pricing</h2>
-  <p class="section-sub">Start free, upgrade when you need more magic</p>
+<!-- PRICING -->
+<section class="section" id="pricing" style="background:var(--bg);">
+  <h2 class="section-title">Simple Pricing</h2>
+  <p class="section-sub">Start free. Upgrade when you grow.</p>
 
   <div class="toggle-bar">
-    <span style="font-weight:700;color:#8888aa;" id="lbl-monthly">Monthly</span>
+    <span style="font-size:13.5px;font-weight:500;color:var(--muted);" id="lbl-monthly">Monthly</span>
     <div class="toggle-switch" onclick="toggleBilling()">
-      <div class="toggle-knob" id="billing-knob" style="left:26px;"></div>
+      <div class="toggle-knob" id="billing-knob" style="left:22px;"></div>
     </div>
-    <span style="font-weight:700;color:var(--indigo);" id="lbl-annual">Annually</span>
+    <span style="font-size:13.5px;font-weight:500;color:var(--indigo);" id="lbl-annual">Annually</span>
     <span class="badge-save" id="save-badge">Save 20%</span>
   </div>
 
   <div class="pricing-grid">
-
     <!-- Free -->
-    <div class="card plan-card" style="display:flex;flex-direction:column;">
-      <div style="height:20px;"></div><!-- badge spacer -->
-      <div style="font-size:12px;font-weight:800;color:#8888aa;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;">Free</div>
-      <div class="plan-price">Free</div>
-      <div style="font-size:11px;color:#8888aa;font-weight:600;margin-top:3px;margin-bottom:16px;">forever</div>
-      <button class="btn-outline" onclick="window.location='step1-auth.html'" style="width:100%;justify-content:center;margin-bottom:16px;">Get Started Free</button>
-      <hr class="plan-divider" style="margin-top:0;">
+    <div class="card plan-card">
+      <div style="height:18px;"></div>
+      <div class="plan-name">Free</div>
+      <div class="plan-price">Free<span class="period" style="font-size:16px;"> forever</span></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;margin-bottom:16px;">No credit card needed</div>
+      <button class="btn-secondary" onclick="window.location='step1-auth.html'" style="width:100%;justify-content:center;margin-bottom:16px;">Get Started Free</button>
+      <hr class="plan-divider">
       <div style="flex:1;">
-        <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>1 Dynamic Code</div>
-        <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>50 Static Codes</div>
-        <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Custom Colors & Logo</div>
-        <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>PNG Download</div>
-        <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Basic Analytics</div>
+        <div class="plan-feature"><i data-lucide="check" style="width:14px;height:14px;color:var(--blue);"></i>1 Dynamic Code</div>
+        <div class="plan-feature"><i data-lucide="check" style="width:14px;height:14px;color:var(--blue);"></i>50 Static Codes</div>
+        <div class="plan-feature"><i data-lucide="check" style="width:14px;height:14px;color:var(--blue);"></i>Custom Colors & Logo</div>
+        <div class="plan-feature"><i data-lucide="check" style="width:14px;height:14px;color:var(--blue);"></i>PNG Download</div>
+        <div class="plan-feature"><i data-lucide="check" style="width:14px;height:14px;color:var(--blue);"></i>Basic Analytics</div>
       </div>
     </div>
 
-    <!-- Basic (featured) -->
-    <div class="card plan-card featured" style="display:flex;flex-direction:column;">
-      <div class="plan-badge">🔥 Most Popular</div>
-      <div style="height:20px;"></div><!-- badge spacer -->
-      <div style="font-size:12px;font-weight:800;color:#8888aa;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;">Basic</div>
+    <!-- Basic -->
+    <div class="card plan-card featured">
+      <div class="plan-badge">Most Popular</div>
+      <div style="height:18px;"></div>
+      <div class="plan-name">Basic</div>
       <div class="plan-price"><sup>$</sup><span id="price-basic">4</span><span class="period">/mo</span></div>
-      <div style="font-size:11px;color:#8888aa;font-weight:600;margin-top:3px;margin-bottom:16px;" id="billing-note-basic">billed annually</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;margin-bottom:16px;" id="billing-note-basic">billed annually</div>
       <button class="btn-primary" onclick="window.location='step1-auth.html'" style="width:100%;justify-content:center;margin-bottom:16px;">Start Free Trial</button>
-      <hr class="plan-divider" style="margin-top:0;">
+      <hr class="plan-divider">
       <div style="flex:1;">
-        <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>10 Dynamic Codes</div>
-        <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Unlimited Static</div>
-        <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Advanced Analytics</div>
-        <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>SVG + PNG + PDF</div>
-        <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Custom Frames</div>
-        <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Email Support</div>
+        <div class="plan-feature"><i data-lucide="check" style="width:14px;height:14px;color:var(--blue);"></i>10 Dynamic Codes</div>
+        <div class="plan-feature"><i data-lucide="check" style="width:14px;height:14px;color:var(--blue);"></i>Unlimited Static</div>
+        <div class="plan-feature"><i data-lucide="check" style="width:14px;height:14px;color:var(--blue);"></i>Advanced Analytics</div>
+        <div class="plan-feature"><i data-lucide="check" style="width:14px;height:14px;color:var(--blue);"></i>SVG + PNG + PDF</div>
+        <div class="plan-feature"><i data-lucide="check" style="width:14px;height:14px;color:var(--blue);"></i>Custom Frames</div>
+        <div class="plan-feature"><i data-lucide="check" style="width:14px;height:14px;color:var(--blue);"></i>Email Support</div>
       </div>
     </div>
 
     <!-- Plus -->
-    <div class="card plan-card" style="display:flex;flex-direction:column;">
-      <div style="height:20px;"></div><!-- badge spacer -->
-      <div style="font-size:12px;font-weight:800;color:#8888aa;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;">Plus</div>
+    <div class="card plan-card">
+      <div style="height:18px;"></div>
+      <div class="plan-name">Plus</div>
       <div class="plan-price"><sup>$</sup><span id="price-plus">14</span><span class="period">/mo</span></div>
-      <div style="font-size:11px;color:#8888aa;font-weight:600;margin-top:3px;margin-bottom:16px;" id="billing-note-plus">billed annually</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;margin-bottom:16px;" id="billing-note-plus">billed annually</div>
       <button class="btn-primary" onclick="window.location='step1-auth.html'" style="width:100%;justify-content:center;margin-bottom:16px;">Start Free Trial</button>
-      <hr class="plan-divider" style="margin-top:0;">
+      <hr class="plan-divider">
       <div style="flex:1;">
-        <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>100 Dynamic Codes</div>
-        <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Folder Organization</div>
-        <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Campaign Tracking</div>
-        <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>API Access</div>
-        <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Team Collaboration</div>
-        <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Priority Support</div>
+        <div class="plan-feature"><i data-lucide="check" style="width:14px;height:14px;color:var(--blue);"></i>100 Dynamic Codes</div>
+        <div class="plan-feature"><i data-lucide="check" style="width:14px;height:14px;color:var(--blue);"></i>Folder Organization</div>
+        <div class="plan-feature"><i data-lucide="check" style="width:14px;height:14px;color:var(--blue);"></i>Campaign Tracking</div>
+        <div class="plan-feature"><i data-lucide="check" style="width:14px;height:14px;color:var(--blue);"></i>API Access</div>
+        <div class="plan-feature"><i data-lucide="check" style="width:14px;height:14px;color:var(--blue);"></i>Team Collaboration</div>
+        <div class="plan-feature"><i data-lucide="check" style="width:14px;height:14px;color:var(--blue);"></i>Priority Support</div>
       </div>
     </div>
-
   </div>
 </section>
 
-<!-- ══ FOOTER ══ -->
+<!-- FOOTER -->
 <footer class="footer">
-  <div style="margin-bottom:10px;">✨ <strong style="color:#fff;">QR Magic</strong> — Made with 💙 for businesses worldwide</div>
-  <div style="display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-bottom:7px;">
-    <a href="legal.html?type=terms">Terms & Conditions</a>
-    <a href="legal.html?type=privacy">Privacy Policy</a>
-    <a href="legal.html?type=cookies">Cookie Policy</a>
-    <a href="mailto:office@honoshi.co.il">Contact Us</a>
+  <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px;">
+    <img src="mascot.png" style="width:24px;height:24px;object-fit:contain;border-radius:6px;" onerror="this.style.display='none'">
+    <span style="font-size:15px;font-weight:700;color:#fff;letter-spacing:-0.02em;"><span style="color:var(--blue);">QR</span> Magic</span>
   </div>
-  <div style="font-size:11px;color:rgba(255,255,255,0.4);">© 2025 QR Magic / Honoshi. All rights reserved.</div>
+  <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;">
+    <a href="legal.html?type=terms">Terms</a>
+    <a href="legal.html?type=privacy">Privacy</a>
+    <a href="legal.html?type=cookies">Cookies</a>
+    <a href="mailto:office@honoshi.co.il">Contact</a>
+  </div>
+  <div style="font-size:12px;">© 2025 QR Magic / Honoshi · office@honoshi.co.il</div>
 </footer>
 
 <!-- Cookie banner -->
-<div id="cookie-banner" style="display:none;" class="cookie-banner">
-  <p>🍪 We use cookies to improve your experience. By continuing you agree to our <a href="legal.html?type=cookies">Cookie Policy</a> and <a href="legal.html?type=privacy">Privacy Policy</a>.</p>
-  <div style="display:flex;gap:9px;flex-shrink:0;">
-    <button class="btn-outline" onclick="acceptCookies()" style="color:#fff;border-color:rgba(255,255,255,0.3);padding:7px 18px;font-size:12px;">Decline</button>
-    <button class="btn-primary" onclick="acceptCookies()" style="padding:7px 18px;font-size:12px;">Accept All 🍪</button>
-  </div>
-</div>
-
-<!-- Video modal -->
-<div class="video-modal" id="video-modal">
-  <div class="video-modal-box" style="max-width:480px;">
-    <button onclick="closeVideo()" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;">✕</button>
-    <div style="padding:40px;text-align:center;">
-      <i data-lucide="video" style="width:48px;height:48px;color:#23CED9;margin-bottom:14px;"></i>
-      <p style="color:#fff;font-weight:700;font-size:16px;margin-bottom:6px;">Video Tutorial Coming Soon</p>
-      <p style="color:rgba(255,255,255,0.5);font-size:13px;margin-bottom:20px;">Until then, try the live generator above — no signup needed.</p>
-      <button class="btn-primary" onclick="closeVideo();jumpTo('try');" style="width:100%;justify-content:center;">
-        <i data-lucide="zap" style="width:15px;height:15px;"></i>
-        Try the Live Generator
-      </button>
-    </div>
+<div id="cookie-banner" class="cookie-banner" style="display:none;">
+  <p>We use cookies to improve your experience. See our <a href="legal.html?type=cookies">Cookie Policy</a> and <a href="legal.html?type=privacy">Privacy Policy</a>.</p>
+  <div style="display:flex;gap:8px;flex-shrink:0;">
+    <button class="btn-ghost" onclick="acceptCookies()" style="color:rgba(255,255,255,0.5);font-size:13px;">Decline</button>
+    <button class="btn-primary" onclick="acceptCookies()" style="padding:8px 18px;font-size:13px;">Accept</button>
   </div>
 </div>
 
 <script>
+// PWA
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+
 function jumpTo(id) {
   const el = document.getElementById(id);
   if(!el) return;
-  const offset = 70; // nav height
-  const top = el.getBoundingClientRect().top + window.scrollY - offset;
-  window.scrollTo({ top, behavior: 'smooth' });
+  window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 68, behavior: 'smooth' });
 }
-
-function openVideo() { document.getElementById('video-modal').classList.add('open'); }
-function closeVideo() { document.getElementById('video-modal').classList.remove('open'); }
-document.getElementById('video-modal').addEventListener('click', function(e) { if(e.target===this) closeVideo(); });
 
 let isAnnual = true;
 function toggleBilling() {
   isAnnual = !isAnnual;
-  document.getElementById('billing-knob').style.left = isAnnual ? '26px' : '3px';
-  document.getElementById('lbl-monthly').style.color = isAnnual ? '#8888aa' : 'var(--indigo)';
-  document.getElementById('lbl-annual').style.color = isAnnual ? 'var(--indigo)' : '#8888aa';
+  document.getElementById('billing-knob').style.left = isAnnual ? '22px' : '3px';
+  document.getElementById('lbl-monthly').style.color = isAnnual ? 'var(--muted)' : 'var(--indigo)';
+  document.getElementById('lbl-annual').style.color   = isAnnual ? 'var(--indigo)' : 'var(--muted)';
   document.getElementById('save-badge').style.display = isAnnual ? 'inline' : 'none';
   document.getElementById('price-basic').textContent = isAnnual ? '4' : '5';
-  document.getElementById('price-plus').textContent = isAnnual ? '14' : '18';
+  document.getElementById('price-plus').textContent  = isAnnual ? '14' : '18';
   document.getElementById('billing-note-basic').textContent = isAnnual ? 'billed annually' : 'billed monthly';
-  document.getElementById('billing-note-plus').textContent = isAnnual ? 'billed annually' : 'billed monthly';
+  document.getElementById('billing-note-plus').textContent  = isAnnual ? 'billed annually' : 'billed monthly';
 }
 
-// Mini QR Generator
-let miniColor = '#1A1A2E';
-let miniTimer = null;
-
+let miniColor = '#0f172a', miniTimer = null;
 function selectColor(el) {
   document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
   el.classList.add('active');
   miniColor = el.dataset.color;
   if(document.getElementById('mini-url').value.trim()) miniGenerate();
 }
-
 function miniGenerate() {
   clearTimeout(miniTimer);
   miniTimer = setTimeout(() => {
     const url = document.getElementById('mini-url').value.trim();
     if(!url) return;
-    const output = document.getElementById('mini-qr-output');
-    const placeholder = document.getElementById('mini-qr-placeholder');
-    output.innerHTML = '';
-    output.style.display = 'block';
-    placeholder.style.display = 'none';
-    try {
-      new QRCode(output, { text: url, width: 170, height: 170, colorDark: miniColor, colorLight: '#FFFFFF', correctLevel: QRCode.CorrectLevel.H });
-    } catch(e) {}
-    document.getElementById('mini-dl-btn').style.display = 'flex';
+    const out = document.getElementById('mini-qr-output');
+    out.innerHTML = '';
+    out.style.display = 'block';
+    document.getElementById('mini-placeholder').style.display = 'none';
+    try { new QRCode(out, { text: url, width: 170, height: 170, colorDark: miniColor, colorLight: '#FFFFFF', correctLevel: QRCode.CorrectLevel.H }); } catch(e) {}
+    document.getElementById('mini-dl-btn').style.display = 'inline-flex';
     document.getElementById('mini-scan-hint').style.display = 'block';
+    lucide.createIcons();
   }, 300);
 }
-
 function miniDownload() {
-  const canvas = document.getElementById('mini-qr-output').querySelector('canvas');
-  if(!canvas) return;
-  const a = document.createElement('a');
-  a.href = canvas.toDataURL('image/png');
-  a.download = 'qrmagic-free.png';
-  a.click();
+  const c = document.getElementById('mini-qr-output').querySelector('canvas');
+  if(!c) return;
+  const a = document.createElement('a'); a.href = c.toDataURL('image/png'); a.download = 'qrmagic.png'; a.click();
 }
-
 function acceptCookies() {
-  localStorage.setItem('qrmagic_cookies', '1');
+  localStorage.setItem('qrmagic_cookies','1');
   document.getElementById('cookie-banner').style.display = 'none';
 }
-
 window.addEventListener('load', () => {
   lucide.createIcons();
-  if(!localStorage.getItem('qrmagic_cookies')) {
-    setTimeout(() => { document.getElementById('cookie-banner').style.display = 'flex'; }, 1800);
-  }
+  if(!localStorage.getItem('qrmagic_cookies')) setTimeout(() => { document.getElementById('cookie-banner').style.display = 'flex'; }, 2000);
 });
 </script>
 </body>
