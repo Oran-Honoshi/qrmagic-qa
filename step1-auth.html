@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Magic – Auth Test (Step 1)</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --blue:#23CED9;--pink:#FF69B4;--bg:#F9F9F9;--mint:#E0F7FA;
+  --indigo:#1A1A2E;--blue-dark:#1ab5bf;
+  --shadow:0 8px 32px rgba(26,26,46,0.10);
+  --shadow-lg:0 16px 48px rgba(26,26,46,0.15);
+  --radius:20px;--radius-sm:12px;
+}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--indigo);min-height:100vh;display:flex;flex-direction:column;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{transform:scale(0.85);opacity:0}80%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes confetti{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(110px) rotate(720deg);opacity:0}}
+
+.screen{flex:1;display:flex;align-items:center;justify-content:center;padding:24px;animation:fadeIn 0.5s ease both;}
+
+/* Nav */
+.nav{background:rgba(249,249,249,0.94);backdrop-filter:blur(12px);border-bottom:2px solid rgba(35,206,217,0.15);padding:14px 36px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.nav-logo{font-size:24px;font-weight:900;color:var(--indigo);display:flex;align-items:center;gap:8px;}
+.nav-logo span{color:var(--blue);}
+.nav-right{display:flex;align-items:center;gap:14px;}
+.nav-user{font-size:14px;font-weight:700;color:#6a6a8a;}
+
+/* Card */
+.auth-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:40px;width:100%;max-width:420px;animation:popIn 0.4s cubic-bezier(.34,1.56,.64,1) both;}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:50px;padding:13px 28px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:all 0.2s;width:100%;}
+.btn-blue{background:var(--blue);color:#fff;box-shadow:0 6px 20px rgba(35,206,217,0.4);}
+.btn-blue:hover{background:var(--blue-dark);transform:translateY(-2px);}
+.btn-blue:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+.btn-outline{background:transparent;color:var(--indigo);border:2.5px solid #e8e8f0;}
+.btn-outline:hover{border-color:var(--blue);color:var(--blue);}
+.btn-danger{background:rgba(239,68,68,0.08);color:#ef4444;border:1.5px solid rgba(239,68,68,0.25);}
+.btn-danger:hover{background:rgba(239,68,68,0.15);}
+
+/* Form */
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:13px;font-weight:800;color:var(--indigo);margin-bottom:7px;}
+.form-input{width:100%;padding:12px 15px;border:2.5px solid #e8e8f0;border-radius:var(--radius-sm);font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;color:var(--indigo);background:#fff;transition:all 0.2s;outline:none;}
+.form-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(35,206,217,0.12);}
+
+/* Alerts */
+.alert{border-radius:var(--radius-sm);padding:11px 14px;margin-bottom:16px;font-size:13px;font-weight:700;}
+.alert-error{background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.2);color:#dc2626;}
+.alert-success{background:rgba(34,197,94,0.08);border:1.5px solid rgba(34,197,94,0.2);color:#16a34a;}
+.alert-info{background:rgba(35,206,217,0.08);border:1.5px solid rgba(35,206,217,0.2);color:#0e8f9a;}
+
+/* Spinner */
+.spinner{width:20px;height:20px;border:3px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0;}
+.spinner-blue{border-color:rgba(35,206,217,0.2);border-top-color:var(--blue);}
+
+/* Tabs */
+.tabs{display:flex;background:#f0f0f8;border-radius:50px;padding:4px;gap:4px;margin-bottom:24px;}
+.tab{flex:1;padding:9px;border-radius:50px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;color:#8888aa;border:none;background:transparent;text-align:center;}
+.tab.active{background:var(--blue);color:#fff;box-shadow:0 4px 12px rgba(35,206,217,0.35);}
+
+/* Checkbox */
+.checkbox-row{display:flex;align-items:flex-start;gap:9px;cursor:pointer;}
+.checkbox-row input{width:17px;height:17px;accent-color:var(--blue);cursor:pointer;flex-shrink:0;margin-top:2px;}
+.checkbox-row span{font-size:12px;font-weight:600;color:#6a6a8a;line-height:1.5;}
+
+/* Divider */
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0;}
+.divider::before,.divider::after{content:'';flex:1;height:1.5px;background:#f0f0f8;}
+.divider span{font-size:12px;font-weight:700;color:#c0c0d0;}
+
+/* Dashboard card after login */
+.dash-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:36px;width:100%;max-width:560px;animation:popIn 0.4s cubic-bezier(.34,1.56,.64,1) both;}
+.info-row{display:flex;align-items:center;gap:12px;background:#f9f9fb;border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:12px;}
+.info-icon{width:40px;height:40px;border-radius:10px;background:rgba(35,206,217,0.12);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.info-label{font-size:11px;font-weight:800;color:#aaa;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;}
+.info-value{font-size:15px;font-weight:800;color:var(--indigo);}
+
+/* DB test result */
+.db-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f9f9fb;border-radius:10px;margin-bottom:8px;font-size:13px;font-weight:700;}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.dot-green{background:#22c55e;}
+.dot-red{background:#ef4444;}
+.dot-yellow{background:#f59e0b;}
+
+/* Mascot SVG */
+.mascot-float{animation:float 3s ease-in-out infinite;}
+
+/* Confetti */
+.confetti-wrap{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:999;}
+.confetti-piece{position:absolute;border-radius:2px;animation:confetti 2s ease forwards;}
+
+/* Mobile */
+@media(max-width:480px){
+  .auth-card,.dash-card{padding:28px 20px;}
+  .nav{padding:12px 16px;}
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-logo">✨ <span>QR</span> Magic</div>
+  <div class="nav-right" id="nav-right">
+    <span class="nav-user" id="nav-user-name" style="display:none"></span>
+    <button class="btn btn-outline" id="nav-logout-btn" style="display:none;width:auto;padding:8px 20px;font-size:13px;" onclick="handleLogout()">Log Out 🚪</button>
+  </div>
+</nav>
+
+<!-- Confetti container -->
+<div class="confetti-wrap" id="confetti-wrap" style="display:none"></div>
+
+<!-- SCREEN: Auth (login/signup) -->
+<div class="screen" id="screen-auth">
+  <div class="auth-card">
+
+    <!-- Mascot -->
+    <div style="text-align:center;margin-bottom:20px;">
+      <svg class="mascot-float" width="100" height="110" viewBox="0 0 200 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="30" width="160" height="160" rx="32" fill="#23CED9"/>
+        <rect x="38" y="48" width="44" height="44" rx="8" fill="#1A1A2E"/>
+        <rect x="44" y="54" width="32" height="32" rx="5" fill="#23CED9"/>
+        <rect x="50" y="60" width="20" height="20" rx="3" fill="#1A1A2E"/>
+        <rect x="118" y="48" width="44" height="44" rx="8" fill="#1A1A2E"/>
+        <rect x="124" y="54" width="32" height="32" rx="5" fill="#23CED9"/>
+        <rect x="130" y="60" width="20" height="20" rx="3" fill="#1A1A2E"/>
+        <rect x="38" y="128" width="44" height="44" rx="8" fill="#1A1A2E"/>
+        <rect x="44" y="134" width="32" height="32" rx="5" fill="#23CED9"/>
+        <rect x="50" y="140" width="20" height="20" rx="3" fill="#1A1A2E"/>
+        <rect x="96" y="100" width="10" height="10" rx="2" fill="#1A1A2E" opacity="0.5"/>
+        <rect x="112" y="100" width="10" height="10" rx="2" fill="#1A1A2E" opacity="0.5"/>
+        <rect x="96" y="116" width="10" height="10" rx="2" fill="#1A1A2E" opacity="0.5"/>
+        <rect x="112" y="116" width="10" height="10" rx="2" fill="#1A1A2E" opacity="0.5"/>
+        <ellipse cx="100" cy="95" rx="38" ry="34" fill="white" opacity="0.92"/>
+        <ellipse cx="88" cy="87" rx="6" ry="7" fill="#1A1A2E"/>
+        <ellipse cx="112" cy="87" rx="6" ry="7" fill="#1A1A2E"/>
+        <ellipse cx="90" cy="85" rx="2" ry="2.5" fill="white"/>
+        <ellipse cx="114" cy="85" rx="2" ry="2.5" fill="white"/>
+        <ellipse cx="80" cy="97" rx="7" ry="4" fill="#FF69B4" opacity="0.4"/>
+        <ellipse cx="120" cy="97" rx="7" ry="4" fill="#FF69B4" opacity="0.4"/>
+        <path d="M87 101 Q100 114 113 101" stroke="#1A1A2E" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <rect x="68" y="186" width="22" height="28" rx="11" fill="#1ab5bf"/>
+        <rect x="110" y="186" width="22" height="28" rx="11" fill="#1ab5bf"/>
+        <rect x="2" y="90" width="22" height="12" rx="6" fill="#1ab5bf"/>
+        <rect x="176" y="90" width="22" height="12" rx="6" fill="#1ab5bf"/>
+        <text x="150" y="30" font-size="16" fill="#FF69B4" opacity="0.9">✦</text>
+        <text x="28" y="20" font-size="11" fill="#FFD700" opacity="0.8">✦</text>
+      </svg>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" id="tab-login" onclick="switchTab('login')">Log In</button>
+      <button class="tab" id="tab-signup" onclick="switchTab('signup')">Sign Up Free</button>
+    </div>
+
+    <!-- Alert area -->
+    <div id="auth-alert" style="display:none"></div>
+
+    <!-- Login form -->
+    <div id="form-login">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="login-email" placeholder="you@example.com" onkeydown="if(event.key==='Enter') handleLogin()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter') handleLogin()">
+      </div>
+      <button class="btn btn-blue" id="login-btn" onclick="handleLogin()">🚀 Log In</button>
+      <div style="text-align:center;margin-top:16px;font-size:13px;font-weight:600;color:#8888aa;">
+        Don't have an account? <span style="color:var(--blue);cursor:pointer;font-weight:800;" onclick="switchTab('signup')">Sign up free →</span>
+      </div>
+    </div>
+
+    <!-- Signup form -->
+    <div id="form-signup" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Your Name</label>
+        <input class="form-input" type="text" id="signup-name" placeholder="Alex Smith">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="signup-email" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="signup-pass" placeholder="Min 6 characters" onkeydown="if(event.key==='Enter') handleSignup()">
+      </div>
+      <label class="checkbox-row" style="margin-bottom:16px;">
+        <input type="checkbox" id="signup-marketing" checked>
+        <span>I agree to receive product updates, tips, and promotional offers from QR Magic. You can unsubscribe any time.</span>
+      </label>
+      <p style="font-size:11px;color:#aaa;font-weight:600;line-height:1.5;margin-bottom:16px;">
+        By signing up you agree to our Terms & Conditions and Privacy Policy.
+      </p>
+      <button class="btn btn-blue" id="signup-btn" onclick="handleSignup()">✨ Create Free Account</button>
+      <div style="text-align:center;margin-top:16px;font-size:13px;font-weight:600;color:#8888aa;">
+        Already have an account? <span style="color:var(--blue);cursor:pointer;font-weight:800;" onclick="switchTab('login')">Log in →</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SCREEN: Logged In Dashboard -->
+<div class="screen" id="screen-dashboard" style="display:none;flex-direction:column;gap:20px;align-items:center;">
+
+  <div class="dash-card">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:28px;flex-wrap:wrap;">
+      <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--blue),#1ab5bf);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">✨</div>
+      <div>
+        <h2 style="font-size:20px;font-weight:900;margin-bottom:3px;">You're logged in! 🎉</h2>
+        <p style="font-size:13px;font-weight:600;color:#8888aa;">Supabase connection confirmed ✅</p>
+      </div>
+    </div>
+
+    <!-- User info rows -->
+    <div class="info-row">
+      <div class="info-icon">👤</div>
+      <div>
+        <div class="info-label">Name</div>
+        <div class="info-value" id="dash-name">—</div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-icon">📧</div>
+      <div>
+        <div class="info-label">Email</div>
+        <div class="info-value" id="dash-email">—</div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-icon">🎯</div>
+      <div>
+        <div class="info-label">Plan</div>
+        <div class="info-value" id="dash-plan">Free</div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-icon">🆔</div>
+      <div>
+        <div class="info-label">User ID (Supabase)</div>
+        <div class="info-value" id="dash-id" style="font-size:11px;word-break:break-all;">—</div>
+      </div>
+    </div>
+
+    <div class="divider"><span>Database Test</span></div>
+
+    <!-- DB connection tests -->
+    <div id="db-tests">
+      <div class="db-row"><div class="dot dot-yellow" id="dot-users"></div><span id="test-users">Testing users table...</span></div>
+      <div class="db-row"><div class="dot dot-yellow" id="dot-codes"></div><span id="test-codes">Testing qr_codes table...</span></div>
+      <div class="db-row"><div class="dot dot-yellow" id="dot-scans"></div><span id="test-scans">Testing scan_events table...</span></div>
+    </div>
+
+    <div style="margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-outline" style="flex:1;font-size:13px;padding:11px;" onclick="handleLogout()">🚪 Log Out</button>
+      <button class="btn btn-blue" style="flex:1;font-size:13px;padding:11px;" onclick="showAuthScreen()">← Back to Auth</button>
+    </div>
+
+    <div style="margin-top:20px;padding:14px;background:rgba(35,206,217,0.06);border:1.5px solid rgba(35,206,217,0.2);border-radius:12px;">
+      <p style="font-size:12px;font-weight:700;color:#0e8f9a;line-height:1.6;">
+        ✅ <strong>Step 1 complete!</strong> Login, signup, and Supabase connection all working. Your account is saved in the database. Ready for Step 2.
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Supabase Setup ──────────────────────────────────────
+const SUPA_URL = 'https://igbbfjushjmiafohvgdt.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnYmJmanVzaGptaWFmb2h2Z2R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTgxNDQsImV4cCI6MjA5MjYzNDE0NH0.xIvQiHWm4IVlkGSwgRK0Owyhhna5qz8HCGCtPL2JexI';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ── Session helpers ─────────────────────────────────────
+const SESSION_KEY = 'qrmagic_session';
+const getSession = () => { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null'); } catch { return null; } };
+const saveSession = u => sessionStorage.setItem(SESSION_KEY, JSON.stringify(u));
+const clearSession = () => sessionStorage.removeItem(SESSION_KEY);
+
+// ── UI helpers ──────────────────────────────────────────
+function showAlert(msg, type='error') {
+  const el = document.getElementById('auth-alert');
+  el.className = 'alert alert-' + type;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function clearAlert() {
+  document.getElementById('auth-alert').style.display = 'none';
+}
+function setLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  if(loading) {
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Please wait...';
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = btnId === 'login-btn' ? '🚀 Log In' : '✨ Create Free Account';
+  }
+}
+
+// ── Tab switching ───────────────────────────────────────
+function switchTab(tab) {
+  clearAlert();
+  const isLogin = tab === 'login';
+  document.getElementById('tab-login').className = 'tab' + (isLogin ? ' active' : '');
+  document.getElementById('tab-signup').className = 'tab' + (!isLogin ? ' active' : '');
+  document.getElementById('form-login').style.display = isLogin ? 'block' : 'none';
+  document.getElementById('form-signup').style.display = !isLogin ? 'block' : 'none';
+}
+
+// ── Screen switching ────────────────────────────────────
+function showDashboard(user) {
+  document.getElementById('screen-auth').style.display = 'none';
+  document.getElementById('screen-dashboard').style.display = 'flex';
+  document.getElementById('dash-name').textContent = user.name || '—';
+  document.getElementById('dash-email').textContent = user.email || '—';
+  document.getElementById('dash-plan').textContent = user.plan || 'Free';
+  document.getElementById('dash-id').textContent = user.id || '—';
+  document.getElementById('nav-user-name').textContent = 'Hi, ' + (user.name ? user.name.split(' ')[0] : 'there') + '! 👋';
+  document.getElementById('nav-user-name').style.display = 'inline';
+  document.getElementById('nav-logout-btn').style.display = 'inline-flex';
+  runDBTests(user.id);
+}
+function showAuthScreen() {
+  document.getElementById('screen-auth').style.display = 'flex';
+  document.getElementById('screen-dashboard').style.display = 'none';
+  document.getElementById('nav-user-name').style.display = 'none';
+  document.getElementById('nav-logout-btn').style.display = 'none';
+  clearAlert();
+}
+
+// ── Confetti ────────────────────────────────────────────
+function launchConfetti() {
+  const wrap = document.getElementById('confetti-wrap');
+  wrap.style.display = 'block';
+  wrap.innerHTML = '';
+  const colors = ['#23CED9','#FF69B4','#FFD700','#7C3AED','#22c55e','#f97316'];
+  for(let i = 0; i < 22; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    const size = 8 + Math.random() * 8;
+    el.style.cssText = `
+      left:${Math.random()*100}%;top:-10px;
+      width:${size}px;height:${size}px;
+      background:${colors[i % colors.length]};
+      border-radius:${Math.random()>0.5?'50%':'3px'};
+      animation-delay:${Math.random()*1.2}s;
+      animation-duration:${1.4+Math.random()*0.8}s;
+    `;
+    wrap.appendChild(el);
+  }
+  setTimeout(() => { wrap.style.display = 'none'; wrap.innerHTML = ''; }, 3000);
+}
+
+// ── Login ───────────────────────────────────────────────
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  clearAlert();
+  if(!email || !pass) { showAlert('Please fill in both email and password.'); return; }
+  setLoading('login-btn', true);
+  try {
+    const { data, error } = await sb.from('users').select('*').eq('email', email).maybeSingle();
+    if(error) throw error;
+    if(!data) { showAlert('No account found with this email. Please sign up.'); setLoading('login-btn', false); return; }
+    if(data.password !== pass) { showAlert('Incorrect password. Please try again.'); setLoading('login-btn', false); return; }
+    if(data.deleted) { showAlert('This account has been deleted. To reactivate, contact office@honoshi.co.il'); setLoading('login-btn', false); return; }
+    saveSession({ id: data.id, email: data.email, name: data.name, plan: data.plan });
+    showDashboard(data);
+  } catch(err) {
+    showAlert('Connection error. Please check your internet and try again.');
+    setLoading('login-btn', false);
+  }
+}
+
+// ── Signup ──────────────────────────────────────────────
+async function handleSignup() {
+  const name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const pass = document.getElementById('signup-pass').value;
+  const marketing = document.getElementById('signup-marketing').checked;
+  clearAlert();
+  if(!name) { showAlert('Please enter your name.'); return; }
+  if(!email) { showAlert('Please enter your email address.'); return; }
+  if(!pass || pass.length < 6) { showAlert('Password must be at least 6 characters.'); return; }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if(!emailRegex.test(email)) { showAlert('Please enter a valid email address.'); return; }
+  setLoading('signup-btn', true);
+  try {
+    // Check if email already exists
+    const { data: existing } = await sb.from('users').select('id').eq('email', email).maybeSingle();
+    if(existing) { showAlert('An account with this email already exists. Please log in.'); setLoading('signup-btn', false); return; }
+    // Create account
+    const { data, error } = await sb
+      .from('users')
+      .insert({ email, name, password: pass, marketing, plan: 'free', deleted: false })
+      .select()
+      .single();
+    if(error) throw error;
+    saveSession({ id: data.id, email: data.email, name: data.name, plan: data.plan });
+    launchConfetti();
+    showDashboard(data);
+  } catch(err) {
+    showAlert('Could not create account: ' + (err.message || 'Please try again.'));
+    setLoading('signup-btn', false);
+  }
+}
+
+// ── Logout ──────────────────────────────────────────────
+function handleLogout() {
+  clearSession();
+  showAuthScreen();
+  switchTab('login');
+}
+
+// ── DB Connection Tests ─────────────────────────────────
+async function runDBTests(userId) {
+  const tests = [
+    { id: 'users', dot: 'dot-users', label: 'test-users', name: 'users table', fn: async () => {
+      const { count, error } = await sb.from('users').select('*', { count: 'exact', head: true });
+      if(error) throw error;
+      return `✅ users table — ${count} user(s) found`;
+    }},
+    { id: 'codes', dot: 'dot-codes', label: 'test-codes', name: 'qr_codes table', fn: async () => {
+      const { count, error } = await sb.from('qr_codes').select('*', { count: 'exact', head: true }).eq('user_id', userId);
+      if(error) throw error;
+      return `✅ qr_codes table — ${count} code(s) for your account`;
+    }},
+    { id: 'scans', dot: 'dot-scans', label: 'test-scans', name: 'scan_events table', fn: async () => {
+      const { count, error } = await sb.from('scan_events').select('*', { count: 'exact', head: true });
+      if(error) throw error;
+      return `✅ scan_events table — ready`;
+    }},
+  ];
+
+  for(const test of tests) {
+    try {
+      const result = await test.fn();
+      document.getElementById(test.dot).className = 'dot dot-green';
+      document.getElementById(test.label).textContent = result;
+    } catch(err) {
+      document.getElementById(test.dot).className = 'dot dot-red';
+      document.getElementById(test.label).textContent = `❌ ${test.name} — ${err.message || 'error'}`;
+    }
+  }
+}
+
+// ── Auto-login if session exists ────────────────────────
+window.addEventListener('load', async () => {
+  const session = getSession();
+  if(session && session.id) {
+    try {
+      const { data } = await sb.from('users').select('*').eq('id', session.id).maybeSingle();
+      if(data && !data.deleted) {
+        showDashboard(data);
+        return;
+      }
+    } catch(e) {}
+    clearSession();
+  }
+});
+</script>
+</body>
+</html>
