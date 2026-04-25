@@ -19,9 +19,9 @@
 .step-num{position:absolute;top:18px;left:18px;width:26px;height:26px;background:var(--indigo);color:#fff;border-radius:50%;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;}
 
 /* Video / tutorial */
-.tutorial-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:860px;margin:0 auto;}
+.tutorial-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:860px;margin:0 auto;align-items:stretch;}
 @media(max-width:700px){.tutorial-grid{grid-template-columns:1fr;}}
-.tutorial-card{background:linear-gradient(135deg,#1A1A2E,#2d2d5a);border-radius:var(--radius);padding:28px 22px;text-align:center;position:relative;overflow:hidden;}
+.tutorial-card{background:linear-gradient(135deg,#1A1A2E,#2d2d5a);border-radius:var(--radius);padding:28px 22px;text-align:center;position:relative;overflow:hidden;height:100%;box-sizing:border-box;}
 .tutorial-step-badge{position:absolute;top:14px;left:14px;background:var(--blue);color:#fff;border-radius:50px;padding:3px 12px;font-size:11px;font-weight:800;}
 .tutorial-arrow{position:absolute;right:-14px;top:50%;transform:translateY(-50%);z-index:10;background:var(--blue);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;}
 @media(max-width:700px){.tutorial-arrow{display:none;}}
@@ -48,7 +48,7 @@
 /* Pricing */
 .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;max-width:960px;margin:0 auto;align-items:stretch;}
 @media(max-width:800px){.pricing-grid{grid-template-columns:1fr;max-width:380px;}}
-.plan-card{padding:32px 26px;text-align:center;position:relative;}
+.plan-card{padding:32px 26px 32px;text-align:center;position:relative;}
 .plan-card.featured{border-color:var(--blue);background:linear-gradient(160deg,#fff 0%,rgba(35,206,217,0.07) 100%);}
 .plan-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;border-radius:50px;padding:4px 16px;font-size:12px;font-weight:800;white-space:nowrap;}
 .plan-price{font-size:44px;font-weight:900;color:var(--indigo);line-height:1;}
@@ -436,6 +436,7 @@
 
     <!-- Free -->
     <div class="card plan-card" style="display:flex;flex-direction:column;">
+      <div style="height:20px;"></div><!-- badge spacer -->
       <div style="font-size:12px;font-weight:800;color:#8888aa;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;">Free</div>
       <div class="plan-price">Free</div>
       <div style="font-size:11px;color:#8888aa;font-weight:600;margin-top:3px;margin-bottom:16px;">forever</div>
@@ -453,7 +454,8 @@
     <!-- Basic (featured) -->
     <div class="card plan-card featured" style="display:flex;flex-direction:column;">
       <div class="plan-badge">🔥 Most Popular</div>
-      <div style="font-size:12px;font-weight:800;color:#8888aa;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;margin-top:14px;">Basic</div>
+      <div style="height:20px;"></div><!-- badge spacer -->
+      <div style="font-size:12px;font-weight:800;color:#8888aa;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;">Basic</div>
       <div class="plan-price"><sup>$</sup><span id="price-basic">4</span><span class="period">/mo</span></div>
       <div style="font-size:11px;color:#8888aa;font-weight:600;margin-top:3px;margin-bottom:16px;" id="billing-note-basic">billed annually</div>
       <button class="btn-primary" onclick="window.location='step1-auth.html'" style="width:100%;justify-content:center;margin-bottom:16px;">Start Free Trial</button>
@@ -470,6 +472,7 @@
 
     <!-- Plus -->
     <div class="card plan-card" style="display:flex;flex-direction:column;">
+      <div style="height:20px;"></div><!-- badge spacer -->
       <div style="font-size:12px;font-weight:800;color:#8888aa;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;">Plus</div>
       <div class="plan-price"><sup>$</sup><span id="price-plus">14</span><span class="period">/mo</span></div>
       <div style="font-size:11px;color:#8888aa;font-weight:600;margin-top:3px;margin-bottom:16px;" id="billing-note-plus">billed annually</div>
