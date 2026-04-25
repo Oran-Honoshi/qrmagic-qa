@@ -46,7 +46,7 @@
 .feat-col-highlight{background:rgba(35,206,217,0.05);}
 
 /* Pricing */
-.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;max-width:960px;margin:0 auto;}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;max-width:960px;margin:0 auto;align-items:stretch;}
 @media(max-width:800px){.pricing-grid{grid-template-columns:1fr;max-width:380px;}}
 .plan-card{padding:32px 26px;text-align:center;position:relative;}
 .plan-card.featured{border-color:var(--blue);background:linear-gradient(160deg,#fff 0%,rgba(35,206,217,0.07) 100%);}
@@ -433,30 +433,32 @@
   </div>
 
   <div class="pricing-grid">
+
     <!-- Free -->
-    <div class="card plan-card">
+    <div class="card plan-card" style="display:flex;flex-direction:column;">
       <div style="font-size:12px;font-weight:800;color:#8888aa;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;">Free</div>
       <div class="plan-price">Free</div>
-      <div style="font-size:11px;color:#8888aa;font-weight:600;margin-top:3px;">forever</div>
-      <hr class="plan-divider">
-      <div style="margin-bottom:24px;">
+      <div style="font-size:11px;color:#8888aa;font-weight:600;margin-top:3px;margin-bottom:16px;">forever</div>
+      <button class="btn-outline" onclick="window.location='step1-auth.html'" style="width:100%;justify-content:center;margin-bottom:16px;">Get Started Free</button>
+      <hr class="plan-divider" style="margin-top:0;">
+      <div style="flex:1;">
         <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>1 Dynamic Code</div>
         <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>50 Static Codes</div>
         <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Custom Colors & Logo</div>
         <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>PNG Download</div>
         <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Basic Analytics</div>
       </div>
-      <button class="btn-outline" onclick="window.location='step1-auth.html'" style="width:100%;justify-content:center;">Get Started Free</button>
     </div>
 
     <!-- Basic (featured) -->
-    <div class="card plan-card featured">
+    <div class="card plan-card featured" style="display:flex;flex-direction:column;">
       <div class="plan-badge">🔥 Most Popular</div>
       <div style="font-size:12px;font-weight:800;color:#8888aa;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;margin-top:14px;">Basic</div>
       <div class="plan-price"><sup>$</sup><span id="price-basic">4</span><span class="period">/mo</span></div>
-      <div style="font-size:11px;color:#8888aa;font-weight:600;margin-top:3px;" id="billing-note-basic">billed annually</div>
-      <hr class="plan-divider">
-      <div style="margin-bottom:24px;">
+      <div style="font-size:11px;color:#8888aa;font-weight:600;margin-top:3px;margin-bottom:16px;" id="billing-note-basic">billed annually</div>
+      <button class="btn-primary" onclick="window.location='step1-auth.html'" style="width:100%;justify-content:center;margin-bottom:16px;">Start Free Trial</button>
+      <hr class="plan-divider" style="margin-top:0;">
+      <div style="flex:1;">
         <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>10 Dynamic Codes</div>
         <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Unlimited Static</div>
         <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Advanced Analytics</div>
@@ -464,16 +466,16 @@
         <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Custom Frames</div>
         <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Email Support</div>
       </div>
-      <button class="btn-primary" onclick="window.location='step1-auth.html'" style="width:100%;justify-content:center;">Start Free Trial</button>
     </div>
 
     <!-- Plus -->
-    <div class="card plan-card">
+    <div class="card plan-card" style="display:flex;flex-direction:column;">
       <div style="font-size:12px;font-weight:800;color:#8888aa;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;">Plus</div>
       <div class="plan-price"><sup>$</sup><span id="price-plus">14</span><span class="period">/mo</span></div>
-      <div style="font-size:11px;color:#8888aa;font-weight:600;margin-top:3px;" id="billing-note-plus">billed annually</div>
-      <hr class="plan-divider">
-      <div style="margin-bottom:24px;">
+      <div style="font-size:11px;color:#8888aa;font-weight:600;margin-top:3px;margin-bottom:16px;" id="billing-note-plus">billed annually</div>
+      <button class="btn-primary" onclick="window.location='step1-auth.html'" style="width:100%;justify-content:center;margin-bottom:16px;">Start Free Trial</button>
+      <hr class="plan-divider" style="margin-top:0;">
+      <div style="flex:1;">
         <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>100 Dynamic Codes</div>
         <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Folder Organization</div>
         <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Campaign Tracking</div>
@@ -481,8 +483,8 @@
         <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Team Collaboration</div>
         <div class="plan-feature"><i data-lucide="check" style="width:15px;height:15px;color:#23CED9;flex-shrink:0;"></i>Priority Support</div>
       </div>
-      <button class="btn-outline" onclick="window.location='step1-auth.html'" style="width:100%;justify-content:center;">Go Plus</button>
     </div>
+
   </div>
 </section>
 
