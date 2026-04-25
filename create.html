@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Magic – Create QR Code</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+.ec-card{border:2.5px solid #e8e8f0;border-radius:10px;padding:10px 12px;cursor:pointer;transition:all 0.2s;}
+.ec-card:hover,.ec-card.sel{border-color:var(--blue);background:rgba(35,206,217,0.06);}
+.ec-card.sel .ec-title{color:var(--blue);}
+.ec-title{font-size:13px;font-weight:800;color:var(--indigo);}
+.ec-desc{font-size:11px;color:#8888aa;font-weight:600;margin-top:2px;}
+.fmt-card{flex:1;border:2.5px solid #e8e8f0;border-radius:12px;padding:11px;text-align:center;cursor:pointer;transition:all 0.2s;}
+.fmt-card:hover,.fmt-card.sel{border-color:var(--blue);background:rgba(35,206,217,0.06);}
+.fmt-card.sel .fmt-lbl{color:var(--blue);}
+.fmt-icon{font-size:18px;margin-bottom:3px;}
+.fmt-lbl{font-size:12px;font-weight:800;color:#6a6a8a;}
+.upgrade-gate{background:rgba(255,215,0,0.08);border:1.5px solid rgba(255,215,0,0.3);border-radius:12px;padding:12px 14px;margin-top:10px;display:flex;align-items:center;gap:10px;}
+</style>
+</head>
+<body>
+<div class="dash-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">✨ <span>QR</span> Magic</div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-item" onclick="window.location='dashboard.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Dashboard</span>
+      </div>
+      <div class="sidebar-item active" onclick="window.location='create.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>Create QR</span>
+      </div>
+      <div class="sidebar-item" onclick="window.location='codes.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>My Codes</span>
+      </div>
+      <div class="sidebar-item" onclick="window.location='analytics.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Analytics</span>
+      </div>
+      <div class="sidebar-item" onclick="window.location='settings.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Settings</span>
+      </div>
+    </nav>
+    <div style="margin-top:auto;">
+      <button onclick="window.location='landing.html#pricing'" style="width:100%;background:linear-gradient(135deg,#23CED9,#FF69B4);border:none;border-radius:12px;padding:10px;color:#fff;font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;cursor:pointer;">⚡ Upgrade</button>
+      <div style="margin-top:7px;padding:9px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;border-radius:10px;color:rgba(255,255,255,0.5);font-weight:700;font-size:14px;" onclick="logout()"><span>🚪</span><span>Log Out</span></div>
+    </div>
+  </aside>
+
+  <main class="dash-main" style="padding-bottom:60px;">
+    <button onclick="window.location='dashboard.html'" style="background:none;border:none;color:#8888aa;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px;margin-bottom:16px;">← Back to Dashboard</button>
+    <h1 style="font-size:26px;font-weight:900;margin-bottom:4px;">Create QR Code ✨</h1>
+    <p style="color:#8888aa;font-weight:600;margin-bottom:24px;">Follow the steps below to build your perfect QR code</p>
+
+    <!-- Wizard steps indicator -->
+    <div class="wizard-steps" style="margin-bottom:28px;">
+      <div class="wstep" id="wstep-1">
+        <div class="wstep-circle active" id="wc-1">1</div>
+        <span class="wstep-label active">Select Type</span>
+        <div class="wstep-line" id="wl-1" style="background:#e8e8f0;"></div>
+      </div>
+      <div class="wstep" id="wstep-2">
+        <div class="wstep-circle inactive" id="wc-2">2</div>
+        <span class="wstep-label inactive" id="wlbl-2">Input Data</span>
+        <div class="wstep-line" id="wl-2" style="background:#e8e8f0;"></div>
+      </div>
+      <div class="wstep">
+        <div class="wstep-circle inactive" id="wc-3">3</div>
+        <span class="wstep-label inactive" id="wlbl-3">Customize</span>
+      </div>
+    </div>
+
+    <!-- STEP 1: Type selection -->
+    <div id="step1">
+      <h3 style="font-size:17px;font-weight:800;margin-bottom:14px;">What type of QR code?</h3>
+      <div class="type-grid" id="type-grid">
+        <div class="type-card" data-type="url" onclick="selectType(this)"><div style="font-size:30px;margin-bottom:6px;">🔗</div><div style="font-size:12px;font-weight:800;">URL</div></div>
+        <div class="type-card" data-type="wifi" onclick="selectType(this)"><div style="font-size:30px;margin-bottom:6px;">📶</div><div style="font-size:12px;font-weight:800;">Wi-Fi</div></div>
+        <div class="type-card" data-type="vcard" onclick="selectType(this)"><div style="font-size:30px;margin-bottom:6px;">👤</div><div style="font-size:12px;font-weight:800;">vCard</div></div>
+        <div class="type-card" data-type="text" onclick="selectType(this)"><div style="font-size:30px;margin-bottom:6px;">📝</div><div style="font-size:12px;font-weight:800;">Text</div></div>
+        <div class="type-card" data-type="email" onclick="selectType(this)"><div style="font-size:30px;margin-bottom:6px;">📧</div><div style="font-size:12px;font-weight:800;">Email</div></div>
+        <div class="type-card" data-type="sms" onclick="selectType(this)"><div style="font-size:30px;margin-bottom:6px;">💬</div><div style="font-size:12px;font-weight:800;">SMS</div></div>
+        <div class="type-card" data-type="phone" onclick="selectType(this)"><div style="font-size:30px;margin-bottom:6px;">📞</div><div style="font-size:12px;font-weight:800;">Phone</div></div>
+        <div class="type-card" data-type="image" onclick="selectType(this)"><div style="font-size:30px;margin-bottom:6px;">🖼️</div><div style="font-size:12px;font-weight:800;">Image</div></div>
+      </div>
+      <div style="margin-top:24px;display:flex;justify-content:flex-end;">
+        <button class="btn-primary" onclick="goStep(2)" id="step1-next" style="opacity:0.5;" disabled>Next Step →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Input data -->
+    <div id="step2" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 280px;gap:24px;">
+        <div>
+          <h3 style="font-size:17px;font-weight:800;margin-bottom:18px;">Enter your details</h3>
+          <div id="form-fields"></div>
+          <!-- URL type only: Dynamic/Static toggle + UTMs -->
+          <div id="url-extras" style="display:none;">
+            <div style="margin-bottom:16px;">
+              <label class="form-label">QR Code Type</label>
+              <div class="ds-toggle">
+                <div class="ds-option" id="opt-dynamic" onclick="setDynamic(true)">⚡ Dynamic</div>
+                <div class="ds-option active" id="opt-static" onclick="setDynamic(false)">🔒 Static</div>
+              </div>
+              <div id="dynamic-info" style="display:none;margin-top:8px;font-size:12px;color:#8888aa;font-weight:600;">✓ Editable URL · ✓ Analytics · ✓ Scan & Click tracking</div>
+              <div id="dynamic-gate" style="display:none;" class="upgrade-gate">
+                <span style="font-size:18px;">👑</span>
+                <div>
+                  <div style="font-size:13px;font-weight:800;color:#7a4f00;">Free plan: 1 dynamic code used</div>
+                  <div style="font-size:12px;color:#a07020;font-weight:600;"><a href="landing.html#pricing" style="color:var(--blue);font-weight:800;">Upgrade to unlock 10 more →</a></div>
+                </div>
+              </div>
+            </div>
+            <!-- UTM section -->
+            <div style="background:rgba(35,206,217,0.06);border:1.5px solid rgba(35,206,217,0.2);border-radius:14px;padding:14px 16px;margin-bottom:16px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleUTM()">
+                <div>
+                  <div style="font-size:13px;font-weight:800;color:var(--indigo);">📊 UTM Tracking Parameters</div>
+                  <div style="font-size:12px;color:#8888aa;font-weight:600;margin-top:2px;">Optional — track in Google Analytics</div>
+                </div>
+                <span id="utm-arrow" style="font-size:16px;color:var(--blue);transition:transform 0.2s;">▾</span>
+              </div>
+              <div id="utm-fields" style="display:none;margin-top:14px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                  <div><label class="form-label" style="font-size:12px;">utm_source</label><input class="form-input" id="utm-source" placeholder="e.g. instagram" style="font-size:13px;padding:8px 12px;" oninput="updatePreview()"></div>
+                  <div><label class="form-label" style="font-size:12px;">utm_medium</label><input class="form-input" id="utm-medium" placeholder="e.g. qr_code" style="font-size:13px;padding:8px 12px;" oninput="updatePreview()"></div>
+                  <div><label class="form-label" style="font-size:12px;">utm_campaign</label><input class="form-input" id="utm-campaign" placeholder="e.g. summer_sale" style="font-size:13px;padding:8px 12px;" oninput="updatePreview()"></div>
+                  <div><label class="form-label" style="font-size:12px;">utm_term</label><input class="form-input" id="utm-term" placeholder="e.g. keyword" style="font-size:13px;padding:8px 12px;" oninput="updatePreview()"></div>
+                  <div style="grid-column:1/-1;"><label class="form-label" style="font-size:12px;">utm_content</label><input class="form-input" id="utm-content" placeholder="e.g. blue_button" style="font-size:13px;padding:8px 12px;" oninput="updatePreview()"></div>
+                </div>
+                <div id="utm-preview" style="display:none;margin-top:10px;background:#f0f0f8;border-radius:10px;padding:9px 12px;">
+                  <div style="font-size:11px;font-weight:800;color:#8888aa;margin-bottom:3px;">GENERATED URL</div>
+                  <div id="utm-preview-text" style="font-size:12px;color:var(--blue);font-weight:700;word-break:break-all;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:4px;">
+            <button class="btn-outline" onclick="goStep(1)">← Back</button>
+            <button class="btn-primary" onclick="goStep(3)">Next: Customize →</button>
+          </div>
+        </div>
+        <!-- Live preview -->
+        <div class="qr-preview-box">
+          <p style="font-size:12px;font-weight:800;color:#8888aa;margin-bottom:14px;text-transform:uppercase;letter-spacing:0.06em;">Live Preview</p>
+          <div id="preview-qr-wrap" style="display:inline-block;"></div>
+          <p style="font-size:11px;color:#aaaacc;margin-top:10px;font-weight:600;">Updates in real-time</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: Customize -->
+    <div id="step3" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 280px;gap:24px;">
+        <div>
+          <h3 style="font-size:17px;font-weight:800;margin-bottom:18px;">Customize your QR code</h3>
+
+          <!-- Colors -->
+          <div class="card" style="padding:18px;margin-bottom:14px;">
+            <label class="form-label">QR Code Color</label>
+            <div class="color-row" id="qr-colors">
+              <div class="color-dot selected" style="background:#1A1A2E;" data-color="#1A1A2E" onclick="pickColor('qr',this)"></div>
+              <div class="color-dot" style="background:#23CED9;" data-color="#23CED9" onclick="pickColor('qr',this)"></div>
+              <div class="color-dot" style="background:#FF69B4;" data-color="#FF69B4" onclick="pickColor('qr',this)"></div>
+              <div class="color-dot" style="background:#7C3AED;" data-color="#7C3AED" onclick="pickColor('qr',this)"></div>
+              <div class="color-dot" style="background:#ef4444;" data-color="#ef4444" onclick="pickColor('qr',this)"></div>
+              <div class="color-dot" style="background:#f97316;" data-color="#f97316" onclick="pickColor('qr',this)"></div>
+              <div class="color-dot" style="background:#22c55e;" data-color="#22c55e" onclick="pickColor('qr',this)"></div>
+              <div class="color-dot" style="background:#000000;" data-color="#000000" onclick="pickColor('qr',this)"></div>
+            </div>
+          </div>
+
+          <!-- Background color -->
+          <div class="card" style="padding:18px;margin-bottom:14px;">
+            <label class="form-label">Background Color</label>
+            <div class="color-row" id="bg-colors">
+              <div class="color-dot selected" style="background:#FFFFFF;border-color:#e8e8f0;" data-color="#FFFFFF" onclick="pickColor('bg',this)"></div>
+              <div class="color-dot" style="background:#F9F9F9;" data-color="#F9F9F9" onclick="pickColor('bg',this)"></div>
+              <div class="color-dot" style="background:#E0F7FA;" data-color="#E0F7FA" onclick="pickColor('bg',this)"></div>
+              <div class="color-dot" style="background:#FFF3E0;" data-color="#FFF3E0" onclick="pickColor('bg',this)"></div>
+              <div class="color-dot" style="background:#F3E8FF;" data-color="#F3E8FF" onclick="pickColor('bg',this)"></div>
+              <div class="color-dot" style="background:#FFE4E6;" data-color="#FFE4E6" onclick="pickColor('bg',this)"></div>
+              <div class="color-dot" style="background:#DCFCE7;" data-color="#DCFCE7" onclick="pickColor('bg',this)"></div>
+              <div class="color-dot" style="background:#1A1A2E;" data-color="#1A1A2E" onclick="pickColor('bg',this)"></div>
+            </div>
+          </div>
+
+          <!-- Frame -->
+          <div class="card" style="padding:18px;margin-bottom:14px;">
+            <label class="form-label" style="margin-bottom:12px;">Frame Style</label>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">
+              <div class="frame-opt sel" data-frame="none" onclick="pickFrame(this)"><div style="font-size:18px;margin-bottom:3px;">⊡</div><div style="font-size:10px;">none</div></div>
+              <div class="frame-opt" data-frame="simple" onclick="pickFrame(this)"><div style="font-size:18px;margin-bottom:3px;">□</div><div style="font-size:10px;">simple</div></div>
+              <div class="frame-opt" data-frame="rounded" onclick="pickFrame(this)"><div style="font-size:18px;margin-bottom:3px;">▢</div><div style="font-size:10px;">rounded</div></div>
+              <div class="frame-opt" data-frame="badge" onclick="pickFrame(this)"><div style="font-size:18px;margin-bottom:3px;">🏷️</div><div style="font-size:10px;">badge</div></div>
+              <div class="frame-opt" data-frame="scan" onclick="pickFrame(this)"><div style="font-size:18px;margin-bottom:3px;">📲</div><div style="font-size:10px;">scan</div></div>
+            </div>
+          </div>
+
+          <!-- Error Correction -->
+          <div class="card" style="padding:18px;margin-bottom:14px;">
+            <label class="form-label">Error Correction Level</label>
+            <p style="font-size:12px;color:#8888aa;font-weight:600;margin-bottom:10px;">Higher = more damage-resistant. Use H when adding a logo.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div class="ec-card" data-ec="L" onclick="pickEC(this)"><div class="ec-title">L — Low (7%)</div><div class="ec-desc">Max data capacity</div></div>
+              <div class="ec-card" data-ec="M" onclick="pickEC(this)"><div class="ec-title">M — Medium (15%)</div><div class="ec-desc">Balanced</div></div>
+              <div class="ec-card" data-ec="Q" onclick="pickEC(this)"><div class="ec-title">Q — Quartile (25%)</div><div class="ec-desc">Good for logos</div></div>
+              <div class="ec-card sel" data-ec="H" onclick="pickEC(this)"><div class="ec-title">H — High (30%) ✓</div><div class="ec-desc">Best for logos</div></div>
+            </div>
+          </div>
+
+          <!-- Quiet Zone -->
+          <div class="card" style="padding:18px;margin-bottom:14px;">
+            <label class="form-label">Quiet Zone (White Border): <span id="qz-val">4</span>px</label>
+            <p style="font-size:12px;color:#8888aa;font-weight:600;margin-bottom:10px;">White space around the QR. Min 4px recommended for reliable scanning.</p>
+            <input type="range" class="range-input" min="0" max="20" value="4" id="quiet-zone" oninput="document.getElementById('qz-val').textContent=this.value;updatePreview();">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:#aaa;font-weight:600;margin-top:4px;"><span>0px</span><span>20px</span></div>
+          </div>
+
+          <!-- Logo Upload -->
+          <div class="card" style="padding:18px;margin-bottom:14px;">
+            <label class="form-label">Add Logo (center)</label>
+            <input type="file" id="logo-input" accept="image/*" style="display:none;" onchange="handleLogoUpload(event)">
+            <div class="upload-zone" id="upload-zone" onclick="document.getElementById('logo-input').click()"
+              ondragover="event.preventDefault();this.style.borderColor='var(--blue)';"
+              ondragleave="this.style.borderColor='';"
+              ondrop="event.preventDefault();handleLogoFile(event.dataTransfer.files[0]);">
+              <div id="upload-placeholder">
+                <div style="font-size:26px;margin-bottom:6px;">📎</div>
+                <div style="font-size:13px;font-weight:700;color:#8888aa;">Click to upload or drag & drop</div>
+                <div style="font-size:12px;color:#aaa;margin-top:3px;font-weight:600;">PNG, JPG, SVG · Use EC Level H with logos</div>
+              </div>
+              <div id="upload-preview" style="display:none;align-items:center;gap:12px;">
+                <img id="logo-thumb" style="width:44px;height:44px;object-fit:contain;border-radius:8px;border:1px solid #e8e8f0;">
+                <div>
+                  <div style="font-size:13px;font-weight:800;color:var(--blue);">✓ Logo uploaded!</div>
+                  <div style="font-size:12px;color:#8888aa;font-weight:600;margin-top:2px;">Click to change</div>
+                </div>
+                <button onclick="removeLogo(event)" style="margin-left:auto;background:none;border:none;color:#aaa;cursor:pointer;font-size:13px;font-weight:700;">Remove</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Download format -->
+          <div class="card" style="padding:18px;margin-bottom:20px;">
+            <label class="form-label">Download Format</label>
+            <div style="display:flex;gap:10px;">
+              <div class="fmt-card sel" data-fmt="PNG" onclick="pickFmt(this)"><div class="fmt-icon">🖼️</div><div class="fmt-lbl">PNG</div></div>
+              <div class="fmt-card" data-fmt="SVG" onclick="pickFmt(this)"><div class="fmt-icon">✏️</div><div class="fmt-lbl">SVG</div></div>
+              <div class="fmt-card" data-fmt="PDF" onclick="pickFmt(this)"><div class="fmt-icon">📄</div><div class="fmt-lbl">PDF</div></div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;">
+            <button class="btn-outline" onclick="goStep(2)">← Back</button>
+            <button class="btn-pink" onclick="downloadAndSave()" id="dl-btn" style="gap:8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download as PNG
+            </button>
+          </div>
+
+          <div id="success-msg" style="display:none;margin-top:14px;background:rgba(34,197,94,0.08);border:1.5px solid rgba(34,197,94,0.25);border-radius:12px;padding:11px 14px;font-size:14px;font-weight:700;color:#16a34a;">
+            ✅ Downloaded! QR code saved to your collection.
+            <a href="codes.html" style="color:var(--blue);margin-left:8px;">View My Codes →</a>
+          </div>
+        </div>
+
+        <!-- Live preview sticky -->
+        <div class="qr-preview-box">
+          <p style="font-size:12px;font-weight:800;color:#8888aa;margin-bottom:14px;text-transform:uppercase;letter-spacing:0.06em;">Live Preview</p>
+          <div id="preview-qr-wrap-3" style="display:inline-block;"></div>
+          <div id="frame-label" style="display:none;margin-top:6px;font-size:11px;font-weight:800;color:var(--blue);"></div>
+          <p style="font-size:11px;color:#aaaacc;margin-top:10px;font-weight:600;">Updates in real-time</p>
+          <div id="logo-badge" style="display:none;margin-top:10px;display:none;align-items:center;gap:7px;justify-content:center;">
+            <img id="logo-mini" style="width:24px;height:24px;object-fit:contain;border-radius:5px;border:1px solid #e8e8f0;">
+            <span style="font-size:12px;font-weight:700;color:var(--blue);">Logo applied ✓</span>
+          </div>
+          <div style="margin-top:14px;padding:10px 12px;background:#f9f9fb;border-radius:10px;text-align:left;">
+            <div style="font-size:11px;font-weight:800;color:#8888aa;margin-bottom:4px;">SETTINGS</div>
+            <div style="font-size:12px;font-weight:600;color:#6a6a8a;">EC Level: <strong id="preview-ec">H</strong></div>
+            <div style="font-size:12px;font-weight:600;color:#6a6a8a;">Quiet Zone: <strong id="preview-qz">4</strong>px</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const SUPA_URL = 'https://igbbfjushjmiafohvgdt.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnYmJmanVzaGptaWFmb2h2Z2R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTgxNDQsImV4cCI6MjA5MjYzNDE0NH0.xIvQiHWm4IVlkGSwgRK0Owyhhna5qz8HCGCtPL2JexI';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+const SESSION_KEY = 'qrmagic_session';
+function getSession() { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null'); } catch { return null; } }
+function logout() { sessionStorage.removeItem(SESSION_KEY); window.location='step1-auth.html'; }
+
+// State
+let state = {
+  type: null, step: 1, isDynamic: false, dynamicLimitReached: false,
+  qrColor: '#1A1A2E', bgColor: '#FFFFFF', frame: 'none',
+  ecLevel: 'H', quietZone: 4, logoSrc: null, format: 'PNG',
+  showUTM: false,
+};
+let previewTimer = null;
+
+// Check session + dynamic limit
+window.addEventListener('load', async () => {
+  const session = getSession();
+  if(!session) { window.location='step1-auth.html'; return; }
+  // Check dynamic codes used
+  const { count } = await sb.from('qr_codes').select('*',{count:'exact',head:true}).eq('user_id',session.id).eq('status','dynamic');
+  state.dynamicLimitReached = (count||0) >= 1;
+  // Pre-select type from URL param
+  const params = new URLSearchParams(window.location.search);
+  const t = params.get('type');
+  if(t) {
+    const card = document.querySelector(`.type-card[data-type="${t}"]`);
+    if(card) { selectType(card); goStep(2); }
+  }
+});
+
+// Step navigation
+function goStep(n) {
+  document.getElementById('step1').style.display = n===1?'block':'none';
+  document.getElementById('step2').style.display = n===2?'block':'none';
+  document.getElementById('step3').style.display = n===3?'block':'none';
+  state.step = n;
+  // Update wizard indicators
+  [1,2,3].forEach(i => {
+    const circle = document.getElementById('wc-'+i);
+    const label = document.getElementById('wlbl-'+i);
+    if(!circle) return;
+    if(i < n) { circle.className='wstep-circle done'; circle.textContent='✓'; }
+    else if(i===n) { circle.className='wstep-circle active'; circle.textContent=i; }
+    else { circle.className='wstep-circle inactive'; circle.textContent=i; }
+    if(label) label.className = i===n?'wstep-label active':'wstep-label inactive';
+  });
+  [1,2].forEach(i => {
+    const line = document.getElementById('wl-'+i);
+    if(line) line.style.background = i<n ? '#23CED9' : '#e8e8f0';
+  });
+  if(n===2) { renderForm(); updatePreview(); }
+  if(n===3) { updatePreview3(); }
+}
+
+// Type selection
+function selectType(card) {
+  document.querySelectorAll('.type-card').forEach(c=>c.classList.remove('selected'));
+  card.classList.add('selected');
+  state.type = card.dataset.type;
+  const btn = document.getElementById('step1-next');
+  btn.disabled = false; btn.style.opacity='1';
+}
+
+// QR value builder
+function getQRValue() {
+  const v = id => document.getElementById(id)?.value?.trim()||'';
+  const t = state.type;
+  if(t==='url'){
+    let base = v('f-url')||'https://qrmagic.io';
+    const params=[v('utm-source')&&`utm_source=${encodeURIComponent(v('utm-source'))}`,v('utm-medium')&&`utm_medium=${encodeURIComponent(v('utm-medium'))}`,v('utm-campaign')&&`utm_campaign=${encodeURIComponent(v('utm-campaign'))}`,v('utm-term')&&`utm_term=${encodeURIComponent(v('utm-term'))}`,v('utm-content')&&`utm_content=${encodeURIComponent(v('utm-content'))}`].filter(Boolean);
+    if(params.length) base+=(base.includes('?')?'&':'?')+params.join('&');
+    return base;
+  }
+  if(t==='wifi') return `WIFI:T:WPA;S:${v('f-ssid')};P:${v('f-wpass')};;`;
+  if(t==='vcard') return `BEGIN:VCARD\nFN:${v('f-name')}\nTEL:${v('f-phone')}\nEMAIL:${v('f-email')}\nORG:${v('f-company')}\nEND:VCARD`;
+  if(t==='text') return v('f-text')||'Hello from QR Magic!';
+  if(t==='email') return `mailto:${v('f-email2')}?subject=${v('f-subject')}&body=${v('f-body')}`;
+  if(t==='phone') return `tel:${v('f-phone2')}`;
+  if(t==='sms') return `sms:${v('f-sphone')}?body=${v('f-smsg')}`;
+  if(t==='image') return v('f-imgurl')||'https://qrmagic.io';
+  return 'https://qrmagic.io';
+}
+
+// Form templates
+function renderForm() {
+  const t = state.type;
+  const fi = (id,lbl,ph,type='text') => `<div class="form-group"><label class="form-label">${lbl}</label><input class="form-input" id="${id}" type="${type}" placeholder="${ph}" oninput="updatePreview()"></div>`;
+  const ta = (id,lbl,ph) => `<div class="form-group"><label class="form-label">${lbl}</label><textarea class="form-input" id="${id}" rows="4" placeholder="${ph}" oninput="updatePreview()" style="resize:vertical;"></textarea></div>`;
+  const forms = {
+    url: fi('f-url','Destination URL','https://yourwebsite.com','url') + fi('f-name','QR Code Name (optional)','My Homepage QR'),
+    wifi: fi('f-ssid','Network Name (SSID)','MyHomeNetwork') + fi('f-wpass','Password','••••••••','password') + `<div class="form-group"><label class="form-label">Security</label><select class="form-input" id="f-wsec" onchange="updatePreview()"><option>WPA</option><option>WEP</option><option>None</option></select></div>`,
+    vcard: fi('f-name','Full Name','Alex Smith') + fi('f-phone','Phone','+1 555 000 0000','tel') + fi('f-email','Email','alex@example.com','email') + fi('f-company','Company','Acme Inc.'),
+    text: ta('f-text','Your Text','Type anything here...'),
+    email: fi('f-email2','Email Address','recipient@example.com','email') + fi('f-subject','Subject','Hello there!') + ta('f-body','Body (optional)','Your message here...'),
+    phone: fi('f-phone2','Phone Number','+1 555 000 0000','tel'),
+    sms: fi('f-sphone','Phone Number','+1 555 000 0000','tel') + ta('f-smsg','Pre-filled Message','Your message...'),
+    image: fi('f-imgurl','Image URL','https://example.com/image.jpg','url'),
+  };
+  document.getElementById('form-fields').innerHTML = forms[t]||'';
+  // Show URL extras
+  const isURL = t==='url';
+  document.getElementById('url-extras').style.display = isURL?'block':'none';
+  if(isURL && state.dynamicLimitReached) {
+    document.getElementById('dynamic-gate').style.display='flex';
+  }
+}
+
+function updatePreview() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(() => renderQR('preview-qr-wrap', 170), 200);
+  // UTM preview
+  if(state.type==='url') {
+    const url = document.getElementById('f-url')?.value?.trim();
+    const src = document.getElementById('utm-source')?.value;
+    const cam = document.getElementById('utm-campaign')?.value;
+    if(url && (src||cam)) {
+      document.getElementById('utm-preview').style.display='block';
+      document.getElementById('utm-preview-text').textContent = getQRValue();
+    } else {
+      document.getElementById('utm-preview').style.display='none';
+    }
+  }
+}
+
+function updatePreview3() {
+  renderQR('preview-qr-wrap-3', 180);
+  document.getElementById('preview-ec').textContent = state.ecLevel;
+  document.getElementById('preview-qz').textContent = state.quietZone;
+  const fl = document.getElementById('frame-label');
+  if(state.frame!=='none'){ fl.style.display='block'; fl.textContent = state.frame==='badge'?'SCAN ME':state.frame==='scan'?'SCAN TO VISIT':''; }
+  else fl.style.display='none';
+}
+
+function renderQR(containerId, size) {
+  const wrap = document.getElementById(containerId);
+  if(!wrap) return;
+  wrap.innerHTML='';
+  const ecMap={'L':QRCode.CorrectLevel.L,'M':QRCode.CorrectLevel.M,'Q':QRCode.CorrectLevel.Q,'H':QRCode.CorrectLevel.H};
+  try {
+    new QRCode(wrap,{text:getQRValue(),width:size,height:size,colorDark:state.qrColor,colorLight:state.bgColor,correctLevel:ecMap[state.ecLevel]||QRCode.CorrectLevel.H});
+    // Quiet zone border-radius trick
+    const canvas=wrap.querySelector('canvas');
+    if(canvas){ canvas.style.borderRadius=state.quietZone*2+'px'; canvas.style.padding=state.quietZone+'px'; canvas.style.background=state.bgColor; }
+    // Logo overlay
+    if(state.logoSrc){
+      setTimeout(()=>{
+        if(!wrap) return;
+        const prev=wrap.querySelector('img.logo-overlay');if(prev) prev.remove();
+        const lo=document.createElement('img');lo.src=state.logoSrc;lo.className='logo-overlay';
+        const ls=Math.round(size*0.22);
+        lo.style.cssText=`position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${ls}px;height:${ls}px;object-fit:contain;border-radius:6px;background:#fff;padding:3px;box-shadow:0 2px 6px rgba(0,0,0,0.15);pointer-events:none;`;
+        wrap.style.position='relative';wrap.style.display='inline-block';
+        wrap.appendChild(lo);
+      },120);
+    }
+  }catch(e){}
+}
+
+// Color pickers
+function pickColor(which, el) {
+  const group = which==='qr'?'qr-colors':'bg-colors';
+  document.querySelectorAll(`#${group} .color-dot`).forEach(d=>d.classList.remove('selected'));
+  el.classList.add('selected');
+  if(which==='qr') state.qrColor=el.dataset.color;
+  else state.bgColor=el.dataset.color;
+  updatePreview3();
+}
+function pickFrame(el) {
+  document.querySelectorAll('.frame-opt').forEach(f=>f.classList.remove('sel'));
+  el.classList.add('sel');
+  state.frame=el.dataset.frame;
+  updatePreview3();
+}
+function pickEC(el) {
+  document.querySelectorAll('.ec-card').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  state.ecLevel=el.dataset.ec;
+  updatePreview3();
+}
+function pickFmt(el) {
+  document.querySelectorAll('.fmt-card').forEach(f=>f.classList.remove('sel'));
+  el.classList.add('sel');
+  state.format=el.dataset.fmt;
+  document.getElementById('dl-btn').innerHTML=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download as ${state.format}`;
+}
+
+// Dynamic toggle
+function setDynamic(val) {
+  if(val && state.dynamicLimitReached) { document.getElementById('dynamic-gate').style.display='flex'; return; }
+  state.isDynamic=val;
+  document.getElementById('opt-dynamic').className='ds-option'+(val?' active':'');
+  document.getElementById('opt-static').className='ds-option'+(!val?' active':'');
+  document.getElementById('dynamic-info').style.display=val?'block':'none';
+}
+
+// UTM
+function toggleUTM() {
+  state.showUTM=!state.showUTM;
+  document.getElementById('utm-fields').style.display=state.showUTM?'block':'none';
+  document.getElementById('utm-arrow').style.transform=state.showUTM?'rotate(180deg)':'rotate(0deg)';
+}
+
+// Logo
+function handleLogoUpload(e) { handleLogoFile(e.target.files[0]); }
+function handleLogoFile(file) {
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    state.logoSrc=ev.target.result;
+    document.getElementById('upload-placeholder').style.display='none';
+    const prev=document.getElementById('upload-preview');prev.style.display='flex';
+    document.getElementById('logo-thumb').src=state.logoSrc;
+    const mini=document.getElementById('logo-mini');mini.src=state.logoSrc;
+    const badge=document.getElementById('logo-badge');badge.style.display='flex';
+    document.getElementById('upload-zone').classList.add('has-logo');
+    updatePreview3();
+  };
+  reader.readAsDataURL(file);
+}
+function removeLogo(e) {
+  e.stopPropagation();
+  state.logoSrc=null;
+  document.getElementById('upload-placeholder').style.display='block';
+  document.getElementById('upload-preview').style.display='none';
+  document.getElementById('logo-badge').style.display='none';
+  document.getElementById('upload-zone').classList.remove('has-logo');
+  document.getElementById('logo-input').value='';
+  updatePreview3();
+}
+
+// Download + save to Supabase
+async function downloadAndSave() {
+  const wrap = document.getElementById('preview-qr-wrap-3');
+  const canvas = wrap?.querySelector('canvas');
+  if(!canvas) { alert('Please complete the QR code first.'); return; }
+
+  // Build composite canvas
+  const qrSize=canvas.width;
+  const pad=state.frame!=='none'?12:0,bw=state.frame!=='none'?4:0;
+  const badgeH=(state.frame==='badge'||state.frame==='scan')?34:0;
+  const tw=qrSize+(pad+bw)*2,th=qrSize+(pad+bw)*2+badgeH;
+  const off=document.createElement('canvas');off.width=tw;off.height=th;
+  const ctx=off.getContext('2d');
+  ctx.fillStyle=state.bgColor;ctx.fillRect(0,0,tw,th);
+  if(state.frame!=='none'){
+    ctx.strokeStyle=state.qrColor;ctx.lineWidth=bw;
+    const bx=bw/2,by=bw/2,bww=tw-bw,bhh=th-bw-badgeH,r=state.frame==='rounded'?16:5;
+    ctx.beginPath();ctx.moveTo(bx+r,by);ctx.lineTo(bx+bww-r,by);ctx.arcTo(bx+bww,by,bx+bww,by+r,r);ctx.lineTo(bx+bww,by+bhh-r);ctx.arcTo(bx+bww,by+bhh,bx+bww-r,by+bhh,r);ctx.lineTo(bx+r,by+bhh);ctx.arcTo(bx,by+bhh,bx,by+bhh-r,r);ctx.lineTo(bx,by+r);ctx.arcTo(bx,by,bx+r,by,r);ctx.closePath();ctx.stroke();
+  }
+  if(state.frame==='badge'){ctx.fillStyle=state.qrColor;ctx.fillRect(bw,th-badgeH,tw-bw*2,badgeH);ctx.fillStyle='#fff';ctx.font='bold 13px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('SCAN ME',tw/2,th-badgeH/2);}
+  if(state.frame==='scan'){ctx.fillStyle=state.qrColor;ctx.font='bold 12px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('SCAN TO VISIT',tw/2,th-badgeH/2);}
+
+  const drawQR = () => new Promise(res=>{
+    const qi=new Image();qi.onload=()=>{ctx.drawImage(qi,pad+bw,pad+bw,qrSize,qrSize);res();};qi.src=canvas.toDataURL('image/png');
+  });
+  await drawQR();
+
+  if(state.logoSrc) {
+    await new Promise(res=>{
+      const li=new Image();li.onload=()=>{
+        const ls=Math.round(qrSize*0.22),lx=(tw-ls)/2,ly=pad+bw+(qrSize-ls)/2,p=4;
+        ctx.fillStyle='#fff';ctx.beginPath();ctx.rect(lx-p,ly-p,ls+p*2,ls+p*2);ctx.fill();
+        ctx.drawImage(li,lx,ly,ls,ls);res();
+      };li.src=state.logoSrc;
+    });
+  }
+
+  const dataUrl=off.toDataURL('image/png');
+  const fname=document.getElementById('f-name')?.value?.trim()||state.type||'qrmagic';
+
+  if(state.format==='PNG'){const a=document.createElement('a');a.href=dataUrl;a.download=`${fname}.png`;a.click();}
+  else if(state.format==='SVG'){const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${off.width}" height="${off.height}"><image href="${dataUrl}" width="${off.width}" height="${off.height}"/></svg>`;const blob=new Blob([svg],{type:'image/svg+xml'});const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=`${fname}.svg`;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
+  else if(state.format==='PDF'){const w=window.open('','_blank');if(w){w.document.write(`<html><head><title>${fname}</title><style>body{margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;}</style></head><body><img src="${dataUrl}" style="max-width:90vw;"/></body></html>`);w.document.close();setTimeout(()=>w.print(),600);}}
+
+  // Save to Supabase
+  const session=getSession();
+  if(session){
+    try{
+      await sb.from('qr_codes').insert({
+        user_id:session.id,
+        name:fname,
+        type:state.type,
+        status:state.isDynamic?'dynamic':'static',
+        value:getQRValue(),
+        color:state.qrColor,
+        bg_color:state.bgColor,
+        frame:state.frame,
+        utm_source:document.getElementById('utm-source')?.value||null,
+        utm_medium:document.getElementById('utm-medium')?.value||null,
+        utm_campaign:document.getElementById('utm-campaign')?.value||null,
+        utm_term:document.getElementById('utm-term')?.value||null,
+        utm_content:document.getElementById('utm-content')?.value||null,
+        scans:0,clicks:0,
+      });
+    }catch(e){ console.error('Save error:',e); }
+  }
+
+  document.getElementById('success-msg').style.display='block';
+}
+</script>
+</body>
+</html>
