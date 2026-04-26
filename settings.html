@@ -70,7 +70,7 @@
 
       <!-- Profile -->
       <div class="card" style="padding:26px;margin-bottom:18px;">
-        <h3 style="font-size:15px;font-weight:800;margin-bottom:18px;">Profile</h3>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;"><i data-lucide="user" style="width:16px;height:16px;color:var(--muted);flex-shrink:0;"></i><h3 style="font-size:14px;font-weight:600;">Profile</h3></div>
         <div class="form-group">
           <label class="form-label">Full Name</label>
           <input class="form-input" id="s-name" placeholder="Your name">
@@ -85,7 +85,7 @@
 
       <!-- Security -->
       <div class="card" style="padding:26px;margin-bottom:18px;">
-        <h3 style="font-size:15px;font-weight:800;margin-bottom:18px;">Security</h3>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;"><i data-lucide="shield" style="width:16px;height:16px;color:var(--muted);flex-shrink:0;"></i><h3 style="font-size:14px;font-weight:600;">Security</h3></div>
         <div class="form-group">
           <label class="form-label">Current Password</label>
           <input class="form-input" type="password" id="s-cur-pass" placeholder="••••••••">
@@ -102,21 +102,21 @@
       <div class="card" style="padding:26px;margin-bottom:18px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
           <h3 style="font-size:15px;font-weight:800;">API Access</h3>
-          <span class="pro-badge">👑 PRO</span>
+          <span class="pro-badge">PRO</span>
         </div>
         <p style="color:#8888aa;font-weight:600;font-size:14px;margin-bottom:14px;">Integrate QR Magic directly into your apps and workflows using our REST API.</p>
         <div style="background:#f0f0f8;border-radius:10px;padding:12px 16px;font-family:monospace;font-size:13px;color:#aaa;margin-bottom:14px;filter:blur(3px);user-select:none;">Bearer: qrm_live_xxxxxxxxxxxxxxxxxxxx</div>
-        <button class="upgrade-pill" onclick="showUpgrade('API Access is a Pro feature.')">👑 Upgrade to Access API</button>
+        <button class="upgrade-pill" onclick="showUpgrade('API Access is a Pro feature.')">Upgrade to Access API</button>
       </div>
 
       <!-- Pro: White label -->
       <div class="card" style="padding:26px;margin-bottom:18px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
           <h3 style="font-size:15px;font-weight:800;">White Label & Branding</h3>
-          <span class="pro-badge">👑 PRO</span>
+          <span class="pro-badge">PRO</span>
         </div>
         <p style="color:#8888aa;font-weight:600;font-size:14px;margin-bottom:14px;">Remove "QR Magic" branding from your exports and use your own logo on all downloads.</p>
-        <button class="upgrade-pill" onclick="showUpgrade('White Label is a Pro feature.')">👑 Upgrade to Remove Branding</button>
+        <button class="upgrade-pill" onclick="showUpgrade('White Label is a Pro feature.')">Upgrade to Remove Branding</button>
       </div>
 
       <!-- Danger Zone -->
@@ -145,7 +145,7 @@
       <p style="font-size:13px;font-weight:700;color:#4a4a6a;margin-bottom:7px;">⏳ <strong>Your data will be kept for 60 days.</strong></p>
       <p style="font-size:13px;font-weight:600;color:#6a6a8a;line-height:1.6;">If you change your mind and wish to reactivate your account within 60 days, please contact us at:</p>
       <div style="margin-top:8px;background:#fff;border:1.5px solid #e8e8f0;border-radius:10px;padding:10px 14px;font-size:14px;font-weight:800;color:#23CED9;word-break:break-all;">
-        ✉️ office@honoshi.co.il
+        office@honoshi.co.il
       </div>
       <p style="font-size:12px;color:#aaa;margin-top:8px;font-weight:600;">After 60 days, all your data will be permanently and irreversibly deleted.</p>
     </div>
@@ -165,10 +165,10 @@
 <div id="upgrade-modal" style="display:none;position:fixed;inset:0;background:rgba(26,26,46,0.55);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;padding:24px;">
   <div style="background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:32px;max-width:360px;width:100%;position:relative;text-align:center;animation:popIn 0.35s cubic-bezier(.34,1.56,.64,1) both;">
     <button onclick="document.getElementById('upgrade-modal').style.display='none'" style="position:absolute;top:14px;right:14px;background:#f0f0f8;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;color:#8888aa;">✕</button>
-    <div style="font-size:32px;margin-bottom:8px;">👑</div>
+    <div style="font-size:32px;margin-bottom:8px;"></div>
     <h3 style="font-size:20px;font-weight:900;margin-bottom:8px;">Upgrade to Unlock!</h3>
     <p id="u-reason" style="background:rgba(255,215,0,0.1);border:1.5px solid rgba(255,215,0,0.3);border-radius:11px;padding:9px 14px;margin-bottom:14px;font-size:13px;font-weight:700;color:#7a4f00;"></p>
-    <button class="btn-primary" onclick="window.location='landing.html#pricing'" style="width:100%;justify-content:center;">⚡ View Plans</button>
+    <button class="btn-primary" onclick="window.location='landing.html#pricing'" style="width:100%;justify-content:center;">View Plans</button>
     <div style="margin-top:9px;font-size:12px;color:#aaa;cursor:pointer;" onclick="document.getElementById('upgrade-modal').style.display='none'">Maybe later</div>
   </div>
 </div>
@@ -192,7 +192,7 @@ async function saveProfile(){
   await sb.from('users').update({name}).eq('id',currentUser.id);
   const session=getSession();
   sessionStorage.setItem('qrmagic_session',JSON.stringify({...session,name}));
-  showMsg('profile-msg','✅ Profile saved successfully!',true);
+  showMsg('profile-msg','Profile saved successfully!',true);
   btn.textContent='Save Changes';btn.disabled=false;
 }
 
@@ -206,7 +206,7 @@ async function changePassword(){
   currentUser.password=newp;
   document.getElementById('s-cur-pass').value='';
   document.getElementById('s-new-pass').value='';
-  showMsg('pass-msg','✅ Password updated successfully!',true);
+  showMsg('pass-msg','Password updated successfully!',true);
 }
 
 function openDeleteModal(){
