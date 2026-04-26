@@ -80,7 +80,7 @@
 
     <div id="no-data" style="display:none;">
       <div class="card" style="padding:60px;text-align:center;">
-        <div style="font-size:48px;margin-bottom:12px;">📊</div>
+        <div style="margin-bottom:14px;"><i data-lucide="bar-chart-2" style="width:44px;height:44px;color:var(--border);flex-shrink:0;"></i></div>
         <h3 style="font-size:18px;font-weight:800;margin-bottom:8px;">No data yet</h3>
         <p style="color:#8888aa;font-weight:600;margin-bottom:20px;">Create your first QR code to start seeing analytics!</p>
         <button class="btn-primary" onclick="window.location='create.html'">Create QR Code</button>
@@ -91,22 +91,22 @@
       <!-- Stat cards -->
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:20px;">
         <div class="card" style="padding:18px;text-align:center;">
-          <div style="font-size:26px;margin-bottom:5px;">🔳</div>
+          <div style="margin-bottom:8px;"><i data-lucide="qr-code" style="width:20px;height:20px;color:var(--blue);flex-shrink:0;"></i></div>
           <div class="stat-num" id="a-total">0</div>
           <div class="stat-label">Total QR Codes</div>
         </div>
         <div class="card" style="padding:18px;text-align:center;">
-          <div style="font-size:26px;margin-bottom:5px;">📲</div>
+          <div style="margin-bottom:8px;"><i data-lucide="smartphone" style="width:20px;height:20px;color:var(--pink);flex-shrink:0;"></i></div>
           <div class="stat-num" id="a-scans" style="color:var(--pink);">0</div>
           <div class="stat-label">Total Scans</div>
         </div>
         <div class="card" style="padding:18px;text-align:center;">
-          <div style="font-size:26px;margin-bottom:5px;">🖱️</div>
+          <div style="margin-bottom:8px;"><i data-lucide="mouse-pointer" style="width:20px;height:20px;color:#22c55e;flex-shrink:0;"></i></div>
           <div class="stat-num" id="a-clicks" style="color:#22c55e;">0</div>
           <div class="stat-label">Total Clicks</div>
         </div>
         <div class="card" style="padding:18px;text-align:center;">
-          <div style="font-size:26px;margin-bottom:5px;">📈</div>
+          <div style="margin-bottom:8px;"><i data-lucide="trending-up" style="width:20px;height:20px;color:#f59e0b;flex-shrink:0;"></i></div>
           <div class="stat-num" id="a-ctr" style="color:#f59e0b;">0%</div>
           <div class="stat-label">Avg. CTR</div>
         </div>
@@ -144,19 +144,19 @@
           <span class="pro-badge">👑 PRO</span>
         </div>
         <div class="pro-feature-row" style="cursor:pointer;" onclick="showUpgrade('Geographic Heatmap is a Pro feature.')">
-          <div style="display:flex;align-items:center;gap:12px;"><span style="font-size:22px;">🌍</span><div><div style="font-weight:800;font-size:14px;">Geographic Heatmap</div><div style="font-size:12px;color:#8888aa;font-weight:600;">See exactly where your QR codes are scanned on an interactive map.</div></div></div>
+          <div style="display:flex;align-items:center;gap:12px;"><i data-lucide="map" style="width:18px;height:18px;color:var(--muted);flex-shrink:0;"></i><div><div style="font-weight:800;font-size:14px;">Geographic Heatmap</div><div style="font-size:12px;color:#8888aa;font-weight:600;">See exactly where your QR codes are scanned on an interactive map.</div></div></div>
           <button class="upgrade-pill">👑 Unlock</button>
         </div>
         <div class="pro-feature-row" style="cursor:pointer;" onclick="showUpgrade('Scan Time Analysis is a Pro feature.')">
-          <div style="display:flex;align-items:center;gap:12px;"><span style="font-size:22px;">⏱️</span><div><div style="font-weight:800;font-size:14px;">Scan Time Analysis</div><div style="font-size:12px;color:#8888aa;font-weight:600;">Discover peak scanning hours and days to optimize campaigns.</div></div></div>
+          <div style="display:flex;align-items:center;gap:12px;"><i data-lucide="clock" style="width:18px;height:18px;color:var(--muted);flex-shrink:0;"></i><div><div style="font-weight:800;font-size:14px;">Scan Time Analysis</div><div style="font-size:12px;color:#8888aa;font-weight:600;">Discover peak scanning hours and days to optimize campaigns.</div></div></div>
           <button class="upgrade-pill">👑 Unlock</button>
         </div>
         <div class="pro-feature-row" style="cursor:pointer;" onclick="showUpgrade('Return Visitor Rate is a Pro feature.')">
-          <div style="display:flex;align-items:center;gap:12px;"><span style="font-size:22px;">🔁</span><div><div style="font-weight:800;font-size:14px;">Return Visitor Rate</div><div style="font-size:12px;color:#8888aa;font-weight:600;">Track how many people scan your QR code more than once.</div></div></div>
+          <div style="display:flex;align-items:center;gap:12px;"><i data-lucide="repeat" style="width:18px;height:18px;color:var(--muted);flex-shrink:0;"></i><div><div style="font-weight:800;font-size:14px;">Return Visitor Rate</div><div style="font-size:12px;color:#8888aa;font-weight:600;">Track how many people scan your QR code more than once.</div></div></div>
           <button class="upgrade-pill">👑 Unlock</button>
         </div>
         <div class="pro-feature-row" style="cursor:pointer;" onclick="showUpgrade('Campaign Comparison is a Pro feature.')">
-          <div style="display:flex;align-items:center;gap:12px;"><span style="font-size:22px;">📣</span><div><div style="font-weight:800;font-size:14px;">Campaign Comparison</div><div style="font-size:12px;color:#8888aa;font-weight:600;">Compare performance across multiple campaigns side by side.</div></div></div>
+          <div style="display:flex;align-items:center;gap:12px;"><i data-lucide="megaphone" style="width:18px;height:18px;color:var(--muted);flex-shrink:0;"></i><div><div style="font-weight:800;font-size:14px;">Campaign Comparison</div><div style="font-size:12px;color:#8888aa;font-weight:600;">Compare performance across multiple campaigns side by side.</div></div></div>
           <button class="upgrade-pill">👑 Unlock</button>
         </div>
       </div>
@@ -223,9 +223,9 @@ function renderDonut(svgId, legendId, data){
 function renderTopCodes(codes){
   const sorted=[...codes].sort((a,b)=>(b.scans||0)-(a.scans||0)).slice(0,5);
   const max=Math.max(...sorted.map(c=>c.scans||0),1);
-  const typeIcon=t=>t==='url'?'🔗':t==='wifi'?'📶':t==='vcard'?'👤':t==='text'?'📝':'🔳';
+  const typeIcon=t=>{const m={url:'link',wifi:'wifi',vcard:'user',text:'file-text',email:'mail',sms:'message-square',phone:'phone',image:'image'};return `<i data-lucide="${m[t]||'qr-code'}" style="width:16px;height:16px;color:var(--muted);"></i>`;};
   if(!sorted.length||sorted[0].scans===0){
-    document.getElementById('top-codes').innerHTML=`<p style="color:#aaa;font-weight:600;font-size:14px;text-align:center;padding:16px 0;">No scan data yet. Share your QR codes to see which performs best!</p>`;return;
+    document.getElementById('top-codes').innerHTML=`<p style="color:#aaa;font-weight:600;font-size:14px;text-align:center;padding:16px 0;">No scan data yet — Share your QR codes to see which performs best!</p>`;return;
   }
   document.getElementById('top-codes').innerHTML=sorted.map(c=>`
     <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1.5px solid #f0f0f8;">
@@ -267,7 +267,7 @@ async function loadAnalytics(){
       {label:'Desktop',value:11,color:'#7C3AED'},
       {label:'Other',value:5,color:'#FFD700'},
     ]);
-    renderTopCodes(allCodes);
+    renderTopCodes(allCodes); setTimeout(()=>lucide.createIcons(),100);
   }catch(err){
     document.getElementById('loading').innerHTML=`<div style="font-size:48px;margin-bottom:12px;">⚠️</div><p style="color:#8888aa;font-weight:700;">Could not load analytics.</p><button class="btn-primary" onclick="location.reload()" style="margin-top:14px;">Retry</button>`;
   }
