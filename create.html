@@ -97,8 +97,26 @@
     <!-- STEP 1: Type selection -->
     <div id="step1">
       <h3 style="font-size:17px;font-weight:800;margin-bottom:14px;">What type of QR code?</h3>
-      <div class="type-grid" id="type-grid">
-        <div class="type-card" data-type="url" onclick="selectType(this)"><div style="margin:0 auto 8px;"><i data-lucide="link" style="width:28px;height:28px;color:var(--blue);flex-shrink:0;"></i></div><div style="font-size:12px;font-weight:800;">URL</div></div>
+            <div class="type-grid" id="type-grid">
+        <div class="type-card" data-type="url" onclick="selectType(this)"><div class="type-card-icon"><i data-lucide="link" style="width:20px;height:20px;"></i></div><div class="type-card-label">URL</div></div>
+        <div class="type-card" data-type="wifi" onclick="selectType(this)"><div class="type-card-icon"><i data-lucide="wifi" style="width:20px;height:20px;"></i></div><div class="type-card-label">Wi-Fi</div></div>
+        <div class="type-card" data-type="vcard" onclick="selectType(this)"><div class="type-card-icon"><i data-lucide="user" style="width:20px;height:20px;"></i></div><div class="type-card-label">vCard</div></div>
+        <div class="type-card" data-type="text" onclick="selectType(this)"><div class="type-card-icon"><i data-lucide="file-text" style="width:20px;height:20px;"></i></div><div class="type-card-label">Text</div></div>
+        <div class="type-card" data-type="email" onclick="selectType(this)"><div class="type-card-icon"><i data-lucide="mail" style="width:20px;height:20px;"></i></div><div class="type-card-label">Email</div></div>
+        <div class="type-card" data-type="sms" onclick="selectType(this)"><div class="type-card-icon"><i data-lucide="message-square" style="width:20px;height:20px;"></i></div><div class="type-card-label">SMS</div></div>
+        <div class="type-card" data-type="phone" onclick="selectType(this)"><div class="type-card-icon"><i data-lucide="phone" style="width:20px;height:20px;"></i></div><div class="type-card-label">Phone</div></div>
+        <div class="type-card" data-type="whatsapp" onclick="selectType(this)"><div class="type-card-icon"><i data-lucide="message-circle" style="width:20px;height:20px;"></i></div><div class="type-card-label">WhatsApp</div></div>
+        <div class="type-card" data-type="location" onclick="selectType(this)"><div class="type-card-icon"><i data-lucide="map-pin" style="width:20px;height:20px;"></i></div><div class="type-card-label">Location</div></div>
+        <div class="type-card" data-type="event" onclick="selectType(this)"><div class="type-card-icon"><i data-lucide="calendar" style="width:20px;height:20px;"></i></div><div class="type-card-label">Event</div></div>
+        <div class="type-card" data-type="social" onclick="selectType(this)"><div class="type-card-icon"><i data-lucide="share-2" style="width:20px;height:20px;"></i></div><div class="type-card-label">Social</div></div>
+        <div class="type-card" data-type="youtube" onclick="selectType(this)"><div class="type-card-icon"><i data-lucide="youtube" style="width:20px;height:20px;"></i></div><div class="type-card-label">YouTube</div></div>
+        <div class="type-card" data-type="appstore" onclick="selectType(this)"><div class="type-card-icon"><i data-lucide="smartphone" style="width:20px;height:20px;"></i></div><div class="type-card-label">App Store</div></div>
+        <div class="type-card" data-type="bitcoin" onclick="selectType(this)"><div class="type-card-icon"><i data-lucide="bitcoin" style="width:20px;height:20px;"></i></div><div class="type-card-label">Bitcoin</div></div>
+        <div class="type-card" data-type="zoom" onclick="selectType(this)"><div class="type-card-icon"><i data-lucide="video" style="width:20px;height:20px;"></i></div><div class="type-card-label">Zoom</div></div>
+        <div class="type-card" data-type="pdf" onclick="selectType(this)"><div class="type-card-icon"><i data-lucide="file" style="width:20px;height:20px;"></i></div><div class="type-card-label">PDF / File</div></div>
+        <div class="type-card" data-type="paypal" onclick="selectType(this)"><div class="type-card-icon"><i data-lucide="credit-card" style="width:20px;height:20px;"></i></div><div class="type-card-label">PayPal</div></div>
+        <div class="type-card" data-type="image" onclick="selectType(this)"><div class="type-card-icon"><i data-lucide="image" style="width:20px;height:20px;"></i></div><div class="type-card-label">Image</div></div>
+      </div>
         <div class="type-card" data-type="wifi" onclick="selectType(this)"><div style="margin:0 auto 8px;"><i data-lucide="wifi" style="width:28px;height:28px;color:var(--blue);flex-shrink:0;"></i></div><div style="font-size:12px;font-weight:800;">Wi-Fi</div></div>
         <div class="type-card" data-type="vcard" onclick="selectType(this)"><div style="margin:0 auto 8px;"><i data-lucide="user" style="width:28px;height:28px;color:var(--blue);flex-shrink:0;"></i></div><div style="font-size:12px;font-weight:800;">vCard</div></div>
         <div class="type-card" data-type="text" onclick="selectType(this)"><div style="margin:0 auto 8px;"><i data-lucide="file-text" style="width:28px;height:28px;color:var(--blue);flex-shrink:0;"></i></div><div style="font-size:12px;font-weight:800;">Text</div></div>
@@ -379,8 +397,41 @@ function selectType(card) {
 
 // QR value builder
 function getQRValue() {
-  const v = id => document.getElementById(id)?.value?.trim()||'';
-  const t = state.type;
+  const v=id=>document.getElementById(id)?.value?.trim()||'';
+  const t=state.type;
+  if(t==='url'){
+    let base=v('f-url')||'https://qrmagic.io';
+    const params=[v('utm-source')&&`utm_source=${encodeURIComponent(v('utm-source'))}`,v('utm-medium')&&`utm_medium=${encodeURIComponent(v('utm-medium'))}`,v('utm-campaign')&&`utm_campaign=${encodeURIComponent(v('utm-campaign'))}`,v('utm-term')&&`utm_term=${encodeURIComponent(v('utm-term'))}`,v('utm-content')&&`utm_content=${encodeURIComponent(v('utm-content'))}`].filter(Boolean);
+    if(params.length) base+=(base.includes('?')?'&':'?')+params.join('&');
+    return base;
+  }
+  if(t==='wifi')    return `WIFI:T:${v('f-wsec')||'WPA'};S:${v('f-ssid')};P:${v('f-wpass')};;`;
+  if(t==='vcard')   return `BEGIN:VCARD\nVERSION:3.0\nFN:${v('f-vname')}\nTITLE:${v('f-vtitle')}\nORG:${v('f-vcompany')}\nTEL:${v('f-vphone')}\nEMAIL:${v('f-vemail')}\nURL:${v('f-vweb')}\nEND:VCARD`;
+  if(t==='text')    return v('f-text')||'Hello from QR Magic!';
+  if(t==='email')   return `mailto:${v('f-email')}?subject=${encodeURIComponent(v('f-subject'))}&body=${encodeURIComponent(v('f-body'))}`;
+  if(t==='phone')   return `tel:${v('f-phone')}`;
+  if(t==='sms')     return `sms:${v('f-sphone')}${v('f-smsg')?'?body='+encodeURIComponent(v('f-smsg')):''}`;
+  if(t==='whatsapp'){const num=v('f-waphone').replace(/[^0-9]/g,'');return `https://wa.me/${num}${v('f-wamsg')?'?text='+encodeURIComponent(v('f-wamsg')):''}`;};
+  if(t==='location'){
+    const mapsUrl=v('f-maps');
+    if(mapsUrl) return mapsUrl;
+    const lat=v('f-lat'),lng=v('f-lng');
+    return lat&&lng?`https://maps.google.com/?q=${lat},${lng}`:'https://maps.google.com';
+  }
+  if(t==='event'){
+    const fmt=d=>d?d.replace(/[-:T]/g,'').substring(0,15)+'Z':'';
+    return `BEGIN:VEVENT\nSUMMARY:${v('f-etitle')}\nLOCATION:${v('f-eloc')}\nDTSTART:${fmt(v('f-estart'))}\nDTEND:${fmt(v('f-eend'))}\nDESCRIPTION:${v('f-edesc')}\nEND:VEVENT`;
+  }
+  if(t==='social')  return v('f-surl')||'https://qrmagic.io';
+  if(t==='youtube') return v('f-yturl')||'https://youtube.com';
+  if(t==='appstore'){const plat=v('f-asplat');if(plat==='ios') return v('f-asios');if(plat==='android') return v('f-asand');return v('f-asios')||v('f-asand')||'https://qrmagic.io';}
+  if(t==='bitcoin') {const prefix=v('f-btctype')||'bitcoin';return `${prefix}:${v('f-btcaddr')}${v('f-btcamt')?'?amount='+v('f-btcamt'):''}`;};
+  if(t==='zoom')    return v('f-zoomurl')||'https://zoom.us';
+  if(t==='pdf')     return v('f-pdfurl')||'https://qrmagic.io';
+  if(t==='paypal')  return v('f-ppurl')||'https://paypal.me';
+  if(t==='image')   return v('f-imgurl')||'https://qrmagic.io';
+  return 'https://qrmagic.io';
+
   if(t==='url'){
     let base = v('f-url')||'https://qrmagic.io';
     const params=[v('utm-source')&&`utm_source=${encodeURIComponent(v('utm-source'))}`,v('utm-medium')&&`utm_medium=${encodeURIComponent(v('utm-medium'))}`,v('utm-campaign')&&`utm_campaign=${encodeURIComponent(v('utm-campaign'))}`,v('utm-term')&&`utm_term=${encodeURIComponent(v('utm-term'))}`,v('utm-content')&&`utm_content=${encodeURIComponent(v('utm-content'))}`].filter(Boolean);
@@ -611,7 +662,19 @@ async function downloadAndSave() {
     }catch(e){ console.error('Save error:',e); }
   }
 
+  // Check if this is the user's first ever QR code
+  const{count:totalCodes}=await sb.from('qr_codes').select('*',{count:'exact',head:true}).eq('user_id',session.id);
+  if(totalCodes===1){
+    // First QR ever — set flag for dashboard to show celebration
+    sessionStorage.setItem('qrmagic_first_qr','1');
+  }
   document.getElementById('success-msg').style.display='block';
+  document.getElementById('success-msg').innerHTML=\`
+    <div style="display:flex;align-items:center;gap:10px;">
+      <i data-lucide="check-circle" style="width:18px;height:18px;color:#16a34a;flex-shrink:0;"></i>
+      <div>Downloaded & saved! <a href="codes.html" style="color:var(--blue);font-weight:600;margin-left:6px;">View My Codes →</a></div>
+    </div>\`;
+  lucide.createIcons();
 }
 lucide.createIcons();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
