@@ -98,14 +98,14 @@
     <div id="step1">
       <h3 style="font-size:17px;font-weight:800;margin-bottom:14px;">What type of QR code?</h3>
       <div class="type-grid" id="type-grid">
-        <div class="type-card" data-type="url" onclick="selectType(this)"><div style="font-size:30px;margin-bottom:6px;">🔗</div><div style="font-size:12px;font-weight:800;">URL</div></div>
-        <div class="type-card" data-type="wifi" onclick="selectType(this)"><div style="font-size:30px;margin-bottom:6px;">📶</div><div style="font-size:12px;font-weight:800;">Wi-Fi</div></div>
-        <div class="type-card" data-type="vcard" onclick="selectType(this)"><div style="font-size:30px;margin-bottom:6px;">👤</div><div style="font-size:12px;font-weight:800;">vCard</div></div>
-        <div class="type-card" data-type="text" onclick="selectType(this)"><div style="font-size:30px;margin-bottom:6px;">📝</div><div style="font-size:12px;font-weight:800;">Text</div></div>
-        <div class="type-card" data-type="email" onclick="selectType(this)"><div style="font-size:30px;margin-bottom:6px;">📧</div><div style="font-size:12px;font-weight:800;">Email</div></div>
-        <div class="type-card" data-type="sms" onclick="selectType(this)"><div style="font-size:30px;margin-bottom:6px;">💬</div><div style="font-size:12px;font-weight:800;">SMS</div></div>
-        <div class="type-card" data-type="phone" onclick="selectType(this)"><div style="font-size:30px;margin-bottom:6px;">📞</div><div style="font-size:12px;font-weight:800;">Phone</div></div>
-        <div class="type-card" data-type="image" onclick="selectType(this)"><div style="font-size:30px;margin-bottom:6px;">🖼️</div><div style="font-size:12px;font-weight:800;">Image</div></div>
+        <div class="type-card" data-type="url" onclick="selectType(this)"><div style="margin:0 auto 8px;"><i data-lucide="link" style="width:28px;height:28px;color:var(--blue);flex-shrink:0;"></i></div><div style="font-size:12px;font-weight:800;">URL</div></div>
+        <div class="type-card" data-type="wifi" onclick="selectType(this)"><div style="margin:0 auto 8px;"><i data-lucide="wifi" style="width:28px;height:28px;color:var(--blue);flex-shrink:0;"></i></div><div style="font-size:12px;font-weight:800;">Wi-Fi</div></div>
+        <div class="type-card" data-type="vcard" onclick="selectType(this)"><div style="margin:0 auto 8px;"><i data-lucide="user" style="width:28px;height:28px;color:var(--blue);flex-shrink:0;"></i></div><div style="font-size:12px;font-weight:800;">vCard</div></div>
+        <div class="type-card" data-type="text" onclick="selectType(this)"><div style="margin:0 auto 8px;"><i data-lucide="file-text" style="width:28px;height:28px;color:var(--blue);flex-shrink:0;"></i></div><div style="font-size:12px;font-weight:800;">Text</div></div>
+        <div class="type-card" data-type="email" onclick="selectType(this)"><div style="margin:0 auto 8px;"><i data-lucide="mail" style="width:28px;height:28px;color:var(--blue);flex-shrink:0;"></i></div><div style="font-size:12px;font-weight:800;">Email</div></div>
+        <div class="type-card" data-type="sms" onclick="selectType(this)"><div style="margin:0 auto 8px;"><i data-lucide="message-square" style="width:28px;height:28px;color:var(--blue);flex-shrink:0;"></i></div><div style="font-size:12px;font-weight:800;">SMS</div></div>
+        <div class="type-card" data-type="phone" onclick="selectType(this)"><div style="margin:0 auto 8px;"><i data-lucide="phone" style="width:28px;height:28px;color:var(--blue);flex-shrink:0;"></i></div><div style="font-size:12px;font-weight:800;">Phone</div></div>
+        <div class="type-card" data-type="image" onclick="selectType(this)"><div style="margin:0 auto 8px;"><i data-lucide="image" style="width:28px;height:28px;color:var(--blue);flex-shrink:0;"></i></div><div style="font-size:12px;font-weight:800;">Image</div></div>
       </div>
       <div style="margin-top:24px;display:flex;justify-content:flex-end;">
         <button class="btn-primary" onclick="goStep(2)" id="step1-next" style="opacity:0.5;" disabled>Next Step →</button>
@@ -123,12 +123,12 @@
             <div style="margin-bottom:16px;">
               <label class="form-label">QR Code Type</label>
               <div class="ds-toggle">
-                <div class="ds-option" id="opt-dynamic" onclick="setDynamic(true)">⚡ Dynamic</div>
-                <div class="ds-option active" id="opt-static" onclick="setDynamic(false)">🔒 Static</div>
+                <div class="ds-option" id="opt-dynamic" onclick="setDynamic(true)">Dynamic</div>
+                <div class="ds-option active" id="opt-static" onclick="setDynamic(false)">Static</div>
               </div>
               <div id="dynamic-info" style="display:none;margin-top:8px;font-size:12px;color:#8888aa;font-weight:600;">✓ Editable URL · ✓ Analytics · ✓ Scan & Click tracking</div>
               <div id="dynamic-gate" style="display:none;" class="upgrade-gate">
-                <span style="font-size:18px;">👑</span>
+                <span style="font-size:18px;"></span>
                 <div>
                   <div style="font-size:13px;font-weight:800;color:#7a4f00;">Free plan: 1 dynamic code used</div>
                   <div style="font-size:12px;color:#a07020;font-weight:600;"><a href="landing.html#pricing" style="color:var(--blue);font-weight:800;">Upgrade to unlock 10 more →</a></div>
@@ -142,7 +142,7 @@
                   <div style="font-size:13px;font-weight:800;color:var(--indigo);">📊 UTM Tracking Parameters</div>
                   <div style="font-size:12px;color:#8888aa;font-weight:600;margin-top:2px;">Optional — track in Google Analytics</div>
                 </div>
-                <span id="utm-arrow" style="font-size:16px;color:var(--blue);transition:transform 0.2s;">▾</span>
+                <span id="utm-arrow" style="font-size:16px;color:var(--blue);transition:transform 0.2s;"></span>
               </div>
               <div id="utm-fields" style="display:none;margin-top:14px;">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -213,11 +213,11 @@
           <div class="card" style="padding:18px;margin-bottom:14px;">
             <label class="form-label" style="margin-bottom:12px;">Frame Style</label>
             <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">
-              <div class="frame-opt sel" data-frame="none" onclick="pickFrame(this)"><div style="font-size:18px;margin-bottom:3px;">⊡</div><div style="font-size:10px;">none</div></div>
-              <div class="frame-opt" data-frame="simple" onclick="pickFrame(this)"><div style="font-size:18px;margin-bottom:3px;">□</div><div style="font-size:10px;">simple</div></div>
-              <div class="frame-opt" data-frame="rounded" onclick="pickFrame(this)"><div style="font-size:18px;margin-bottom:3px;">▢</div><div style="font-size:10px;">rounded</div></div>
-              <div class="frame-opt" data-frame="badge" onclick="pickFrame(this)"><div style="font-size:18px;margin-bottom:3px;">🏷️</div><div style="font-size:10px;">badge</div></div>
-              <div class="frame-opt" data-frame="scan" onclick="pickFrame(this)"><div style="font-size:18px;margin-bottom:3px;">📲</div><div style="font-size:10px;">scan</div></div>
+              <div class="frame-opt sel" data-frame="none" onclick="pickFrame(this)"><div style="margin-bottom:3px;"><i data-lucide="square" style="width:14px;height:14px;color:var(--muted);flex-shrink:0;"></i></div><div style="font-size:10px;">none</div></div>
+              <div class="frame-opt" data-frame="simple" onclick="pickFrame(this)"><div style="margin-bottom:3px;"><i data-lucide="square" style="width:14px;height:14px;color:var(--muted);flex-shrink:0;"></i></div><div style="font-size:10px;">simple</div></div>
+              <div class="frame-opt" data-frame="rounded" onclick="pickFrame(this)"><div style="margin-bottom:3px;"><i data-lucide="square" style="width:14px;height:14px;color:var(--muted);flex-shrink:0;"></i></div><div style="font-size:10px;">rounded</div></div>
+              <div class="frame-opt" data-frame="badge" onclick="pickFrame(this)"><div style="margin-bottom:3px;"><i data-lucide="tag" style="width:14px;height:14px;color:var(--muted);flex-shrink:0;"></i></div><div style="font-size:10px;">badge</div></div>
+              <div class="frame-opt" data-frame="scan" onclick="pickFrame(this)"><div style="margin-bottom:3px;"><i data-lucide="smartphone" style="width:14px;height:14px;color:var(--muted);flex-shrink:0;"></i></div><div style="font-size:10px;">scan</div></div>
             </div>
           </div>
 
@@ -250,7 +250,7 @@
               ondragleave="this.style.borderColor='';"
               ondrop="event.preventDefault();handleLogoFile(event.dataTransfer.files[0]);">
               <div id="upload-placeholder">
-                <div style="font-size:26px;margin-bottom:6px;">📎</div>
+                <div style="margin-bottom:8px;"><i data-lucide="paperclip" style="width:24px;height:24px;color:var(--muted);flex-shrink:0;"></i></div>
                 <div style="font-size:13px;font-weight:700;color:#8888aa;">Click to upload or drag & drop</div>
                 <div style="font-size:12px;color:#aaa;margin-top:3px;font-weight:600;">PNG, JPG, SVG · Use EC Level H with logos</div>
               </div>
@@ -269,9 +269,9 @@
           <div class="card" style="padding:18px;margin-bottom:20px;">
             <label class="form-label">Download Format</label>
             <div style="display:flex;gap:10px;">
-              <div class="fmt-card sel" data-fmt="PNG" onclick="pickFmt(this)"><div class="fmt-icon">🖼️</div><div class="fmt-lbl">PNG</div></div>
-              <div class="fmt-card" data-fmt="SVG" onclick="pickFmt(this)"><div class="fmt-icon">✏️</div><div class="fmt-lbl">SVG</div></div>
-              <div class="fmt-card" data-fmt="PDF" onclick="pickFmt(this)"><div class="fmt-icon">📄</div><div class="fmt-lbl">PDF</div></div>
+              <div class="fmt-card sel" data-fmt="PNG" onclick="pickFmt(this)"><div class="fmt-icon"><i data-lucide="image" style="width:18px;height:18px;color:var(--muted);flex-shrink:0;"></i></div><div class="fmt-lbl">PNG</div></div>
+              <div class="fmt-card" data-fmt="SVG" onclick="pickFmt(this)"><div class="fmt-icon"><i data-lucide="pen-tool" style="width:18px;height:18px;color:var(--muted);flex-shrink:0;"></i></div><div class="fmt-lbl">SVG</div></div>
+              <div class="fmt-card" data-fmt="PDF" onclick="pickFmt(this)"><div class="fmt-icon"><i data-lucide="file" style="width:18px;height:18px;color:var(--muted);flex-shrink:0;"></i></div><div class="fmt-lbl">PDF</div></div>
             </div>
           </div>
 
@@ -284,7 +284,7 @@
           </div>
 
           <div id="success-msg" style="display:none;margin-top:14px;background:rgba(34,197,94,0.08);border:1.5px solid rgba(34,197,94,0.25);border-radius:12px;padding:11px 14px;font-size:14px;font-weight:700;color:#16a34a;">
-            ✅ Downloaded! QR code saved to your collection.
+             Downloaded! QR code saved to your collection.
             <a href="codes.html" style="color:var(--blue);margin-left:8px;">View My Codes →</a>
           </div>
         </div>
