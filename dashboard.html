@@ -104,10 +104,10 @@
 
       <!-- Quick stats -->
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-bottom:20px;">
-        <div class="card quick-stat"><div style="font-size:26px;margin-bottom:5px;">🔳</div><div class="num" id="stat-total" style="color:var(--blue);">—</div><div class="lbl">Total Codes</div></div>
-        <div class="card quick-stat"><div style="font-size:26px;margin-bottom:5px;">📲</div><div class="num" id="stat-scans" style="color:var(--pink);">—</div><div class="lbl">Total Scans</div></div>
-        <div class="card quick-stat"><div style="font-size:26px;margin-bottom:5px;">⚡</div><div class="num" id="stat-dynamic" style="color:#22c55e;">—</div><div class="lbl">Dynamic Codes</div></div>
-        <div class="card quick-stat"><div style="font-size:26px;margin-bottom:5px;">🔒</div><div class="num" id="stat-static" style="color:#7C3AED;">—</div><div class="lbl">Static Codes</div></div>
+        <div class="card quick-stat"><div style="font-size:26px;margin-bottom:5px;"></div><div class="num" id="stat-total" style="color:var(--blue);">—</div><div class="lbl">Total Codes</div></div>
+        <div class="card quick-stat"><div style="margin-bottom:8px;"><i data-lucide="smartphone" style="width:20px;height:20px;color:var(--pink);flex-shrink:0;"></i></div><div class="num" id="stat-scans" style="color:var(--pink);">—</div><div class="lbl">Total Scans</div></div>
+        <div class="card quick-stat"><div style="margin-bottom:8px;"><i data-lucide="zap" style="width:20px;height:20px;color:#22c55e;flex-shrink:0;"></i></div><div class="num" id="stat-dynamic" style="color:#22c55e;">—</div><div class="lbl">Dynamic Codes</div></div>
+        <div class="card quick-stat"><div style="margin-bottom:8px;"><i data-lucide="lock" style="width:20px;height:20px;color:#7C3AED;flex-shrink:0;"></i></div><div class="num" id="stat-static" style="color:#7C3AED;">—</div><div class="lbl">Static Codes</div></div>
       </div>
 
       <!-- Two-column grid -->
@@ -121,7 +121,7 @@
           </div>
           <div id="recent-codes">
             <div style="text-align:center;padding:20px 0;color:#aaa;font-weight:600;font-size:14px;">
-              <div style="font-size:32px;margin-bottom:8px;">🔳</div>No codes yet — create one!
+              <div style="font-size:32px;margin-bottom:8px;"></div>No codes yet — create one!
             </div>
           </div>
           <button onclick="window.location='create.html'" style="margin-top:12px;width:100%;background:rgba(35,206,217,0.08);border:1.5px dashed rgba(35,206,217,0.3);border-radius:12px;padding:11px;color:var(--blue);font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;cursor:pointer;">+ Create New QR Code</button>
@@ -143,12 +143,12 @@
       <div style="margin-top:20px;">
         <h3 style="font-size:15px;font-weight:800;margin-bottom:14px;">Quick Create</h3>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:12px;">
-          <div class="type-card" onclick="window.location='create.html?type=url'"><div style="font-size:28px;margin-bottom:6px;">🔗</div><div style="font-size:12px;font-weight:800;">URL</div></div>
-          <div class="type-card" onclick="window.location='create.html?type=wifi'"><div style="font-size:28px;margin-bottom:6px;">📶</div><div style="font-size:12px;font-weight:800;">Wi-Fi</div></div>
-          <div class="type-card" onclick="window.location='create.html?type=vcard'"><div style="font-size:28px;margin-bottom:6px;">👤</div><div style="font-size:12px;font-weight:800;">vCard</div></div>
-          <div class="type-card" onclick="window.location='create.html?type=text'"><div style="font-size:28px;margin-bottom:6px;">📝</div><div style="font-size:12px;font-weight:800;">Text</div></div>
-          <div class="type-card" onclick="window.location='create.html?type=email'"><div style="font-size:28px;margin-bottom:6px;">📧</div><div style="font-size:12px;font-weight:800;">Email</div></div>
-          <div class="type-card" onclick="window.location='create.html?type=phone'"><div style="font-size:28px;margin-bottom:6px;">📞</div><div style="font-size:12px;font-weight:800;">Phone</div></div>
+          <div class="type-card" onclick="window.location='create.html?type=url'"><div style="margin-bottom:6px;"><i data-lucide="link" style="width:26px;height:26px;color:var(--blue);flex-shrink:0;"></i></div><div style="font-size:12px;font-weight:800;">URL</div></div>
+          <div class="type-card" onclick="window.location='create.html?type=wifi'"><div style="margin-bottom:6px;"><i data-lucide="wifi" style="width:26px;height:26px;color:var(--blue);flex-shrink:0;"></i></div><div style="font-size:12px;font-weight:800;">Wi-Fi</div></div>
+          <div class="type-card" onclick="window.location='create.html?type=vcard'"><div style="margin-bottom:6px;"><i data-lucide="user" style="width:26px;height:26px;color:var(--blue);flex-shrink:0;"></i></div><div style="font-size:12px;font-weight:800;">vCard</div></div>
+          <div class="type-card" onclick="window.location='create.html?type=text'"><div style="margin-bottom:6px;"><i data-lucide="file-text" style="width:26px;height:26px;color:var(--blue);flex-shrink:0;"></i></div><div style="font-size:12px;font-weight:800;">Text</div></div>
+          <div class="type-card" onclick="window.location='create.html?type=email'"><div style="margin-bottom:6px;"><i data-lucide="mail" style="width:26px;height:26px;color:var(--blue);flex-shrink:0;"></i></div><div style="font-size:12px;font-weight:800;">Email</div></div>
+          <div class="type-card" onclick="window.location='create.html?type=phone'"><div style="margin-bottom:6px;"><i data-lucide="phone" style="width:26px;height:26px;color:var(--blue);flex-shrink:0;"></i></div><div style="font-size:12px;font-weight:800;">Phone</div></div>
         </div>
       </div>
 
@@ -165,7 +165,10 @@ const SESSION_KEY = 'qrmagic_session';
 function getSession() { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null'); } catch { return null; } }
 function logout() { sessionStorage.removeItem(SESSION_KEY); window.location = 'step1-auth.html'; }
 
-const typeIcon = t => t==='url'?'🔗':t==='wifi'?'📶':t==='vcard'?'👤':t==='text'?'📝':t==='email'?'📧':'🔳';
+const typeIcon = t => {
+  const icons={url:'link',wifi:'wifi',vcard:'user',text:'file-text',email:'mail',sms:'message-square',phone:'phone',image:'image'};
+  return `<i data-lucide="${icons[t]||'qr-code'}" style="width:18px;height:18px;color:var(--muted);"></i>`;
+};
 
 function renderBarChart(codes) {
   const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -196,7 +199,7 @@ async function loadDashboard() {
 
     // Update welcome
     const firstName = (user.name||'there').split(' ')[0];
-    document.getElementById('welcome-msg').textContent = `Welcome back, ${firstName}! 👋`;
+    document.getElementById('welcome-msg').textContent = `Welcome back, ${firstName}! `;
     const totalScans = allCodes.reduce((s,c)=>s+(c.scans||0),0);
     document.getElementById('welcome-sub').innerHTML =
       `You have <strong style="color:#23CED9;">${allCodes.length} QR code${allCodes.length!==1?'s':''}</strong>`+
@@ -237,7 +240,7 @@ async function loadDashboard() {
 
   } catch(err) {
     document.getElementById('loading-state').innerHTML = `
-      <div style="font-size:48px;margin-bottom:12px;">⚠️</div>
+      <div style="font-size:48px;margin-bottom:12px;"></div>
       <p style="color:#8888aa;font-weight:700;">Could not load dashboard.</p>
       <button class="btn-primary" onclick="location.reload()" style="margin-top:14px;">Try Again</button>
     `;
