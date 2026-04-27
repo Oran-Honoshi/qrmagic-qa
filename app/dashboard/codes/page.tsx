@@ -11,7 +11,7 @@ import {
   Folder, Megaphone, Globe
 } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
-// qr-code-styling loaded dynamically
+import type QRCodeStylingType from "qr-code-styling";
 
 const supabase = createClient(
   "https://igbbfjushjmiafohvgdt.supabase.co",
@@ -45,17 +45,19 @@ function MiniQR({ code, size = 180 }: { code: QRCode; size?: number }) {
 
   useEffect(() => {
     if (!ref.current) return;
-    const qr = new QRCodeStyling({
-      width: size, height: size, type: "svg",
-      data: code.value || "https://qrmagic.io",
-      dotsOptions: { color: code.color || "#06B6D4", type: "rounded" },
-      cornersSquareOptions: { color: code.color || "#06B6D4", type: "extra-rounded" },
-      cornersDotOptions: { color: code.color || "#06B6D4" },
-      backgroundOptions: { color: code.bg_color || "#ffffff" },
-      qrOptions: { errorCorrectionLevel: "H" },
+    import("qr-code-styling").then(({ default: QRCodeStyling }) => {
+      const qr = new QRCodeStyling({
+        width: size, height: size, type: "svg",
+        data: code.value || "https://qrmagic.io",
+        dotsOptions: { color: code.color || "#06B6D4", type: "rounded" },
+        cornersSquareOptions: { color: code.color || "#06B6D4", type: "extra-rounded" },
+        cornersDotOptions: { color: code.color || "#06B6D4" },
+        backgroundOptions: { color: code.bg_color || "#ffffff" },
+        qrOptions: { errorCorrectionLevel: "H" },
+      });
+      ref.current!.innerHTML = "";
+      qr.append(ref.current!);
     });
-    ref.current.innerHTML = "";
-    qr.append(ref.current);
   }, [code, size]);
 
   return <div ref={ref} />;
@@ -63,24 +65,26 @@ function MiniQR({ code, size = 180 }: { code: QRCode; size?: number }) {
 
 /* Preview Modal */
 function PreviewModal({ code, onClose }: { code: QRCode; onClose: () => void }) {
-  const qrRef = useRef<QRCodeStyling | null>(null);
+  const qrRef = useRef<unknown>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const ctr = code.scans > 0 ? Math.round((code.clicks / code.scans) * 100) : 0;
 
   useEffect(() => {
     if (!containerRef.current) return;
-    const qr = new QRCodeStyling({
-      width: 200, height: 200, type: "svg",
-      data: code.value || "https://qrmagic.io",
-      dotsOptions: { color: code.color || "#06B6D4", type: "rounded" },
-      cornersSquareOptions: { color: code.color || "#06B6D4", type: "extra-rounded" },
-      cornersDotOptions: { color: code.color || "#06B6D4" },
-      backgroundOptions: { color: code.bg_color || "#ffffff" },
-      qrOptions: { errorCorrectionLevel: "H" },
+    import("qr-code-styling").then(({ default: QRCodeStyling }) => {
+      const qr = new QRCodeStyling({
+        width: 200, height: 200, type: "svg",
+        data: code.value || "https://qrmagic.io",
+        dotsOptions: { color: code.color || "#06B6D4", type: "rounded" },
+        cornersSquareOptions: { color: code.color || "#06B6D4", type: "extra-rounded" },
+        cornersDotOptions: { color: code.color || "#06B6D4" },
+        backgroundOptions: { color: code.bg_color || "#ffffff" },
+        qrOptions: { errorCorrectionLevel: "H" },
+      });
+      containerRef.current!.innerHTML = "";
+      qr.append(containerRef.current!);
+      qrRef.current = qr as unknown as QRCodeStylingType;
     });
-    containerRef.current.innerHTML = "";
-    qr.append(containerRef.current);
-    qrRef.current = qr;
   }, [code]);
 
   return (
@@ -129,13 +133,13 @@ function PreviewModal({ code, onClose }: { code: QRCode; onClose: () => void }) 
 
         <div className="grid grid-cols-2 gap-2">
           <button
-            onClick={() => qrRef.current?.download({ name: code.name, extension: "png" })}
+            onClick={() => (qrRef.current as any)?.download({ name: code.name, extension: "png" })}
             className="flex items-center justify-center gap-1.5 py-2 text-xs font-semibold bg-[#141C2B] border border-[rgba(255,255,255,0.07)] rounded-xl text-[#94A3B8] hover:border-[rgba(6,182,212,0.3)] hover:text-[#06B6D4] transition-all"
           >
             <Download size={12} /> Download PNG
           </button>
           <button
-            onClick={() => qrRef.current?.download({ name: code.name, extension: "svg" })}
+            onClick={() => (qrRef.current as any)?.download({ name: code.name, extension: "svg" })}
             className="flex items-center justify-center gap-1.5 py-2 text-xs font-semibold bg-[rgba(6,182,212,0.08)] border border-[rgba(6,182,212,0.2)] rounded-xl text-[#06B6D4] hover:bg-[#06B6D4] hover:text-[#0A0E14] transition-all"
           >
             <Download size={12} /> Download SVG

@@ -9,7 +9,7 @@ import {
   Bitcoin, Image, Check, ChevronDown, Upload, X,
   Download, Zap, Lock, ArrowLeft, Info
 } from "lucide-react";
-// qr-code-styling loaded dynamically to avoid SSR issues
+import type QRCodeStylingType from "qr-code-styling";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -300,38 +300,43 @@ function buildQRValue(type: string, data: Record<string, string>): string {
 }
 
 /* Holographic QR Preview */
+/* Holographic QR Preview */
 function QRPreview({
   value, color, bgColor, dotStyle, ecLevel, logo, isHolo,
 }: {
   value: string; color: string; bgColor: string;
   dotStyle: string; ecLevel: string; logo: string | null; isHolo: boolean;
-}) {
+}): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
-  const qrRef = useRef<QRCodeStyling | null>(null);
+  const qrRef = useRef<unknown>(null);
 
   useEffect(() => {
     if (!ref.current) return;
-    const qr = new QRCodeStyling({
-      width: 220, height: 220,
-      type: "svg",
-      data: value || "https://qrmagic.io",
-      image: logo || undefined,
-      dotsOptions: { color, type: dotStyle as "rounded" },
-      cornersSquareOptions: { color, type: "extra-rounded" },
-      cornersDotOptions: { color },
-      backgroundOptions: { color: bgColor },
-      imageOptions: { crossOrigin: "anonymous", margin: 4 },
-      qrOptions: { errorCorrectionLevel: ecLevel as "H" },
+    import("qr-code-styling").then(({ default: QRCodeStyling }) => {
+      if (!ref.current) return;
+      const qr = new QRCodeStyling({
+        width: 220, height: 220,
+        type: "svg",
+        data: value || "https://qrmagic.io",
+        image: logo || undefined,
+        dotsOptions: { color, type: dotStyle as "rounded" },
+        cornersSquareOptions: { color, type: "extra-rounded" },
+        cornersDotOptions: { color },
+        backgroundOptions: { color: bgColor },
+        imageOptions: { crossOrigin: "anonymous", margin: 4 },
+        qrOptions: { errorCorrectionLevel: ecLevel as "H" },
+      });
+      ref.current.innerHTML = "";
+      qr.append(ref.current);
+      qrRef.current = qr;
     });
-    ref.current.innerHTML = "";
-    qr.append(ref.current);
-    qrRef.current = qr;
   }, []);
 
   useEffect(() => {
     if (!qrRef.current) return;
     const t = setTimeout(() => {
-      qrRef.current?.update({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (qrRef.current as any)?.update({
         data: value || "https://qrmagic.io",
         image: logo || undefined,
         dotsOptions: { color, type: dotStyle as "rounded" },
@@ -345,7 +350,8 @@ function QRPreview({
   }, [value, color, bgColor, dotStyle, ecLevel, logo]);
 
   function download(ext: "svg" | "png" | "jpeg") {
-    qrRef.current?.download({ name: "qrmagic-export", extension: ext });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (qrRef.current as any)?.download({ name: "qrmagic-export", extension: ext });
   }
 
   return (
@@ -354,7 +360,6 @@ function QRPreview({
         Live Preview
       </p>
 
-      {/* Holographic frame */}
       <div
         className="p-[1.5px] rounded-2xl mx-auto"
         style={{
@@ -372,7 +377,6 @@ function QRPreview({
           className="rounded-[14px] p-4 relative overflow-hidden"
           style={{ background: bgColor }}
         >
-          {/* Scan line */}
           {isHolo && (
             <div
               className="absolute left-0 right-0 h-[1px] pointer-events-none z-10"
@@ -383,21 +387,17 @@ function QRPreview({
             />
           )}
           <div ref={ref} />
-
-          {/* Corner accents */}
           {isHolo && ["top-2 left-2 border-t border-l","top-2 right-2 border-t border-r","bottom-2 left-2 border-b border-l","bottom-2 right-2 border-b border-r"].map((pos, i) => (
             <div key={i} className={`absolute w-3 h-3 ${pos} opacity-50 rounded-[2px]`} style={{ borderColor: color }} />
           ))}
         </div>
       </div>
 
-      {/* EC + dot info */}
       <div className="flex items-center justify-center gap-3 mt-3">
         <span className="text-[10px] text-[#4A5568]">EC: <span className="text-[#06B6D4] font-semibold">{ecLevel}</span></span>
         <span className="text-[10px] text-[#4A5568]">Style: <span className="text-[#06B6D4] font-semibold capitalize">{dotStyle}</span></span>
       </div>
 
-      {/* Download buttons */}
       <div className="grid grid-cols-3 gap-2 mt-4">
         <button onClick={() => download("png")}
           className="flex items-center justify-center gap-1 py-2 text-[11px] font-semibold bg-[#141C2B] border border-[rgba(255,255,255,0.07)] rounded-xl text-[#94A3B8] hover:border-[rgba(6,182,212,0.3)] hover:text-[#06B6D4] transition-all">
@@ -419,6 +419,7 @@ function QRPreview({
     </div>
   );
 }
+
 
 /* Main Create Page */
 function CreatePageInner() {
