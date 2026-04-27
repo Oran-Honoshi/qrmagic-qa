@@ -11,7 +11,7 @@ import {
   Folder, Megaphone, Globe
 } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
-import QRCodeStyling from "qr-code-styling";
+// qr-code-styling loaded dynamically
 
 const supabase = createClient(
   "https://igbbfjushjmiafohvgdt.supabase.co",

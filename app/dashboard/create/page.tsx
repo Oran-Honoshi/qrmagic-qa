@@ -9,7 +9,7 @@ import {
   Bitcoin, Image, Check, ChevronDown, Upload, X,
   Download, Zap, Lock, ArrowLeft, Info
 } from "lucide-react";
-import QRCodeStyling from "qr-code-styling";
+// qr-code-styling loaded dynamically to avoid SSR issues
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(

@@ -10,6 +10,7 @@ import {
   Bitcoin, Image, PlusCircle, ArrowRight, TrendingUp
 } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
+import { WelcomeOffer, FirstQRCelebration } from "@/components/WelcomeOffer";
 
 const supabase = createClient(
   "https://igbbfjushjmiafohvgdt.supabase.co",
@@ -68,6 +69,14 @@ function BarChart({ codes }: { codes: Array<{ scans?: number }> }) {
         </div>
       ))}
     </div>
+
+      {/* Celebrations & Offers */}
+      {userData && !userData.first_qr_celebrated && (
+        <FirstQRCelebration userId={user?.id || ""} />
+      )}
+      {userData && !userData.welcome_shown && userData.created_at && (
+        <WelcomeOffer userId={user?.id || ""} createdAt={userData.created_at as string} />
+      )}
   );
 }
 
@@ -100,12 +109,16 @@ export default function DashboardPage() {
   const [codes, setCodes] = useState<Array<Record<string, unknown>>>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<Record<string, string> | null>(null);
+  const [userData, setUserData] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     const session = getSession();
     if (!session) return;
     setUser(session);
     loadData(session.id);
+    // Fetch full user data for offer modal
+    supabase.from("users").select("*").eq("id", session.id).single()
+      .then(({ data }) => setUserData(data));
   }, []);
 
   async function loadData(userId: string) {
@@ -284,5 +297,13 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
+
+      {/* Celebrations & Offers */}
+      {userData && !userData.first_qr_celebrated && (
+        <FirstQRCelebration userId={user?.id || ""} />
+      )}
+      {userData && !userData.welcome_shown && userData.created_at && (
+        <WelcomeOffer userId={user?.id || ""} createdAt={userData.created_at as string} />
+      )}
   );
 }
