@@ -178,12 +178,17 @@ function LoginForm({ onSwitch, onSuccess }: { onSwitch: () => void; onSuccess: (
         )}
       </button>
 
-      <p className="text-center text-xs text-[#4A5568]">
-        Don&apos;t have an account?{" "}
-        <button onClick={onSwitch} className="text-[#06B6D4] font-semibold hover:text-[#22D3EE] transition-colors">
-          Sign up free →
-        </button>
-      </p>
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-[#4A5568]">
+          Don&apos;t have an account?{" "}
+          <button onClick={onSwitch} className="text-[#06B6D4] font-semibold hover:text-[#22D3EE] transition-colors">
+            Sign up free →
+          </button>
+        </p>
+        <a href="/forgot-password" className="text-xs text-[#4A5568] hover:text-[#06B6D4] transition-colors">
+          Forgot password?
+        </a>
+      </div>
     </div>
   );
 }
