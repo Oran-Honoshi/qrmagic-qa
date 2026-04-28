@@ -37,6 +37,7 @@ type QRCode = {
   id: string; name: string; type: string; status: string;
   value: string; color: string; bg_color: string;
   scans: number; clicks: number; created_at: string;
+  redirect_url?: string; short_id?: string;
 };
 
 /* Mini QR renderer for preview */
@@ -155,13 +156,16 @@ function EditModal({ code, onClose, onSave }: {
   code: QRCode; onClose: () => void; onSave: (updated: QRCode) => void;
 }) {
   const [name, setName] = useState(code.name);
-  const [url, setUrl] = useState(code.type === "url" ? code.value : "");
+  const [url, setUrl] = useState(code.status === "dynamic" ? ((code as Record<string,unknown>).redirect_url as string || "") : code.value);
   const [saving, setSaving] = useState(false);
 
   async function save() {
     setSaving(true);
     const updates: Record<string, string> = { name };
-    if (code.type === "url" && code.status === "dynamic" && url) updates.value = url;
+    // For dynamic codes, update redirect_url (not value which holds the short link)
+    if (code.type === "url" && code.status === "dynamic" && url) {
+      updates.redirect_url = url;
+    }
     await supabase.from("qr_codes").update(updates).eq("id", code.id);
     onSave({ ...code, ...updates });
     setSaving(false);

@@ -23,6 +23,21 @@ function getSession() {
   catch { return null; }
 }
 
+// Generate a unique 8-char alphanumeric short ID
+function generateShortId(): string {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  for (let i = 0; i < 8; i++) {
+    result += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return result;
+}
+
+// Base URL for redirects
+const BASE_URL = typeof window !== "undefined"
+  ? window.location.origin
+  : "https://qrmagic-qa-oran-honoshis-projects.vercel.app";
+
 /* Types */
 const QR_TYPES = [
   { id: "url",      icon: Link,          label: "URL",       desc: "Website or link" },
@@ -466,12 +481,32 @@ function CreatePageInner() {
     if (!session) return;
     setSaving(true);
     try {
+      // For dynamic codes, generate a short_id and encode redirect URL
+      let shortId: string | null = null;
+      let savedValue = qrValue;
+
+      if (isDynamic && selectedType === "url") {
+        // Generate unique short_id (retry if collision)
+        let attempts = 0;
+        while (attempts < 5) {
+          shortId = generateShortId();
+          const { data: existing } = await supabase
+            .from("qr_codes").select("id").eq("short_id", shortId).maybeSingle();
+          if (!existing) break;
+          attempts++;
+        }
+        // The QR code encodes the redirect URL, not the real URL
+        savedValue = `${BASE_URL}/r/${shortId}`;
+      }
+
       const { data } = await supabase.from("qr_codes").insert({
         user_id: session.id,
         name: formData.name || `${selectedType?.toUpperCase()} Code`,
         type: selectedType,
         status: isDynamic ? "dynamic" : "static",
-        value: qrValue,
+        value: savedValue,          // redirect URL for dynamic, real value for static
+        redirect_url: isDynamic ? qrValue : null,  // real destination for dynamic
+        short_id: shortId,
         color: qrColor,
         bg_color: bgColor,
         utm_source: formData.utmSource || null,
