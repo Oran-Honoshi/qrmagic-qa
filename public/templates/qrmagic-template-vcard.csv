@@ -1,0 +1,3 @@
+name,status,folder,color,vcard_name,vcard_title,vcard_company,vcard_phone,vcard_email,vcard_website,vcard_linkedin
+John Smith,dynamic,Sales Team,#8B5CF6,John Smith,CEO,Acme Inc,+15550001234,john@acme.com,https://acme.com,https://linkedin.com/in/johnsmith
+Jane Doe,dynamic,Sales Team,#8B5CF6,Jane Doe,VP Sales,Acme Inc,+15550001235,jane@acme.com,https://acme.com,https://linkedin.com/in/janedoe

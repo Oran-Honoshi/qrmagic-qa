@@ -1,0 +1,4 @@
+name,status,folder,color,url,utm_source,utm_medium,utm_campaign
+Homepage,static,Marketing,#06B6D4,https://mywebsite.com,instagram,qr_code,summer_2026
+Blog,static,Marketing,#06B6D4,https://mywebsite.com/blog,,,
+Contact Us,dynamic,Marketing,#F472B6,https://mywebsite.com/contact,flyer,print,q2_campaign

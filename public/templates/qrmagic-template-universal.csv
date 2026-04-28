@@ -1,0 +1,6 @@
+name,type,status,folder,color,url,wifi_ssid,wifi_password,wifi_security,vcard_name,vcard_title,vcard_company,vcard_phone,vcard_email,vcard_website,text,email_to,email_subject,email_body,sms_phone,sms_message,phone,whatsapp_phone,whatsapp_message,location_lat,location_lng,location_maps_url,event_title,event_location,event_start,event_end,event_description,social_platform,social_url,youtube_url,appstore_ios,appstore_android,bitcoin_currency,bitcoin_address,bitcoin_amount,zoom_url,zoom_id,zoom_password,pdf_url,paypal_url,paypal_amount,image_url
+My Website,url,static,Marketing,#06B6D4,https://mywebsite.com,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Guest WiFi,wifi,static,Operations,#F472B6,,MyNetwork,mypassword,WPA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+John Smith,vcard,dynamic,Sales,#8B5CF6,,,,,John Smith,CEO,Acme Inc,+15550001234,john@acme.com,https://acme.com,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Office Location,location,static,Operations,#4ADE80,,,,,,,,,,,,,,,,,,,+40.7128,-74.0060,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Team Meeting,event,static,Events,#FB923C,,,,,,,,,,,,,,,,,,,,,,,,Team Kickoff,123 Main St,2026-06-01T09:00,2026-06-01T17:00,Annual kickoff meeting,,,,,,,,,,,,,,,,,,

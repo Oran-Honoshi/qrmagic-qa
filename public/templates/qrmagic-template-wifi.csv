@@ -1,0 +1,4 @@
+name,status,folder,color,wifi_ssid,wifi_password,wifi_security
+Main WiFi,static,Operations,#06B6D4,MyNetwork_5G,password123,WPA
+Guest WiFi,static,Operations,#F472B6,MyNetwork_Guest,guestpass,WPA
+Staff Only,static,Operations,#8B5CF6,MyNetwork_Staff,staffpass,WPA
