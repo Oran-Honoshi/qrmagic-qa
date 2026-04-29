@@ -15,78 +15,47 @@ export default function AuthCallback() {
   useEffect(() => {
     async function handleCallback() {
       try {
-        // Get the session from Supabase after OAuth redirect
         const { data: { session }, error } = await supabase.auth.getSession();
-
-        if (error || !session?.user) {
-          router.replace("/auth?error=oauth_failed");
-          return;
-        }
+        if (error || !session?.user) { router.replace("/auth?error=oauth_failed"); return; }
 
         const { user } = session;
-
-        // Check if user already exists in our users table
         const { data: existing } = await supabase
-          .from("users")
-          .select("*")
-          .eq("email", user.email!)
-          .maybeSingle();
+          .from("users").select("*").eq("email", user.email!).maybeSingle();
 
         if (existing) {
-          // Existing user — update session
           sessionStorage.setItem("qrmagic_session", JSON.stringify({
-            id: existing.id,
-            email: existing.email,
-            name: existing.name,
-            plan: existing.plan,
+            id: existing.id, email: existing.email,
+            name: existing.name, plan: existing.plan,
           }));
         } else {
-          // New user — create record
           const name = user.user_metadata?.full_name ||
                        user.user_metadata?.name ||
                        user.email?.split("@")[0] || "User";
-
           const { data: newUser, error: insertError } = await supabase
             .from("users")
-            .insert({
-              email: user.email,
-              name,
-              password: "", // OAuth users have no password
-              marketing: false,
-              plan: "free",
-              deleted: false,
-            })
-            .select()
-            .single();
-
-          if (insertError || !newUser) {
-            router.replace("/auth?error=account_creation_failed");
-            return;
-          }
-
+            .insert({ email: user.email, name, password: "", marketing: false, plan: "free", deleted: false })
+            .select().single();
+          if (insertError || !newUser) { router.replace("/auth?error=account_creation_failed"); return; }
           sessionStorage.setItem("qrmagic_session", JSON.stringify({
-            id: newUser.id,
-            email: newUser.email,
-            name: newUser.name,
-            plan: newUser.plan,
+            id: newUser.id, email: newUser.email,
+            name: newUser.name, plan: newUser.plan,
           }));
         }
-
         router.replace("/dashboard");
-      } catch {
-        router.replace("/auth?error=unknown");
-      }
+      } catch { router.replace("/auth?error=unknown"); }
     }
-
     handleCallback();
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-[#0A0E14] flex items-center justify-center">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center">
       <div className="fixed inset-0 bg-grid pointer-events-none" />
       <div className="relative z-10 text-center">
-        <div className="w-12 h-12 border-2 border-[rgba(6,182,212,0.15)] border-t-[#06B6D4] rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-sm text-[#4A5568]">Signing you in with Google...</p>
+        <img src="/mascot.png" alt="Sqrly" className="w-16 h-16 object-contain mx-auto mb-5"
+          style={{ animation: "float 3.5s ease-in-out infinite" }} />
+        <div className="w-8 h-8 border-2 border-slate-200 border-t-[#00D4FF] rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-sm text-[#94A3B8] font-medium">Signing you in with Google...</p>
+        <p className="text-xs text-[#CBD5E1] mt-1">You&apos;ll be redirected to your dashboard.</p>
       </div>
     </div>
   );
