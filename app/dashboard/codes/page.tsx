@@ -50,9 +50,9 @@ function MiniQR({ code, size = 180 }: { code: QRCode; size?: number }) {
       const qr = new QRCodeStyling({
         width: size, height: size, type: "svg",
         data: code.value || "https://qrmagic.io",
-        dotsOptions: { color: code.color || "#06B6D4", type: "rounded" },
-        cornersSquareOptions: { color: code.color || "#06B6D4", type: "extra-rounded" },
-        cornersDotOptions: { color: code.color || "#06B6D4" },
+        dotsOptions: { color: code.color || "#00D4FF", type: "rounded" },
+        cornersSquareOptions: { color: code.color || "#00D4FF", type: "extra-rounded" },
+        cornersDotOptions: { color: code.color || "#00D4FF" },
         backgroundOptions: { color: code.bg_color || "#ffffff" },
         qrOptions: { errorCorrectionLevel: "H" },
       });
@@ -76,9 +76,9 @@ function PreviewModal({ code, onClose }: { code: QRCode; onClose: () => void }) 
       const qr = new QRCodeStyling({
         width: 200, height: 200, type: "svg",
         data: code.value || "https://qrmagic.io",
-        dotsOptions: { color: code.color || "#06B6D4", type: "rounded" },
-        cornersSquareOptions: { color: code.color || "#06B6D4", type: "extra-rounded" },
-        cornersDotOptions: { color: code.color || "#06B6D4" },
+        dotsOptions: { color: code.color || "#00D4FF", type: "rounded" },
+        cornersSquareOptions: { color: code.color || "#00D4FF", type: "extra-rounded" },
+        cornersDotOptions: { color: code.color || "#00D4FF" },
         backgroundOptions: { color: code.bg_color || "#ffffff" },
         qrOptions: { errorCorrectionLevel: "H" },
       });
@@ -96,14 +96,14 @@ function PreviewModal({ code, onClose }: { code: QRCode; onClose: () => void }) 
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.92 }}
         onClick={e => e.stopPropagation()}
-        className="bg-[#0F1520] border border-[rgba(255,255,255,0.1)] rounded-2xl p-6 max-w-sm w-full shadow-[0_24px_80px_rgba(0,0,0,0.6)]"
+        className="bg-[#FFFFFF] border border-[rgba(255,255,255,0.1)] rounded-2xl p-6 max-w-sm w-full shadow-[0_24px_80px_rgba(0,0,0,0.6)]"
       >
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h3 className="text-base font-bold text-[#F0F4F8]">{code.name}</h3>
-            <p className="text-xs text-[#4A5568] mt-0.5 break-all line-clamp-1">{code.value}</p>
+            <h3 className="text-base font-bold text-[#0F172A]">{code.name}</h3>
+            <p className="text-xs text-[#94A3B8] mt-0.5 break-all line-clamp-1">{code.value}</p>
           </div>
-          <button onClick={onClose} className="text-[#4A5568] hover:text-[#94A3B8] transition-colors ml-2 flex-shrink-0">
+          <button onClick={onClose} className="text-[#94A3B8] hover:text-[#475569] transition-colors ml-2 flex-shrink-0">
             <X size={18} />
           </button>
         </div>
@@ -111,9 +111,9 @@ function PreviewModal({ code, onClose }: { code: QRCode; onClose: () => void }) 
         <div className="flex justify-center mb-4">
           <div
             className="p-[1.5px] rounded-xl"
-            style={{ background: `linear-gradient(135deg, ${code.color || "#06B6D4"}, ${code.color || "#06B6D4"}60)` }}
+            style={{ background: `linear-gradient(135deg, ${code.color || "#00D4FF"}, ${code.color || "#00D4FF"}60)` }}
           >
-            <div className="bg-[#0F1520] rounded-[11px] p-3">
+            <div className="bg-[#FFFFFF] rounded-[11px] p-3">
               <div ref={containerRef} />
             </div>
           </div>
@@ -121,13 +121,13 @@ function PreviewModal({ code, onClose }: { code: QRCode; onClose: () => void }) 
 
         <div className="grid grid-cols-3 gap-2 mb-4">
           {[
-            { label: "Scans", value: code.scans || 0, color: "#06B6D4" },
+            { label: "Scans", value: code.scans || 0, color: "#00D4FF" },
             { label: "Clicks", value: code.clicks || 0, color: "#F472B6" },
             { label: "CTR", value: `${ctr}%`, color: "#4ADE80" },
           ].map(s => (
-            <div key={s.label} className="bg-[#141C2B] rounded-xl p-2.5 text-center border border-[rgba(255,255,255,0.06)]">
+            <div key={s.label} className="bg-[#F8FAFC] rounded-xl p-2.5 text-center border border-[rgba(226,232,240,0.8)]">
               <div className="text-lg font-black" style={{ color: s.color }}>{s.value}</div>
-              <div className="text-[10px] text-[#4A5568] font-medium">{s.label}</div>
+              <div className="text-[10px] text-[#94A3B8] font-medium">{s.label}</div>
             </div>
           ))}
         </div>
@@ -135,13 +135,13 @@ function PreviewModal({ code, onClose }: { code: QRCode; onClose: () => void }) 
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => (qrRef.current as any)?.download({ name: code.name, extension: "png" })}
-            className="flex items-center justify-center gap-1.5 py-2 text-xs font-semibold bg-[#141C2B] border border-[rgba(255,255,255,0.07)] rounded-xl text-[#94A3B8] hover:border-[rgba(6,182,212,0.3)] hover:text-[#06B6D4] transition-all"
+            className="flex items-center justify-center gap-1.5 py-2 text-xs font-semibold bg-[#F8FAFC] border border-[rgba(226,232,240,1)] rounded-xl text-[#475569] hover:border-[rgba(0,212,255,0.25)] hover:text-[#0891B2] transition-all"
           >
             <Download size={12} /> Download PNG
           </button>
           <button
             onClick={() => (qrRef.current as any)?.download({ name: code.name, extension: "svg" })}
-            className="flex items-center justify-center gap-1.5 py-2 text-xs font-semibold bg-[rgba(6,182,212,0.08)] border border-[rgba(6,182,212,0.2)] rounded-xl text-[#06B6D4] hover:bg-[#06B6D4] hover:text-[#0A0E14] transition-all"
+            className="flex items-center justify-center gap-1.5 py-2 text-xs font-semibold bg-[rgba(0,212,255,0.06)] border border-[rgba(0,212,255,0.15)] rounded-xl text-[#0891B2] hover:bg-[#00FF88] hover:text-[#F8FAFC] transition-all"
           >
             <Download size={12} /> Download SVG
           </button>
@@ -179,31 +179,31 @@ function EditModal({ code, onClose, onSave }: {
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.92 }}
         onClick={e => e.stopPropagation()}
-        className="bg-[#0F1520] border border-[rgba(255,255,255,0.1)] rounded-2xl p-6 max-w-sm w-full shadow-[0_24px_80px_rgba(0,0,0,0.6)]"
+        className="bg-[#FFFFFF] border border-[rgba(255,255,255,0.1)] rounded-2xl p-6 max-w-sm w-full shadow-[0_24px_80px_rgba(0,0,0,0.6)]"
       >
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-base font-bold text-[#F0F4F8]">Edit QR Code</h3>
-          <button onClick={onClose} className="text-[#4A5568] hover:text-[#94A3B8] transition-colors"><X size={18} /></button>
+          <h3 className="text-base font-bold text-[#0F172A]">Edit QR Code</h3>
+          <button onClick={onClose} className="text-[#94A3B8] hover:text-[#475569] transition-colors"><X size={18} /></button>
         </div>
 
         <div className="space-y-3 mb-5">
           <div>
-            <label className="text-xs font-semibold text-[#94A3B8] uppercase tracking-wider mb-1.5 block">Name</label>
+            <label className="text-xs font-semibold text-[#475569] uppercase tracking-wider mb-1.5 block">Name</label>
             <input value={name} onChange={e => setName(e.target.value)}
-              className="w-full bg-[#141C2B] border border-[rgba(255,255,255,0.07)] focus:border-[rgba(6,182,212,0.4)] rounded-xl px-4 py-2.5 text-sm text-[#F0F4F8] outline-none transition-all" />
+              className="w-full bg-[#F8FAFC] border border-[rgba(226,232,240,1)] focus:border-[rgba(6,182,212,0.4)] rounded-xl px-4 py-2.5 text-sm text-[#0F172A] outline-none transition-all" />
           </div>
           {code.type === "url" && code.status === "dynamic" && (
             <div>
-              <label className="text-xs font-semibold text-[#94A3B8] uppercase tracking-wider mb-1.5 block">
+              <label className="text-xs font-semibold text-[#475569] uppercase tracking-wider mb-1.5 block">
                 Destination URL
               </label>
               <input value={url} onChange={e => setUrl(e.target.value)} type="url"
-                className="w-full bg-[#141C2B] border border-[rgba(255,255,255,0.07)] focus:border-[rgba(6,182,212,0.4)] rounded-xl px-4 py-2.5 text-sm text-[#F0F4F8] outline-none transition-all" />
-              <p className="text-[10px] text-[#4A5568] mt-1.5">Dynamic — changing URL won&apos;t break existing printed codes.</p>
+                className="w-full bg-[#F8FAFC] border border-[rgba(226,232,240,1)] focus:border-[rgba(6,182,212,0.4)] rounded-xl px-4 py-2.5 text-sm text-[#0F172A] outline-none transition-all" />
+              <p className="text-[10px] text-[#94A3B8] mt-1.5">Dynamic — changing URL won&apos;t break existing printed codes.</p>
             </div>
           )}
           {code.type === "url" && code.status === "static" && (
-            <div className="bg-[rgba(248,113,113,0.06)] border border-[rgba(248,113,113,0.15)] rounded-xl px-4 py-3 text-xs text-[#4A5568]">
+            <div className="bg-[rgba(248,113,113,0.06)] border border-[rgba(248,113,113,0.15)] rounded-xl px-4 py-3 text-xs text-[#94A3B8]">
               Static QR — URL cannot be changed after creation.
             </div>
           )}
@@ -211,11 +211,11 @@ function EditModal({ code, onClose, onSave }: {
 
         <div className="flex gap-2">
           <button onClick={onClose}
-            className="flex-1 py-2.5 text-sm font-semibold border border-[rgba(255,255,255,0.07)] rounded-full text-[#4A5568] hover:text-[#94A3B8] transition-colors">
+            className="flex-1 py-2.5 text-sm font-semibold border border-[rgba(226,232,240,1)] rounded-full text-[#94A3B8] hover:text-[#475569] transition-colors">
             Cancel
           </button>
           <button onClick={save} disabled={saving}
-            className="flex-1 py-2.5 text-sm font-bold bg-[#06B6D4] text-[#0A0E14] rounded-full hover:bg-[#22D3EE] transition-all disabled:opacity-50">
+            className="flex-1 py-2.5 text-sm font-bold bg-[#00FF88] text-[#F8FAFC] rounded-full hover:bg-[#00CC6E] transition-all disabled:opacity-50">
             {saving ? "Saving..." : "Save Changes"}
           </button>
         </div>
@@ -235,19 +235,19 @@ function DeleteModal({ code, onClose, onConfirm }: {
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.92 }}
         onClick={e => e.stopPropagation()}
-        className="bg-[#0F1520] border border-[rgba(248,113,113,0.2)] rounded-2xl p-6 max-w-sm w-full shadow-[0_24px_80px_rgba(0,0,0,0.6)]"
+        className="bg-[#FFFFFF] border border-[rgba(248,113,113,0.2)] rounded-2xl p-6 max-w-sm w-full shadow-[0_24px_80px_rgba(0,0,0,0.6)]"
         style={{ borderTop: "2px solid rgba(248,113,113,0.4)" }}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-bold text-[#F0F4F8]">Delete QR Code?</h3>
-          <button onClick={onClose} className="text-[#4A5568] hover:text-[#94A3B8]"><X size={18} /></button>
+          <h3 className="text-base font-bold text-[#0F172A]">Delete QR Code?</h3>
+          <button onClick={onClose} className="text-[#94A3B8] hover:text-[#475569]"><X size={18} /></button>
         </div>
-        <p className="text-sm text-[#4A5568] mb-6 leading-relaxed">
-          <span className="text-[#F0F4F8] font-medium">&ldquo;{code.name}&rdquo;</span> will be permanently deleted. This cannot be undone.
+        <p className="text-sm text-[#94A3B8] mb-6 leading-relaxed">
+          <span className="text-[#0F172A] font-medium">&ldquo;{code.name}&rdquo;</span> will be permanently deleted. This cannot be undone.
         </p>
         <div className="flex gap-2">
           <button onClick={onClose}
-            className="flex-1 py-2.5 text-sm font-semibold border border-[rgba(255,255,255,0.07)] rounded-full text-[#4A5568] hover:text-[#94A3B8] transition-colors">
+            className="flex-1 py-2.5 text-sm font-semibold border border-[rgba(226,232,240,1)] rounded-full text-[#94A3B8] hover:text-[#475569] transition-colors">
             Cancel
           </button>
           <button onClick={onConfirm}
@@ -310,14 +310,14 @@ export default function CodesPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-lg font-black text-[#F0F4F8] tracking-tight">My QR Codes</h1>
-          <p className="text-xs text-[#4A5568] mt-0.5">
+          <h1 className="text-lg font-black text-[#0F172A] tracking-tight">My QR Codes</h1>
+          <p className="text-xs text-[#94A3B8] mt-0.5">
             {loading ? "Loading..." : `${codes.length} code${codes.length !== 1 ? "s" : ""}`}
           </p>
         </div>
         <button
           onClick={() => router.push("/dashboard/create")}
-          className="flex items-center gap-2 px-4 py-2 bg-[#06B6D4] text-[#0A0E14] font-bold rounded-full text-sm hover:bg-[#22D3EE] transition-all shadow-[0_4px_16px_rgba(6,182,212,0.3)]"
+          className="flex items-center gap-2 px-4 py-2 bg-[#00FF88] text-[#F8FAFC] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all shadow-[0_4px_16px_rgba(0,212,255,0.25)]"
         >
           <PlusCircle size={14} /> Create New
         </button>
@@ -326,18 +326,18 @@ export default function CodesPage() {
       {/* Filters */}
       <div className="flex gap-3 mb-5 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
-          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4A5568]" />
+          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
           <input
             value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search codes..."
-            className="w-full bg-[#0F1520] border border-[rgba(255,255,255,0.07)] rounded-xl pl-9 pr-4 py-2.5 text-sm text-[#F0F4F8] placeholder:text-[#4A5568] outline-none focus:border-[rgba(6,182,212,0.4)] transition-all"
+            className="w-full bg-[#FFFFFF] border border-[rgba(226,232,240,1)] rounded-xl pl-9 pr-4 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] outline-none focus:border-[rgba(6,182,212,0.4)] transition-all"
           />
         </div>
         <div className="relative">
-          <Filter size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4A5568]" />
+          <Filter size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
           <select
             value={typeFilter} onChange={e => setTypeFilter(e.target.value)}
-            className="bg-[#0F1520] border border-[rgba(255,255,255,0.07)] rounded-xl pl-8 pr-8 py-2.5 text-sm text-[#F0F4F8] outline-none appearance-none focus:border-[rgba(6,182,212,0.4)] transition-all"
+            className="bg-[#FFFFFF] border border-[rgba(226,232,240,1)] rounded-xl pl-8 pr-8 py-2.5 text-sm text-[#0F172A] outline-none appearance-none focus:border-[rgba(6,182,212,0.4)] transition-all"
           >
             <option value="">All types</option>
             {["url","wifi","vcard","text","email","whatsapp","location","event","social","bitcoin"].map(t => (
@@ -345,8 +345,8 @@ export default function CodesPage() {
             ))}
           </select>
         </div>
-        <div className="flex items-center gap-2 text-xs text-[#4A5568]">
-          <div className="w-2 h-2 rounded-full bg-[#06B6D4] shadow-[0_0_6px_#06B6D4]" />
+        <div className="flex items-center gap-2 text-xs text-[#94A3B8]">
+          <div className="w-2 h-2 rounded-full bg-[#00FF88] shadow-[0_0_6px_#00D4FF]" />
           Live from Supabase
         </div>
       </div>
@@ -365,15 +365,15 @@ export default function CodesPage() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-[#0F1520] border border-[rgba(255,255,255,0.07)] rounded-2xl p-12 text-center"
+          className="bg-[#FFFFFF] border border-[rgba(226,232,240,1)] rounded-2xl p-12 text-center"
         >
           <img src="/mascot.png" alt="mascot" className="w-16 h-16 object-contain mx-auto mb-4 opacity-60"
             style={{ animation: "float 3.5s ease-in-out infinite" }} />
-          <h3 className="text-base font-bold text-[#F0F4F8] mb-2">No QR codes yet</h3>
-          <p className="text-sm text-[#4A5568] mb-5">Create your first QR code to see it here.</p>
+          <h3 className="text-base font-bold text-[#0F172A] mb-2">No QR codes yet</h3>
+          <p className="text-sm text-[#94A3B8] mb-5">Create your first QR code to see it here.</p>
           <button
             onClick={() => router.push("/dashboard/create")}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#06B6D4] text-[#0A0E14] font-bold rounded-full text-sm hover:bg-[#22D3EE] transition-all"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#00FF88] text-[#F8FAFC] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all"
           >
             <PlusCircle size={14} /> Create Your First QR Code
           </button>
@@ -382,15 +382,15 @@ export default function CodesPage() {
 
       {/* Table */}
       {!loading && codes.length > 0 && (
-        <div className="bg-[#0F1520] border border-[rgba(255,255,255,0.07)] rounded-xl overflow-hidden mb-5">
+        <div className="bg-[#FFFFFF] border border-[rgba(226,232,240,1)] rounded-xl overflow-hidden mb-5">
           {/* Table header */}
-          <div className="grid grid-cols-[2fr_1fr_1fr_80px_80px_80px_100px] gap-3 px-4 py-3 border-b border-[rgba(255,255,255,0.05)]">
+          <div className="grid grid-cols-[2fr_1fr_1fr_80px_80px_80px_100px] gap-3 px-4 py-3 border-b border-[rgba(226,232,240,0.6)]">
             {["QR Code","Type","Status","Scans","Clicks","CTR","Actions"].map(h => (
-              <div key={h} className="text-[10px] font-semibold text-[#4A5568] uppercase tracking-wider">{h}</div>
+              <div key={h} className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider">{h}</div>
             ))}
           </div>
 
-          <div className="divide-y divide-[rgba(255,255,255,0.04)]">
+          <div className="divide-y divide-[rgba(226,232,240,0.5)]">
             <AnimatePresence>
               {filtered.map((code, i) => {
                 const Icon = typeIcon(code.type);
@@ -406,54 +406,54 @@ export default function CodesPage() {
                   >
                     {/* Name */}
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-lg bg-[rgba(6,182,212,0.08)] border border-[rgba(6,182,212,0.15)] flex items-center justify-center flex-shrink-0">
-                        <Icon size={15} className="text-[#06B6D4]" />
+                      <div className="w-9 h-9 rounded-lg bg-[rgba(0,212,255,0.06)] border border-[rgba(0,212,255,0.10)] flex items-center justify-center flex-shrink-0">
+                        <Icon size={15} className="text-[#0891B2]" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-sm font-medium text-[#F0F4F8] truncate">{code.name}</div>
-                        <div className="text-[10px] text-[#4A5568] truncate">{code.value}</div>
+                        <div className="text-sm font-medium text-[#0F172A] truncate">{code.name}</div>
+                        <div className="text-[10px] text-[#94A3B8] truncate">{code.value}</div>
                       </div>
                     </div>
 
                     {/* Type */}
-                    <div className="text-xs text-[#4A5568] capitalize">{code.type}</div>
+                    <div className="text-xs text-[#94A3B8] capitalize">{code.type}</div>
 
                     {/* Status */}
                     <div>
                       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
                         code.status === "dynamic"
-                          ? "bg-[rgba(6,182,212,0.08)] border-[rgba(6,182,212,0.2)] text-[#06B6D4]"
-                          : "bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.08)] text-[#4A5568]"
+                          ? "bg-[rgba(0,212,255,0.06)] border-[rgba(0,212,255,0.15)] text-[#0891B2]"
+                          : "bg-[rgba(226,232,240,0.5)] border-[rgba(255,255,255,0.08)] text-[#94A3B8]"
                       }`}>
                         {code.status}
                       </span>
                     </div>
 
                     {/* Scans */}
-                    <div className="text-sm font-bold text-[#06B6D4]">{code.scans || 0}</div>
+                    <div className="text-sm font-bold text-[#0891B2]">{code.scans || 0}</div>
 
                     {/* Clicks */}
                     <div className="text-sm font-bold text-[#F472B6]">{code.clicks || 0}</div>
 
                     {/* CTR */}
                     <div className="flex items-center gap-1.5">
-                      <div className="flex-1 h-1 bg-[#1A2436] rounded-full overflow-hidden max-w-[32px]">
+                      <div className="flex-1 h-1 bg-[#F1F5F9] rounded-full overflow-hidden max-w-[32px]">
                         <div
                           className="h-full rounded-full transition-all"
                           style={{
                             width: `${ctr}%`,
-                            background: ctr > 60 ? "#4ADE80" : ctr > 30 ? "#06B6D4" : "#F472B6"
+                            background: ctr > 60 ? "#4ADE80" : ctr > 30 ? "#00D4FF" : "#F472B6"
                           }}
                         />
                       </div>
-                      <span className="text-[11px] font-medium text-[#4A5568]">{ctr}%</span>
+                      <span className="text-[11px] font-medium text-[#94A3B8]">{ctr}%</span>
                     </div>
 
                     {/* Actions */}
                     <div className="flex items-center gap-1">
                       <button onClick={() => setPreviewCode(code)}
                         title="Preview"
-                        className="w-7 h-7 rounded-lg bg-[rgba(6,182,212,0.08)] border border-[rgba(6,182,212,0.15)] flex items-center justify-center text-[#06B6D4] hover:bg-[rgba(6,182,212,0.15)] transition-all">
+                        className="w-7 h-7 rounded-lg bg-[rgba(0,212,255,0.06)] border border-[rgba(0,212,255,0.10)] flex items-center justify-center text-[#0891B2] hover:bg-[rgba(0,212,255,0.10)] transition-all">
                         <Eye size={12} />
                       </button>
                       <button onClick={() => setEditCode(code)}
@@ -474,7 +474,7 @@ export default function CodesPage() {
           </div>
 
           {filtered.length === 0 && search && (
-            <div className="py-10 text-center text-sm text-[#4A5568]">
+            <div className="py-10 text-center text-sm text-[#94A3B8]">
               No codes match &ldquo;{search}&rdquo;
             </div>
           )}
@@ -485,7 +485,7 @@ export default function CodesPage() {
       {!loading && (
         <div className="space-y-2">
           <div className="flex items-center gap-2 mb-3">
-            <h3 className="text-sm font-semibold text-[#F0F4F8]">Advanced Features</h3>
+            <h3 className="text-sm font-semibold text-[#0F172A]">Advanced Features</h3>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[rgba(245,158,11,0.1)] border border-[rgba(245,158,11,0.2)] text-[#FCD34D]">
               PRO
             </span>
@@ -496,7 +496,7 @@ export default function CodesPage() {
             { icon: Globe,     title: "Custom Short Domain", desc: "Use your own domain for dynamic QR redirects." },
           ].map(f => (
             <div key={f.title}
-              className="flex items-center justify-between p-3.5 bg-[#0F1520] border border-[rgba(255,255,255,0.06)] rounded-xl hover:border-[rgba(245,158,11,0.2)] transition-all cursor-pointer group"
+              className="flex items-center justify-between p-3.5 bg-[#FFFFFF] border border-[rgba(226,232,240,0.8)] rounded-xl hover:border-[rgba(245,158,11,0.2)] transition-all cursor-pointer group"
               onClick={() => setShowUpgrade(true)}
             >
               <div className="flex items-center gap-3">
@@ -504,8 +504,8 @@ export default function CodesPage() {
                   <f.icon size={15} className="text-[#FCD34D]" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-[#F0F4F8]">{f.title}</div>
-                  <div className="text-xs text-[#4A5568]">{f.desc}</div>
+                  <div className="text-sm font-medium text-[#0F172A]">{f.title}</div>
+                  <div className="text-xs text-[#94A3B8]">{f.desc}</div>
                 </div>
               </div>
               <button className="text-[10px] font-bold px-3 py-1 rounded-full bg-[rgba(245,158,11,0.1)] border border-[rgba(245,158,11,0.2)] text-[#FCD34D] hover:bg-[rgba(245,158,11,0.2)] transition-all">
@@ -532,18 +532,18 @@ export default function CodesPage() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.92 }}
               onClick={e => e.stopPropagation()}
-              className="bg-[#0F1520] border border-[rgba(255,255,255,0.1)] rounded-2xl p-6 max-w-sm w-full text-center"
+              className="bg-[#FFFFFF] border border-[rgba(255,255,255,0.1)] rounded-2xl p-6 max-w-sm w-full text-center"
             >
               <img src="/mascot.png" alt="mascot" className="w-16 h-16 object-contain mx-auto mb-3" />
-              <h3 className="text-lg font-black text-[#F0F4F8] mb-2">Upgrade to Unlock</h3>
-              <p className="text-sm text-[#4A5568] mb-5">Get folders, campaigns, custom domains, and more from just $4/month.</p>
+              <h3 className="text-lg font-black text-[#0F172A] mb-2">Upgrade to Unlock</h3>
+              <p className="text-sm text-[#94A3B8] mb-5">Get folders, campaigns, custom domains, and more from just $4/month.</p>
               <button
                 onClick={() => { setShowUpgrade(false); router.push("/#pricing"); }}
-                className="w-full py-3 bg-[#06B6D4] text-[#0A0E14] font-bold rounded-full text-sm hover:bg-[#22D3EE] transition-all"
+                className="w-full py-3 bg-[#00FF88] text-[#F8FAFC] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all"
               >
                 View Upgrade Options
               </button>
-              <button onClick={() => setShowUpgrade(false)} className="mt-2 text-xs text-[#4A5568] hover:text-[#94A3B8] transition-colors w-full py-1">
+              <button onClick={() => setShowUpgrade(false)} className="mt-2 text-xs text-[#94A3B8] hover:text-[#475569] transition-colors w-full py-1">
                 Maybe later
               </button>
             </motion.div>

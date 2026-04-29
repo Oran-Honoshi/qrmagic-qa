@@ -18,7 +18,7 @@ const supabase = createClient(
 
 function getSession() {
   if (typeof window === "undefined") return null;
-  try { return JSON.parse(sessionStorage.getItem("qrmagic_session") || "null"); }
+  try { return JSON.parse(sessionStorage.getItem("sqrly_session") || "null"); }
   catch { return null; }
 }
 
@@ -32,7 +32,7 @@ function buildValueFromRow(row: Record<string, string>): string {
   const v = (k: string) => (row[k] || "").trim();
   const type = v("type").toLowerCase();
   switch (type) {
-    case "url":      return v("url") || "https://qrmagic.io";
+    case "url":      return v("url") || "https://sqrly.io";
     case "wifi":     return `WIFI:T:${v("wifi_security")||"WPA"};S:${v("wifi_ssid")};P:${v("wifi_password")};;`;
     case "vcard":    return `BEGIN:VCARD\nVERSION:4.0\nFN:${v("vcard_name")}\nTITLE:${v("vcard_title")}\nORG:${v("vcard_company")}\nTEL;TYPE=cell:${v("vcard_phone")}\nEMAIL:${v("vcard_email")}\nURL:${v("vcard_website")}\nURL;TYPE=linkedin:${v("vcard_linkedin")}\nEND:VCARD`;
     case "text":     return v("text");
@@ -47,7 +47,7 @@ function buildValueFromRow(row: Record<string, string>): string {
     case "pdf":      return v("pdf_url");
     case "paypal":   return v("paypal_url");
     case "image":    return v("image_url");
-    default:         return v("url") || "https://qrmagic.io";
+    default:         return v("url") || "https://sqrly.io";
   }
 }
 
@@ -112,7 +112,7 @@ export default function BulkPage() {
         type: c.type || "url",
         status: c.status || "static",
         folder: c.folder || "",
-        color: c.color || "#06B6D4",
+        color: c.color || "#00D4FF",
         url: c.type === "url" ? (c.redirect_url || c.value || "") : "",
         wifi_ssid: "", wifi_password: "", wifi_security: "",
         vcard_name: "", vcard_title: "", vcard_company: "",
@@ -184,7 +184,7 @@ export default function BulkPage() {
             type: (row.type || "url").toLowerCase(),
             status: (row.status || "static").toLowerCase(),
             folder,
-            color: row.color || "#06B6D4",
+            color: row.color || "#00D4FF",
             value: buildValueFromRow(row),
             conflict: conflictId ? "replace" : null,
             conflictId,
@@ -229,7 +229,7 @@ export default function BulkPage() {
         const qr = new QRCodeStyling({
           width: 1000, height: 1000,
           type: "svg",
-          data: r.value || "https://qrmagic.io",
+          data: r.value || "https://sqrly.io",
           dotsOptions: { color: r.color, type: "rounded" },
           cornersSquareOptions: { color: r.color, type: "extra-rounded" },
           cornersDotOptions: { color: r.color },
@@ -240,7 +240,7 @@ export default function BulkPage() {
         // Get SVG blob
         const svgBlob = await qr.getRawData("svg");
         if (svgBlob) {
-          const folder = r.folder || "QR Magic Export";
+          const folder = r.folder || "Sqrly Export";
           const safeFolder = folder.replace(/[/\\?%*:|"<>]/g, "-");
           const safeName = finalName.replace(/[/\\?%*:|"<>]/g, "-");
           zip.folder(safeFolder)?.file(`${safeName}.svg`, svgBlob);
@@ -283,7 +283,7 @@ export default function BulkPage() {
     const url = URL.createObjectURL(zipBlob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `qrmagic-bulk-${Date.now()}.zip`;
+    a.download = `sqrly-bulk-${Date.now()}.zip`;
     a.click();
     URL.revokeObjectURL(url);
     setDownloading(false);
@@ -299,14 +299,14 @@ export default function BulkPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
         <div>
-          <h1 className="text-lg font-black text-[#F0F4F8] tracking-tight">Bulk QR Generator</h1>
-          <p className="text-xs text-[#4A5568] mt-0.5">
+          <h1 className="text-lg font-black text-[#0F172A] tracking-tight">Bulk QR Generator</h1>
+          <p className="text-xs text-[#94A3B8] mt-0.5">
             Upload a CSV → get a ZIP of QR codes. Export your existing codes to edit and re-upload.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={exportExistingCSV} disabled={exportingCSV}
-            className="flex items-center gap-2 px-4 py-2 bg-[#0F1520] border border-[rgba(255,255,255,0.07)] rounded-full text-sm font-semibold text-[#94A3B8] hover:border-[rgba(6,182,212,0.3)] hover:text-[#06B6D4] transition-all disabled:opacity-50">
+            className="flex items-center gap-2 px-4 py-2 bg-[#FFFFFF] border border-[rgba(226,232,240,1)] rounded-full text-sm font-semibold text-[#475569] hover:border-[rgba(0,212,255,0.3)] hover:text-[#0891B2] transition-all disabled:opacity-50">
             {exportingCSV
               ? <div className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
               : <Download size={14} />}
@@ -321,40 +321,40 @@ export default function BulkPage() {
           <div className="w-12 h-12 rounded-xl bg-[rgba(245,158,11,0.1)] border border-[rgba(245,158,11,0.2)] flex items-center justify-center mx-auto mb-4">
             <Zap size={22} className="text-[#FCD34D]" />
           </div>
-          <h2 className="text-base font-bold text-[#F0F4F8] mb-2">Bulk Generation is a Paid Feature</h2>
-          <p className="text-sm text-[#4A5568] mb-5 leading-relaxed">
-            Upgrade to <strong className="text-[#F0F4F8]">Basic</strong> to bulk generate up to 50 QR codes at once,
-            or <strong className="text-[#F0F4F8]">Plus</strong> for up to 500 codes per upload.
+          <h2 className="text-base font-bold text-[#0F172A] mb-2">Bulk Generation is a Paid Feature</h2>
+          <p className="text-sm text-[#94A3B8] mb-5 leading-relaxed">
+            Upgrade to <strong className="text-[#0F172A]">Basic</strong> to bulk generate up to 50 QR codes at once,
+            or <strong className="text-[#0F172A]">Plus</strong> for up to 500 codes per upload.
           </p>
           <button onClick={() => router.push("/pricing")}
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#06B6D4] text-[#0A0E14] font-bold rounded-full text-sm hover:bg-[#22D3EE] transition-all">
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#00FF88] text-[#F8FAFC] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all">
             <Zap size={14} /> View Pricing
           </button>
         </div>
       ) : (
         <>
           {/* Templates download */}
-          <div className="bg-[#0F1520] border border-[rgba(255,255,255,0.07)] rounded-xl p-5 mb-4">
+          <div className="bg-[#FFFFFF] border border-[rgba(226,232,240,1)] rounded-xl p-5 mb-4">
             <div className="flex items-center gap-2 mb-3">
-              <FileText size={15} className="text-[#06B6D4]" />
-              <h3 className="text-sm font-semibold text-[#F0F4F8]">Download CSV Templates</h3>
+              <FileText size={15} className="text-[#0891B2]" />
+              <h3 className="text-sm font-semibold text-[#0F172A]">Download CSV Templates</h3>
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[rgba(245,158,11,0.1)] border border-[rgba(245,158,11,0.2)] text-[#FCD34D]">
                 {plan} · up to {limit} codes
               </span>
             </div>
-            <p className="text-xs text-[#4A5568] mb-4 leading-relaxed">
+            <p className="text-xs text-[#94A3B8] mb-4 leading-relaxed">
               Fill in a template and upload it. Or export your existing codes, edit them, and re-upload.
               Columns left blank are ignored.
             </p>
             <div className="flex flex-wrap gap-2">
               {[
-                { label: "Universal (all types)", file: "qrmagic-template-universal.csv" },
-                { label: "URL Template", file: "qrmagic-template-url.csv" },
-                { label: "vCard Template", file: "qrmagic-template-vcard.csv" },
-                { label: "Wi-Fi Template", file: "qrmagic-template-wifi.csv" },
+                { label: "Universal (all types)", file: "sqrly-template-universal.csv" },
+                { label: "URL Template", file: "sqrly-template-url.csv" },
+                { label: "vCard Template", file: "sqrly-template-vcard.csv" },
+                { label: "Wi-Fi Template", file: "sqrly-template-wifi.csv" },
               ].map(t => (
                 <a key={t.file} href={`/templates/${t.file}`} download
-                  className="flex items-center gap-1.5 px-3 py-2 bg-[#141C2B] border border-[rgba(255,255,255,0.07)] rounded-xl text-xs font-medium text-[#94A3B8] hover:border-[rgba(6,182,212,0.3)] hover:text-[#06B6D4] transition-all">
+                  className="flex items-center gap-1.5 px-3 py-2 bg-[#F8FAFC] border border-[rgba(226,232,240,1)] rounded-xl text-xs font-medium text-[#475569] hover:border-[rgba(0,212,255,0.3)] hover:text-[#0891B2] transition-all">
                   <Download size={11} /> {t.label}
                 </a>
               ))}
@@ -367,8 +367,8 @@ export default function BulkPage() {
               <div
                 className={`border-2 border-dashed rounded-2xl p-12 text-center transition-all cursor-pointer ${
                   dragOver
-                    ? "border-[#06B6D4] bg-[rgba(6,182,212,0.06)]"
-                    : "border-[rgba(255,255,255,0.1)] hover:border-[rgba(6,182,212,0.3)] hover:bg-[rgba(6,182,212,0.03)]"
+                    ? "border-[#00D4FF] bg-[rgba(6,182,212,0.06)]"
+                    : "border-[rgba(203,213,225,1)] hover:border-[rgba(0,212,255,0.3)] hover:bg-[rgba(6,182,212,0.03)]"
                 }`}
                 onClick={() => fileRef.current?.click()}
                 onDragOver={e => { e.preventDefault(); setDragOver(true); }}
@@ -377,10 +377,10 @@ export default function BulkPage() {
               >
                 <input ref={fileRef} type="file" accept=".csv" className="sr-only"
                   onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
-                <Upload size={36} className="mx-auto mb-4 text-[#4A5568]" />
-                <h3 className="text-base font-bold text-[#F0F4F8] mb-2">Drop your CSV here</h3>
-                <p className="text-sm text-[#4A5568] mb-4">or click to browse</p>
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#06B6D4] text-[#0A0E14] font-bold rounded-full text-sm">
+                <Upload size={36} className="mx-auto mb-4 text-[#94A3B8]" />
+                <h3 className="text-base font-bold text-[#0F172A] mb-2">Drop your CSV here</h3>
+                <p className="text-sm text-[#94A3B8] mb-4">or click to browse</p>
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#00FF88] text-[#F8FAFC] font-bold rounded-full text-sm">
                   <Upload size={14} /> Choose CSV File
                 </div>
               </div>
@@ -402,11 +402,11 @@ export default function BulkPage() {
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
               {/* Stats bar */}
               <div className="flex items-center gap-3 flex-wrap mb-4">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-[rgba(6,182,212,0.08)] border border-[rgba(6,182,212,0.2)] rounded-full text-xs font-semibold text-[#06B6D4]">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-[rgba(0,212,255,0.06)] border border-[rgba(0,212,255,0.2)] rounded-full text-xs font-semibold text-[#0891B2]">
                   <Check size={12} /> {toGenerate} to generate
                 </div>
                 {skipped > 0 && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-full text-xs font-semibold text-[#4A5568]">
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-[rgba(255,255,255,0.04)] border border-[rgba(226,232,240,1)] rounded-full text-xs font-semibold text-[#94A3B8]">
                     {skipped} skipped
                   </div>
                 )}
@@ -434,26 +434,26 @@ export default function BulkPage() {
               )}
 
               {/* Table */}
-              <div className="bg-[#0F1520] border border-[rgba(255,255,255,0.07)] rounded-xl overflow-hidden mb-4">
+              <div className="bg-[#FFFFFF] border border-[rgba(226,232,240,1)] rounded-xl overflow-hidden mb-4">
                 <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-3 px-4 py-3 border-b border-[rgba(255,255,255,0.05)]">
                   {["Name","Type","Status","Folder","Conflict"].map(h => (
-                    <div key={h} className="text-[10px] font-semibold text-[#4A5568] uppercase tracking-wider">{h}</div>
+                    <div key={h} className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider">{h}</div>
                   ))}
                 </div>
                 <div className="divide-y divide-[rgba(255,255,255,0.04)] max-h-96 overflow-y-auto">
                   {rows.map(r => (
                     <div key={r.index}
                       className={`grid grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-3 px-4 py-3 items-center ${r.error ? "opacity-50" : ""}`}>
-                      <div className="text-sm font-medium text-[#F0F4F8] truncate">{r.name}</div>
-                      <div className="text-xs text-[#4A5568] capitalize">{r.type}</div>
+                      <div className="text-sm font-medium text-[#0F172A] truncate">{r.name}</div>
+                      <div className="text-xs text-[#94A3B8] capitalize">{r.type}</div>
                       <div>
                         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
                           r.status === "dynamic"
-                            ? "bg-[rgba(6,182,212,0.08)] border-[rgba(6,182,212,0.2)] text-[#06B6D4]"
-                            : "bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.07)] text-[#4A5568]"
+                            ? "bg-[rgba(0,212,255,0.06)] border-[rgba(0,212,255,0.2)] text-[#0891B2]"
+                            : "bg-[rgba(255,255,255,0.04)] border-[rgba(226,232,240,1)] text-[#94A3B8]"
                         }`}>{r.status}</span>
                       </div>
-                      <div className="flex items-center gap-1.5 text-xs text-[#4A5568]">
+                      <div className="flex items-center gap-1.5 text-xs text-[#94A3B8]">
                         {r.folder && <><Folder size={11} /> {r.folder}</>}
                       </div>
                       <div>
@@ -463,10 +463,10 @@ export default function BulkPage() {
                               <button key={action} onClick={() => setConflictAction(r.index, action)}
                                 className={`px-1.5 py-0.5 rounded text-[9px] font-semibold capitalize transition-all border ${
                                   r.conflict === action
-                                    ? action === "replace" ? "bg-[rgba(6,182,212,0.15)] border-[rgba(6,182,212,0.4)] text-[#06B6D4]"
-                                    : action === "skip" ? "bg-[rgba(255,255,255,0.08)] border-[rgba(255,255,255,0.2)] text-[#94A3B8]"
+                                    ? action === "replace" ? "bg-[rgba(0,212,255,0.10)] border-[rgba(0,212,255,0.4)] text-[#0891B2]"
+                                    : action === "skip" ? "bg-[rgba(226,232,240,1)] border-[rgba(255,255,255,0.2)] text-[#475569]"
                                     : "bg-[rgba(244,114,182,0.1)] border-[rgba(244,114,182,0.3)] text-[#F472B6]"
-                                    : "border-[rgba(255,255,255,0.06)] text-[#4A5568] hover:border-[rgba(255,255,255,0.15)]"
+                                    : "border-[rgba(226,232,240,0.8)] text-[#94A3B8] hover:border-[rgba(255,255,255,0.15)]"
                                 }`}>
                                 {action}
                               </button>
@@ -475,7 +475,7 @@ export default function BulkPage() {
                         ) : r.error ? (
                           <span className="text-[10px] text-red-400">{r.error}</span>
                         ) : (
-                          <span className="text-[10px] text-[#4A5568]">—</span>
+                          <span className="text-[10px] text-[#94A3B8]">—</span>
                         )}
                       </div>
                     </div>
@@ -490,9 +490,9 @@ export default function BulkPage() {
                     <AlertTriangle size={13} className="text-[#FCD34D]" />
                     <span className="text-xs font-semibold text-[#FCD34D]">Conflict Resolution</span>
                   </div>
-                  <div className="grid grid-cols-3 gap-3 text-xs text-[#4A5568]">
-                    <div><span className="text-[#06B6D4] font-semibold">Replace</span> — overwrite the existing QR code</div>
-                    <div><span className="text-[#94A3B8] font-semibold">Skip</span> — leave existing, don&apos;t create new</div>
+                  <div className="grid grid-cols-3 gap-3 text-xs text-[#94A3B8]">
+                    <div><span className="text-[#0891B2] font-semibold">Replace</span> — overwrite the existing QR code</div>
+                    <div><span className="text-[#475569] font-semibold">Skip</span> — leave existing, don&apos;t create new</div>
                     <div><span className="text-[#F472B6] font-semibold">Rename</span> — create new with &quot;(copy)&quot; suffix</div>
                   </div>
                 </div>
@@ -500,11 +500,11 @@ export default function BulkPage() {
 
               <div className="flex gap-3">
                 <button onClick={() => { setStep("upload"); setRows([]); setErrors([]); }}
-                  className="flex items-center gap-2 px-5 py-2.5 border border-[rgba(255,255,255,0.1)] text-[#4A5568] font-semibold rounded-full text-sm hover:text-[#94A3B8] transition-all">
+                  className="flex items-center gap-2 px-5 py-2.5 border border-[rgba(203,213,225,1)] text-[#94A3B8] font-semibold rounded-full text-sm hover:text-[#475569] transition-all">
                   <X size={14} /> Cancel
                 </button>
                 <button onClick={generateAll} disabled={toGenerate === 0}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-[#06B6D4] text-[#0A0E14] font-bold rounded-full text-sm hover:bg-[#22D3EE] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_16px_rgba(6,182,212,0.3)]">
+                  className="flex items-center gap-2 px-6 py-2.5 bg-[#00FF88] text-[#F8FAFC] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_16px_rgba(0,212,255,0.25)]">
                   <Zap size={14} /> Generate {toGenerate} QR Code{toGenerate !== 1 ? "s" : ""} + Download ZIP
                 </button>
               </div>
@@ -514,18 +514,18 @@ export default function BulkPage() {
           {/* Generating */}
           {step === "generating" && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
-              <div className="w-16 h-16 border-3 border-[rgba(6,182,212,0.2)] border-t-[#06B6D4] rounded-full animate-spin mx-auto mb-6" style={{ borderWidth: 3 }} />
-              <h3 className="text-lg font-bold text-[#F0F4F8] mb-2">Generating QR Codes...</h3>
-              <p className="text-sm text-[#4A5568] mb-6">{generated} of {toGenerate} complete</p>
+              <div className="w-16 h-16 border-3 border-[rgba(0,212,255,0.2)] border-t-[#00D4FF] rounded-full animate-spin mx-auto mb-6" style={{ borderWidth: 3 }} />
+              <h3 className="text-lg font-bold text-[#0F172A] mb-2">Generating QR Codes...</h3>
+              <p className="text-sm text-[#94A3B8] mb-6">{generated} of {toGenerate} complete</p>
               <div className="max-w-xs mx-auto">
-                <div className="h-2 bg-[#1A2436] rounded-full overflow-hidden">
+                <div className="h-2 bg-[#F1F5F9] rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
-                    className="h-full bg-gradient-to-r from-[#0891B2] to-[#06B6D4] rounded-full"
+                    className="h-full bg-gradient-to-r from-[#0891B2] to-[#00D4FF] rounded-full"
                   />
                 </div>
-                <p className="text-xs text-[#4A5568] mt-2">{progress}%</p>
+                <p className="text-xs text-[#94A3B8] mt-2">{progress}%</p>
               </div>
             </motion.div>
           )}
@@ -536,18 +536,18 @@ export default function BulkPage() {
               <div className="w-16 h-16 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center mx-auto mb-5">
                 <Check size={28} className="text-green-400" />
               </div>
-              <h3 className="text-xl font-black text-[#F0F4F8] mb-2">All Done!</h3>
-              <p className="text-sm text-[#4A5568] mb-8">
+              <h3 className="text-xl font-black text-[#0F172A] mb-2">All Done!</h3>
+              <p className="text-sm text-[#94A3B8] mb-8">
                 {generated} QR code{generated !== 1 ? "s" : ""} generated and saved.
                 Your ZIP file should be downloading now.
               </p>
               <div className="flex items-center justify-center gap-3">
                 <button onClick={() => router.push("/dashboard/codes")}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-[#06B6D4] text-[#0A0E14] font-bold rounded-full text-sm hover:bg-[#22D3EE] transition-all">
+                  className="flex items-center gap-2 px-5 py-2.5 bg-[#00FF88] text-[#F8FAFC] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all">
                   View My Codes
                 </button>
                 <button onClick={() => { setStep("upload"); setRows([]); setErrors([]); setProgress(0); setGenerated(0); }}
-                  className="flex items-center gap-2 px-5 py-2.5 border border-[rgba(255,255,255,0.1)] text-[#94A3B8] font-semibold rounded-full text-sm hover:border-[rgba(6,182,212,0.3)] hover:text-[#06B6D4] transition-all">
+                  className="flex items-center gap-2 px-5 py-2.5 border border-[rgba(203,213,225,1)] text-[#475569] font-semibold rounded-full text-sm hover:border-[rgba(0,212,255,0.3)] hover:text-[#0891B2] transition-all">
                   <RefreshCw size={14} /> Upload Another
                 </button>
               </div>
