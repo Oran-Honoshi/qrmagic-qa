@@ -11,7 +11,7 @@ const supabase = createClient(
 );
 
 function makeCoupon(userId: string) {
-  return `MAGIC25-${userId.replace(/-/g, "").substring(0, 6).toUpperCase()}`;
+  return `SQRLY25-${userId.replace(/-/g, "").substring(0, 6).toUpperCase()}`;
 }
 
 function useCountdown(expiry: number) {
@@ -28,11 +28,11 @@ function useCountdown(expiry: number) {
 
 function CountUnit({ val, label }: { val: number; label: string }) {
   return (
-    <div className="bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.08)] rounded-xl px-4 py-3 min-w-[60px] text-center">
-      <div className="text-2xl font-black text-[#F0F4F8] tabular-nums leading-none">
+    <div className="bg-[rgba(255,255,255,0.06)] border border-slate-200 rounded-xl px-4 py-3 min-w-[60px] text-center">
+      <div className="text-2xl font-black text-[#0F172A] tabular-nums leading-none">
         {String(val).padStart(2, "0")}
       </div>
-      <div className="text-[9px] font-semibold text-[#4A5568] uppercase tracking-wider mt-1">{label}</div>
+      <div className="text-[9px] font-semibold text-[#94A3B8] uppercase tracking-wider mt-1">{label}</div>
     </div>
   );
 }
@@ -77,16 +77,16 @@ export function WelcomeOffer({ userId, createdAt }: { userId: string; createdAt:
             {/* Header */}
             <div
               className="relative px-6 py-8 text-center overflow-hidden"
-              style={{ background: "linear-gradient(135deg, #0F1520 0%, #141C2B 100%)" }}
+              style={{ background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)" }}
             >
               {/* Glow effects */}
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full"
-                style={{ background: "radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 70%)" }} />
+                style={{ background: "radial-gradient(circle, rgba(0,212,255,0.15) 0%, transparent 70%)" }} />
               <div className="absolute bottom-0 right-0 w-32 h-32 rounded-full"
                 style={{ background: "radial-gradient(circle, rgba(244,114,182,0.1) 0%, transparent 70%)" }} />
 
               <button onClick={close}
-                className="absolute top-4 right-4 w-7 h-7 rounded-full bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.08)] flex items-center justify-center text-[#4A5568] hover:text-[#94A3B8] transition-colors">
+                className="absolute top-4 right-4 w-7 h-7 rounded-full bg-[rgba(255,255,255,0.06)] border border-slate-200 flex items-center justify-center text-[#94A3B8] hover:text-[#475569] transition-colors">
                 <X size={13} />
               </button>
 
@@ -95,56 +95,56 @@ export function WelcomeOffer({ userId, createdAt }: { userId: string; createdAt:
                   className="w-16 h-16 object-contain mx-auto mb-4"
                   style={{ animation: "float 3.5s ease-in-out infinite" }} />
 
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[rgba(6,182,212,0.25)] bg-[rgba(6,182,212,0.1)] mb-3">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[rgba(0,212,255,0.25)] bg-[rgba(0,212,255,0.1)] mb-3">
                   <Gift size={11} className="text-[#06B6D4]" />
                   <span className="text-[11px] font-semibold text-[#06B6D4]">Welcome offer</span>
                 </div>
 
-                <h2 className="text-2xl font-black text-[#F0F4F8] tracking-tight mb-2">
+                <h2 className="text-2xl font-black text-[#0F172A] tracking-tight mb-2">
                   25% Off — Just for You
                 </h2>
-                <p className="text-sm text-[#4A5568] leading-relaxed">
+                <p className="text-sm text-[#94A3B8] leading-relaxed">
                   Upgrade to Basic or Plus within 48 hours<br />and save 25% on your first month.
                 </p>
 
                 {/* Countdown */}
                 <div className="flex items-center justify-center gap-2 mt-5">
                   <CountUnit val={h} label="hrs" />
-                  <span className="text-[#4A5568] font-bold text-lg">:</span>
+                  <span className="text-[#94A3B8] font-bold text-lg">:</span>
                   <CountUnit val={m} label="min" />
-                  <span className="text-[#4A5568] font-bold text-lg">:</span>
+                  <span className="text-[#94A3B8] font-bold text-lg">:</span>
                   <CountUnit val={s} label="sec" />
                 </div>
               </div>
             </div>
 
             {/* Body */}
-            <div className="bg-[#0F1520] border-t border-[rgba(255,255,255,0.07)] px-6 py-5">
-              <p className="text-[10px] font-semibold text-[#4A5568] uppercase tracking-wider mb-2">
+            <div className="bg-white border-t border-slate-200 px-6 py-5">
+              <p className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider mb-2">
                 Your personal discount code
               </p>
 
               {/* Coupon */}
-              <div className="flex items-center justify-between bg-[rgba(6,182,212,0.06)] border border-dashed border-[rgba(6,182,212,0.3)] rounded-xl px-4 py-3 mb-4">
-                <span className="text-lg font-black text-[#F0F4F8] tracking-widest">{coupon}</span>
+              <div className="flex items-center justify-between bg-[rgba(0,212,255,0.06)] border border-dashed border-[rgba(0,212,255,0.3)] rounded-xl px-4 py-3 mb-4">
+                <span className="text-lg font-black text-[#0F172A] tracking-widest">{coupon}</span>
                 <button onClick={copy}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-[rgba(6,182,212,0.1)] border border-[rgba(6,182,212,0.2)] text-[#06B6D4] hover:bg-[rgba(6,182,212,0.2)]">
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-[rgba(0,212,255,0.1)] border border-[rgba(0,212,255,0.2)] text-[#06B6D4] hover:bg-[rgba(0,212,255,0.2)]">
                   {copied ? <><Check size={12} />Copied!</> : <><Copy size={12} />Copy</>}
                 </button>
               </div>
 
-              <p className="text-[10.5px] text-[#4A5568] leading-relaxed mb-4">
+              <p className="text-[10.5px] text-[#94A3B8] leading-relaxed mb-4">
                 This code is unique to your account and expires 48 hours after signup. One use per account.
               </p>
 
               <button
                 onClick={() => { close(); window.location.href = "/#pricing"; }}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-[#06B6D4] text-[#0A0E14] font-bold rounded-full text-sm hover:bg-[#22D3EE] transition-all shadow-[0_4px_20px_rgba(6,182,212,0.3)]"
+                className="w-full flex items-center justify-center gap-2 py-3 bg-[#00FF88] text-[#0F172A] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all shadow-[0_4px_20px_rgba(0,212,255,0.3)]"
               >
                 <Zap size={14} /> Upgrade Now — Save 25%
               </button>
               <button onClick={close}
-                className="w-full py-2 mt-2 text-xs text-[#4A5568] hover:text-[#94A3B8] transition-colors">
+                className="w-full py-2 mt-2 text-xs text-[#94A3B8] hover:text-[#475569] transition-colors">
                 Maybe later
               </button>
             </div>
@@ -176,25 +176,25 @@ export function FirstQRCelebration({ userId }: { userId: string }) {
         initial={{ opacity: 0, scale: 0.88, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 24 }}
-        className="bg-[#0F1520] border border-[rgba(255,255,255,0.1)] rounded-2xl p-8 max-w-sm w-full text-center shadow-[0_32px_80px_rgba(0,0,0,0.7)]"
+        className="bg-white border border-slate-200 rounded-2xl p-8 max-w-sm w-full text-center shadow-[0_32px_80px_rgba(0,0,0,0.7)]"
       >
         <img src="/mascot.png" alt="mascot"
           className="w-20 h-20 object-contain mx-auto mb-4"
           style={{ animation: "float 3.5s ease-in-out infinite" }} />
-        <h2 className="text-xl font-black text-[#F0F4F8] tracking-tight mb-2">
+        <h2 className="text-xl font-black text-[#0F172A] tracking-tight mb-2">
           Your first QR code!
         </h2>
-        <p className="text-sm text-[#4A5568] leading-relaxed mb-6">
+        <p className="text-sm text-[#94A3B8] leading-relaxed mb-6">
           It&apos;s live and ready to scan. Share it anywhere — print, website, packaging, or business cards.
         </p>
         <button
           onClick={() => { setVisible(false); window.location.href = "/dashboard/codes"; }}
-          className="w-full flex items-center justify-center gap-2 py-3 bg-[#06B6D4] text-[#0A0E14] font-bold rounded-full text-sm hover:bg-[#22D3EE] transition-all"
+          className="w-full flex items-center justify-center gap-2 py-3 bg-[#00FF88] text-[#0F172A] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all"
         >
           <Zap size={14} /> View My Codes
         </button>
         <button onClick={() => setVisible(false)}
-          className="w-full py-2 mt-2 text-xs text-[#4A5568] hover:text-[#94A3B8] transition-colors">
+          className="w-full py-2 mt-2 text-xs text-[#94A3B8] hover:text-[#475569] transition-colors">
           Stay here
         </button>
       </motion.div>
