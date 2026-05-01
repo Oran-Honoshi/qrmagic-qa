@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Home, PlusCircle, Grid, BarChart2, Settings,
-  LogOut, ChevronLeft, ChevronRight, Layers, Zap, Menu
+  LogOut, ChevronLeft, ChevronRight, Layers, Zap, Menu, Image
 } from "lucide-react";
 
 const SESSION_KEY = "qrmagic_session";
@@ -20,6 +20,7 @@ const NAV_ITEMS = [
   { href: "/dashboard/create",    icon: PlusCircle, label: "Create QR" },
   { href: "/dashboard/codes",     icon: Grid,       label: "My Codes" },
   { href: "/dashboard/bulk",      icon: Layers,     label: "Bulk Import" },
+  { href: "/dashboard/assets",    icon: Image,      label: "Asset Library" },
   { href: "/dashboard/analytics", icon: BarChart2,  label: "Analytics" },
   { href: "/dashboard/settings",  icon: Settings,   label: "Settings" },
 ];

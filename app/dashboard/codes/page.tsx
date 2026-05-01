@@ -9,6 +9,8 @@ import {
   Bitcoin, Image, QrCode, Eye, Pencil, Trash2,
   Download, X, Check, Search, Filter, PlusCircle,
   Folder, Megaphone, Globe
+,
+  Smartphone, Music, Coffee, Heart, ShoppingBag, Package
 } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import type QRCodeStylingType from "qr-code-styling";
@@ -28,9 +30,11 @@ const TYPE_ICONS: Record<string, React.ElementType> = {
   url: Link, wifi: Wifi, vcard: User, text: FileText,
   email: Mail, sms: MessageSquare, phone: Phone,
   whatsapp: MessageSquare, location: MapPin, event: Calendar,
-  social: Share2, youtube: Video, appstore: Phone,
+  social: Share2, youtube: Video, appstore: Smartphone,
   bitcoin: Bitcoin, zoom: Video, pdf: File,
   paypal: CreditCard, image: Image,
+  multilink: Globe, spotify: Music, menu: Coffee,
+  feedback: Heart, coupon: ShoppingBag, package: Package,
 };
 
 type QRCode = {

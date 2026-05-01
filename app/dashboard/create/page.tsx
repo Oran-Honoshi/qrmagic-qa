@@ -8,6 +8,8 @@ import {
   MapPin, Calendar, Share2, Video, File, CreditCard,
   Bitcoin, Image, Check, ChevronDown, Upload, X,
   Download, Zap, Lock, ArrowLeft, Info
+,
+  Smartphone, Globe, Music, Coffee, Heart, ShoppingBag, Package
 } from "lucide-react";
 import type QRCodeStylingType from "qr-code-styling";
 import { createClient } from "@supabase/supabase-js";
@@ -40,24 +42,35 @@ const BASE_URL = typeof window !== "undefined"
 
 /* Types */
 const QR_TYPES = [
-  { id: "url",      icon: Link,          label: "URL",       desc: "Website or link" },
-  { id: "wifi",     icon: Wifi,          label: "Wi-Fi",     desc: "Network access" },
-  { id: "vcard",    icon: User,          label: "vCard",     desc: "Contact card" },
-  { id: "text",     icon: FileText,      label: "Text",      desc: "Plain text" },
-  { id: "email",    icon: Mail,          label: "Email",     desc: "Email compose" },
-  { id: "sms",      icon: MessageSquare, label: "SMS",       desc: "Text message" },
-  { id: "phone",    icon: Phone,         label: "Phone",     desc: "Phone call" },
-  { id: "whatsapp", icon: MessageSquare, label: "WhatsApp",  desc: "WA message" },
-  { id: "location", icon: MapPin,        label: "Location",  desc: "Maps / GPS" },
-  { id: "event",    icon: Calendar,      label: "Event",     desc: "iCal event" },
-  { id: "social",   icon: Share2,        label: "Social",    desc: "Profile link" },
-  { id: "youtube",  icon: Video,         label: "YouTube",   desc: "Video link" },
-  { id: "appstore", icon: Phone,         label: "App Store", desc: "iOS / Android" },
-  { id: "bitcoin",  icon: Bitcoin,       label: "Bitcoin",   desc: "Crypto payment" },
-  { id: "zoom",     icon: Video,         label: "Zoom",      desc: "Meeting link" },
-  { id: "pdf",      icon: File,          label: "PDF / File",desc: "Document link" },
-  { id: "paypal",   icon: CreditCard,    label: "PayPal",    desc: "Payment link" },
-  { id: "image",    icon: Image,         label: "Image",     desc: "Image URL" },
+  // Essential
+  { id: "url",       icon: Link,          label: "URL",        desc: "Link to any website",        category: "Essential" },
+  { id: "text",      icon: FileText,      label: "Text",       desc: "Plain text message",         category: "Essential" },
+  { id: "email",     icon: Mail,          label: "Email",      desc: "Pre-filled email compose",   category: "Essential" },
+  { id: "sms",       icon: MessageSquare, label: "SMS",        desc: "Pre-filled SMS message",     category: "Essential" },
+  { id: "phone",     icon: Phone,         label: "Phone",      desc: "Click-to-call number",       category: "Essential" },
+  { id: "location",  icon: MapPin,        label: "Location",   desc: "Google Maps pin",            category: "Essential" },
+  // Professional
+  { id: "vcard",     icon: User,          label: "vCard",      desc: "Digital business card",      category: "Professional" },
+  { id: "wifi",      icon: Wifi,          label: "Wi-Fi",      desc: "Auto-connect to network",    category: "Professional" },
+  { id: "pdf",       icon: File,          label: "PDF",        desc: "Document or file link",      category: "Professional" },
+  { id: "zoom",      icon: Video,         label: "Zoom",       desc: "Zoom meeting link",          category: "Professional" },
+  { id: "event",     icon: Calendar,      label: "Event",      desc: "Add to calendar (iCal)",     category: "Professional" },
+  { id: "appstore",  icon: Smartphone,    label: "App Store",  desc: "iOS & Android app links",    category: "Professional" },
+  // Social & Media
+  { id: "whatsapp",  icon: MessageSquare, label: "WhatsApp",   desc: "WhatsApp chat link",         category: "Social" },
+  { id: "social",    icon: Share2,        label: "Social",     desc: "Social media profile",       category: "Social" },
+  { id: "youtube",   icon: Video,         label: "YouTube",    desc: "Video or channel link",      category: "Social" },
+  { id: "multilink", icon: Globe,         label: "Multi-Link", desc: "Link-in-bio page",           category: "Social" },
+  { id: "spotify",   icon: Music,         label: "Spotify",    desc: "Song or playlist",           category: "Social" },
+  { id: "image",     icon: Image,         label: "Image",      desc: "Photo or image URL",         category: "Social" },
+  // Financial
+  { id: "paypal",    icon: CreditCard,    label: "PayPal",     desc: "PayPal payment link",        category: "Financial" },
+  { id: "bitcoin",   icon: Bitcoin,       label: "Crypto",     desc: "Crypto wallet address",      category: "Financial" },
+  // Retail & Promo
+  { id: "menu",      icon: Coffee,        label: "Menu",       desc: "Restaurant menu link",       category: "Retail" },
+  { id: "feedback",  icon: Heart,         label: "Feedback",   desc: "Review or survey link",      category: "Retail" },
+  { id: "coupon",    icon: ShoppingBag,   label: "Coupon",     desc: "Discount or promo page",     category: "Retail" },
+  { id: "package",   icon: Package,       label: "Product",    desc: "Product info page",          category: "Retail" },
 ];
 
 const QR_COLORS = [
