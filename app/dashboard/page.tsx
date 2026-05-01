@@ -121,7 +121,7 @@ export default function DashboardPage() {
 
         {/* Welcome banner */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-          className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#0F172A] to-[#1E293B] p-6"
+          className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#0F172A] to-[#1E293B] p-5 md:p-6"
           style={{ boxShadow: "0 8px 32px rgba(15,23,42,0.15)" }}>
           <div className="absolute inset-0 bg-grid opacity-30" />
           <div className="absolute top-0 right-32 w-48 h-48 rounded-full"
@@ -155,7 +155,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Two column */}
-        <div className="grid lg:grid-cols-2 gap-4">
+        <div className="grid lg:grid-cols-2 gap-3 md:gap-4">
           {/* Recent */}
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
             <div className="flex items-center justify-between mb-4">
@@ -218,7 +218,7 @@ export default function DashboardPage() {
         {/* Quick create */}
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
           <h3 className="text-sm font-bold text-[#0F172A] mb-4">Quick Create</h3>
-          <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-12 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2">
             {QUICK_TYPES.map(({ id, icon: Icon, label, color }) => (
               <motion.button key={id} whileTap={{ scale: 0.95 }}
                 whileHover={{ y: -3, transition: { duration: 0.2 } }}

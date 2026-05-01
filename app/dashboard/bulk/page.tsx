@@ -346,7 +346,7 @@ export default function BulkPage() {
               Fill in a template and upload it. Or export your existing codes, edit them, and re-upload.
               Columns left blank are ignored.
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
               {[
                 { label: "Universal (all types)", file: "sqrly-template-universal.csv" },
                 { label: "URL Template", file: "sqrly-template-url.csv" },
@@ -401,7 +401,7 @@ export default function BulkPage() {
           {step === "preview" && (
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
               {/* Stats bar */}
-              <div className="flex items-center gap-3 flex-wrap mb-4">
+              <div className="flex items-center gap-2 flex-wrap mb-4">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-[rgba(0,212,255,0.06)] border border-[rgba(0,212,255,0.2)] rounded-full text-xs font-semibold text-[#0891B2]">
                   <Check size={12} /> {toGenerate} to generate
                 </div>
@@ -435,7 +435,7 @@ export default function BulkPage() {
 
               {/* Table */}
               <div className="bg-[#FFFFFF] border border-[rgba(226,232,240,1)] rounded-xl overflow-hidden mb-4">
-                <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-3 px-4 py-3 border-b border-[rgba(255,255,255,0.05)]">
+                <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-3 px-4 py-3 border-b border-[rgba(255,255,255,0.05)]">
                   {["Name","Type","Status","Folder","Conflict"].map(h => (
                     <div key={h} className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider">{h}</div>
                   ))}
@@ -443,7 +443,7 @@ export default function BulkPage() {
                 <div className="divide-y divide-[rgba(255,255,255,0.04)] max-h-96 overflow-y-auto">
                   {rows.map(r => (
                     <div key={r.index}
-                      className={`grid grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-3 px-4 py-3 items-center ${r.error ? "opacity-50" : ""}`}>
+                      className={`hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-3 px-4 py-3 items-center ${r.error ? "opacity-50" : ""}`}>
                       <div className="text-sm font-medium text-[#0F172A] truncate">{r.name}</div>
                       <div className="text-xs text-[#94A3B8] capitalize">{r.type}</div>
                       <div>

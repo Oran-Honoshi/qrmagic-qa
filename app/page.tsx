@@ -396,7 +396,7 @@ function ProblemSolution() {
           <p className="text-[#475569] text-lg">vs. The Sqrly Way</p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-4 md:gap-6">
           <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             className="bg-slate-50/80 border border-slate-200 rounded-2xl p-6">
@@ -465,7 +465,7 @@ function HowItWorks() {
           <p className="text-[#475569]">Three steps. Thirty seconds. Scannable.</p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-5">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-5">
           {steps.map((step, i) => (
             <motion.div key={i}
               initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
@@ -514,7 +514,7 @@ function UseCases() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
           {cases.map((c, i) => (
             <motion.div key={i}
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
@@ -563,7 +563,7 @@ function TrustBar() {
           </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {items.map(({ icon: Icon, color, title, desc }, i) => (
             <motion.div key={i}
               initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
@@ -598,7 +598,7 @@ function TypeShowcase({ onSignup }: { onSignup: () => void }) {
           <p className="text-[#475569]">Every format your business needs, engineered for reliable scanning.</p>
         </motion.div>
 
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 mb-10">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 md:gap-3 mb-10">
           {QR_TYPES.map(({ id, icon: Icon, label }, i) => (
             <motion.button key={id}
               initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }}
@@ -679,7 +679,7 @@ function Pricing({ onSignup }: { onSignup: () => void }) {
           </div>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-5 items-center">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-5 items-center">
           {plans.map((plan, i) => {
             const price = annual ? plan.price.annual : plan.price.monthly;
             return (

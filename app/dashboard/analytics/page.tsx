@@ -100,14 +100,14 @@ export default function AnalyticsPage() {
         <p className="text-xs text-[#94A3B8] mt-0.5">Real-time scan and click data across all your QR codes.</p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <StatCard icon={Smartphone}   value={totalScans}   label="Total Scans"  color="#00D4FF" bg="rgba(0,212,255,0.08)" />
         <StatCard icon={MousePointer} value={totalClicks}  label="Total Clicks" color="#F472B6" bg="rgba(244,114,182,0.08)" />
         <StatCard icon={TrendingUp}   value={`${avgCTR}%`} label="Avg CTR"      color="#00FF88" bg="rgba(0,255,136,0.08)" />
         <StatCard icon={QrCode}       value={codes.length} label="Active Codes" color="#8B5CF6" bg="rgba(139,92,246,0.08)" />
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-4 mb-4">
+      <div className="grid lg:grid-cols-2 gap-3 md:gap-4 mb-4">
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-5">
             <div>
@@ -167,7 +167,7 @@ export default function AnalyticsPage() {
       {!loading && codes.length > 0 && (
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm mb-4">
           <h3 className="text-sm font-bold text-[#0F172A] mb-4">QR Type Breakdown</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 md:gap-3">
             {Object.entries(codes.reduce((acc, c) => { acc[c.type] = (acc[c.type] || 0) + 1; return acc; }, {} as Record<string,number>))
               .map(([type, count]) => {
                 const Icon = TYPE_ICONS[type] || QrCode;

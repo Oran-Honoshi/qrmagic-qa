@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Home, PlusCircle, Grid, BarChart2, Settings,
-  LogOut, ChevronLeft, ChevronRight, Layers, Zap
+  LogOut, ChevronLeft, ChevronRight, Layers, Zap, Menu
 } from "lucide-react";
 
 const SESSION_KEY = "qrmagic_session";
@@ -26,6 +26,7 @@ const NAV_ITEMS = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState<Record<string, string> | null>(null);
   const pathname = usePathname();
   const router = useRouter();
@@ -57,14 +58,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="fixed inset-0 bg-grid pointer-events-none z-0" />
 
       {/* Sidebar */}
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setMobileOpen(false)} />
+      )}
+
       <aside
-        className="fixed top-0 left-0 bottom-0 z-50 flex flex-col transition-all duration-300 bg-white border-r border-slate-200 shadow-sm"
-        style={{ width: sidebarW }}
+        className={`fixed top-0 left-0 bottom-0 z-50 flex flex-col transition-all duration-300 bg-white border-r border-slate-200 shadow-sm
+          md:translate-x-0 ${mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"}`}
+        style={{ width: mobileOpen ? "224px" : sidebarW }}
       >
         {/* Logo */}
         <div className="flex items-center gap-2.5 px-4 h-16 border-b border-slate-100 flex-shrink-0">
           <img src="/mascot.png" alt="Sqrly" className="w-7 h-7 object-contain rounded-lg flex-shrink-0" />
-          {!collapsed && (
+          {(!collapsed || mobileOpen) && (
             <span className="text-base font-black tracking-tight text-[#0F172A] whitespace-nowrap">
               Sq<span className="text-[#00D4FF]">r</span>ly
             </span>
@@ -127,13 +135,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main */}
-      <main className="relative z-10 flex-1 flex flex-col min-h-screen transition-all duration-300"
-        style={{ marginLeft: sidebarW }}>
+      <main className="relative z-10 flex-1 flex flex-col min-h-screen transition-all duration-300 ml-0 md:ml-[var(--sidebar-w)]"
+        style={{ "--sidebar-w": sidebarW } as React.CSSProperties}>
         {/* Top bar */}
-        <header className="h-16 border-b border-slate-200 flex items-center justify-between px-6 bg-white/80 backdrop-blur-xl sticky top-0 z-40 flex-shrink-0">
-          <h1 className="text-sm font-bold text-[#0F172A]">
-            {NAV_ITEMS.find(n => pathname === n.href || (n.href !== "/dashboard" && pathname.startsWith(n.href)))?.label || "Dashboard"}
-          </h1>
+        <header className="h-16 border-b border-slate-200 flex items-center justify-between px-4 md:px-6 bg-white/80 backdrop-blur-xl sticky top-0 z-40 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setMobileOpen(true)}
+              className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg text-[#475569] hover:bg-slate-100 transition-colors">
+              <Menu size={18} strokeWidth={1.5} />
+            </button>
+            <h1 className="text-sm font-bold text-[#0F172A]">
+              {NAV_ITEMS.find(n => pathname === n.href || (n.href !== "/dashboard" && pathname.startsWith(n.href)))?.label || "Dashboard"}
+            </h1>
+          </div>
           <div className="flex items-center gap-3">
             <div className="hidden sm:block text-right">
               <div className="text-xs font-semibold text-[#0F172A]">{user.name || "User"}</div>

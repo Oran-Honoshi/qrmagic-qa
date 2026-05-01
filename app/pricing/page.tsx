@@ -64,7 +64,7 @@ export default function PricingPage() {
       <div className="relative z-10 pt-28 pb-20 px-6">
         <div className="max-w-5xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
-            <h1 className="text-5xl font-black tracking-tight text-[#0F172A] mb-4">Simple Pricing</h1>
+            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-[#0F172A] mb-4">Simple Pricing</h1>
             <p className="text-[#475569] text-lg mb-8">Start free. Upgrade when you grow.</p>
             <div className="inline-flex items-center gap-1 bg-slate-100 rounded-full p-1">
               <button onClick={() => setAnnual(false)}
@@ -86,7 +86,7 @@ export default function PricingPage() {
             </div>
           )}
 
-          <div className="grid md:grid-cols-3 gap-5 items-center mb-16">
+          <div className="grid md:grid-cols-3 gap-4 items-start md:items-center mb-16">
             {PLANS.map((plan, i) => {
               const price = annual ? plan.price.annual : plan.price.monthly;
               return (
@@ -137,7 +137,7 @@ export default function PricingPage() {
             })}
           </div>
 
-          <div className="grid sm:grid-cols-3 gap-6 text-center">
+          <div className="grid sm:grid-cols-3 gap-4 text-center">
             {[
               { q: "Can I cancel anytime?", a: "Yes. Cancel anytime, no questions asked. Keep access until end of billing period." },
               { q: "Is there a free trial?", a: "Yes. All paid plans include a 7-day free trial. No credit card required to start." },
