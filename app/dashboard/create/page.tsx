@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import type QRCodeStylingType from "qr-code-styling";
 import { createClient } from "@supabase/supabase-js";
+import { QRFrameDesigner } from "@/components/QRFrameDesigner";
 
 const supabase = createClient(
   "https://igbbfjushjmiafohvgdt.supabase.co",
@@ -330,10 +331,11 @@ function buildQRValue(type: string, data: Record<string, string>): string {
 /* Holographic QR Preview */
 /* Holographic QR Preview */
 function QRPreview({
-  value, color, bgColor, dotStyle, ecLevel, logo, isHolo,
+  value, color, bgColor, dotStyle, ecLevel, logo, isHolo, onOpenFrame,
 }: {
   value: string; color: string; bgColor: string;
   dotStyle: string; ecLevel: string; logo: string | null; isHolo: boolean;
+  onOpenFrame: () => void;
 }): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   const qrRef = useRef<unknown>(null);
@@ -466,6 +468,18 @@ function CreatePageInner() {
   const [isHolo, setIsHolo] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [showFrameDesigner, setShowFrameDesigner] = useState(false);
+  const [qrSvgContent, setQrSvgContent] = useState("");
+
+  const qrPreviewRef = useRef<HTMLDivElement>(null);
+
+  function openFrameDesigner() {
+    const svgEl = qrPreviewRef.current?.querySelector("svg");
+    if (svgEl) {
+      setQrSvgContent(svgEl.innerHTML);
+      setShowFrameDesigner(true);
+    }
+  }
 
   const qrValue = selectedType ? buildQRValue(selectedType, formData) : "https://qrmagic.io";
 
@@ -545,6 +559,7 @@ function CreatePageInner() {
   const steps = ["Choose Type", "Enter Details", "Customize"];
 
   return (
+    <>
     <div className="max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
@@ -790,20 +805,31 @@ function CreatePageInner() {
 
             {/* Right panel — sticky preview */}
             <div>
-              <QRPreview
-                value={qrValue}
-                color={qrColor}
-                bgColor={bgColor}
-                dotStyle={dotStyle}
-                ecLevel={ecLevel}
-                logo={logo}
-                isHolo={isHolo}
-              />
+              <div ref={qrPreviewRef}>
+                <QRPreview
+                  value={qrValue}
+                  color={qrColor}
+                  bgColor={bgColor}
+                  dotStyle={dotStyle}
+                  ecLevel={ecLevel}
+                  logo={logo}
+                  isHolo={isHolo}
+                  onOpenFrame={openFrameDesigner}
+                />
+              </div>
             </div>
           </div>
         </motion.div>
       )}
     </div>
+
+      {showFrameDesigner && qrSvgContent && (
+        <QRFrameDesigner
+          qrSvgContent={qrSvgContent}
+          onClose={() => setShowFrameDesigner(false)}
+        />
+      )}
+    </>
   );
 }
 
