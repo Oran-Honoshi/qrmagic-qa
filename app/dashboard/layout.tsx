@@ -6,6 +6,7 @@ import {
   Home, PlusCircle, Grid, BarChart2, Settings,
   LogOut, ChevronLeft, ChevronRight, Layers, Zap, Menu, Image
 } from "lucide-react";
+import { LangSwitcher } from "@/components/LangContext";
 
 const SESSION_KEY = "qrmagic_session";
 
@@ -150,6 +151,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </h1>
           </div>
           <div className="flex items-center gap-3">
+            <LangSwitcher compact />
             <div className="hidden sm:block text-right">
               <div className="text-xs font-semibold text-[#0F172A]">{user.name || "User"}</div>
               <div className="text-[10px] text-[#94A3B8]">{user.email}</div>

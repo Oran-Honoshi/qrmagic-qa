@@ -719,7 +719,7 @@ function CreatePageInner() {
             <div key={s} className="flex items-center gap-2 flex-1 last:flex-none">
               <div className="flex items-center gap-2">
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold border transition-all ${
-                  state === "done" ? "bg-[#00FF88] border-[#00D4FF] text-[#F8FAFC]" :
+                  state === "done" ? "bg-[#00FF88] border-[#00D4FF] text-[#0F172A]" :
                   state === "active" ? "border-[#00D4FF] text-[#0891B2] shadow-[0_0_8px_rgba(6,182,212,0.4)]" :
                   "border-[rgba(255,255,255,0.1)] text-[#94A3B8]"
                 }`}>
@@ -793,13 +793,13 @@ function CreatePageInner() {
                     <div className="flex bg-[#F8FAFC] border border-[rgba(226,232,240,1)] rounded-full p-1 gap-1 w-fit mb-2">
                       <button onClick={() => dynamicUsed < 1 ? setIsDynamic(true) : null}
                         className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                          isDynamic ? "bg-[#00FF88] text-[#F8FAFC]" : "text-[#94A3B8] hover:text-[#475569]"
+                          isDynamic ? "bg-[#00FF88] text-[#0F172A]" : "text-[#94A3B8] hover:text-[#475569]"
                         }`}>
                         <Zap size={10} className="inline mr-1" />Dynamic
                       </button>
                       <button onClick={() => setIsDynamic(false)}
                         className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                          !isDynamic ? "bg-[#00FF88] text-[#F8FAFC]" : "text-[#94A3B8] hover:text-[#475569]"
+                          !isDynamic ? "bg-[#00FF88] text-[#0F172A]" : "text-[#94A3B8] hover:text-[#475569]"
                         }`}>
                         <Lock size={10} className="inline mr-1" />Static
                       </button>
@@ -972,7 +972,7 @@ function CreatePageInner() {
                 className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-full font-bold text-sm transition-all ${
                   saved
                     ? "bg-green-500/20 border border-green-500/30 text-green-400"
-                    : "bg-[#00FF88] text-[#F8FAFC] hover:bg-[#00CC6E] hover:-translate-y-0.5 shadow-[0_4px_20px_rgba(0,212,255,0.25)]"
+                    : "bg-[#00FF88] text-[#0F172A] hover:bg-[#00CC6E] hover:-translate-y-0.5 shadow-[0_4px_20px_rgba(0,212,255,0.25)]"
                 } disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none`}
               >
                 {saving ? (
