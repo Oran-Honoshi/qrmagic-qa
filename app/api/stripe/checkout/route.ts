@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
 
     // Dynamic import so Stripe is never imported at build time
     const Stripe = (await import("stripe")).default;
-    const stripe = new Stripe(stripeSecret, { apiVersion: "2025-04-30" as any });
+    const stripe = new Stripe(stripeSecret, { apiVersion: "2026-04-22.dahlia" as any });
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
