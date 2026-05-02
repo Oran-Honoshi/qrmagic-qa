@@ -74,6 +74,42 @@ const QR_TYPES = [
   { id: "package",   icon: Package,       label: "Product",    desc: "Product info page",          category: "Retail" },
 ];
 
+const QR_CATEGORIES_LIST = [
+  { label: "Essential",      color: "#00D4FF", types: ["url","text","email","sms","phone","location"] },
+  { label: "Professional",   color: "#8B5CF6", types: ["vcard","wifi","pdf","zoom","event","appstore"] },
+  { label: "Social & Media", color: "#F472B6", types: ["whatsapp","social","youtube","multilink","spotify","image"] },
+  { label: "Financial",      color: "#00FF88", types: ["paypal","bitcoin"] },
+  { label: "Retail & Promo", color: "#FB923C", types: ["menu","feedback","coupon","package"] },
+];
+
+const TYPE_HINTS: Record<string, string> = {
+  url:       "Great for websites, landing pages, product pages, or any web link.",
+  text:      "Perfect for short messages, quotes, or instructions that don't need a link.",
+  email:     "Pre-fill an email — great for feedback collection or support.",
+  sms:       "Let customers text you instantly — great for reservations or support.",
+  phone:     "One scan dials your number — perfect for business cards and flyers.",
+  location:  "Share your exact location — great for events, stores, or pop-ups.",
+  vcard:     "Save your full contact card to someone's phone with one scan.",
+  wifi:      "Let guests join your network without sharing the password verbally.",
+  pdf:       "Link to a menu, brochure, manual, or any hosted document.",
+  zoom:      "Share your Zoom link — great for printed invitations and posters.",
+  event:     "Add an event to any calendar — great for conferences and weddings.",
+  appstore:  "Direct people to download your iOS or Android app.",
+  whatsapp:  "Open a pre-filled WhatsApp chat — great for customer service.",
+  social:    "Link to your Instagram, LinkedIn, TikTok, or any social profile.",
+  youtube:   "Share a video or channel — great for demos and tutorials.",
+  multilink: "One QR, many links — like a Linktree. Perfect for bio links.",
+  spotify:   "Share a song, playlist, or podcast — great for events and venues.",
+  image:     "Display a photo or gallery — great for portfolios and products.",
+  paypal:    "Accept payments or tips with one scan — great for freelancers.",
+  bitcoin:   "Share your crypto wallet for donations or payments.",
+  menu:      "Link to your digital menu — great for restaurants, cafés, and bars.",
+  feedback:  "Collect reviews and ratings — great for hotels and services.",
+  coupon:    "Share a discount or promo page — great for retail and events.",
+  package:   "Link to product info, warranty, or support page.",
+};
+
+
 const QR_COLORS = [
   "#00D4FF", "#F472B6", "#8B5CF6", "#4ADE80",
   "#FB923C", "#F87171", "#0F172A", "#F8FAFC",
@@ -174,6 +210,12 @@ function QRForm({ type, data, onChange }: {
           {f("utmCampaign", "utm_campaign", "e.g. summer_sale")}
           {f("utmTerm", "utm_term", "e.g. keyword")}
           {f("utmContent", "utm_content", "e.g. blue_button")}
+          <div className="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <p className="text-[10px] text-[#475569] leading-relaxed">
+              💡 UTM parameters work on <strong className="text-[#0F172A]">both static and dynamic</strong> QR codes.
+              Your destination website&apos;s analytics (e.g. Google Analytics) will capture these when someone scans the code.
+            </p>
+          </div>
         </div>
       </details>
     </div>;
@@ -381,7 +423,33 @@ function QRPreview({
 
   function download(ext: "svg" | "png" | "jpeg") {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (qrRef.current as any)?.download({ name: "qrmagic-export", extension: ext });
+    (qrRef.current as any)?.download({ name: "sqrly-export", extension: ext });
+  }
+
+  function downloadPDF() {
+    if (!ref.current) return;
+    const svgEl = ref.current.querySelector("svg");
+    if (!svgEl) return;
+    const svgData = new XMLSerializer().serializeToString(svgEl);
+    const img = new window.Image();
+    const svgBlob = new Blob([svgData], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(svgBlob);
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 600; canvas.height = 600;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, 600, 600);
+      ctx.drawImage(img, 0, 0, 600, 600);
+      URL.revokeObjectURL(url);
+      const dataUrl = canvas.toDataURL("image/png");
+      const win = window.open("", "_blank");
+      if (!win) return;
+      win.document.write(`<html><head><style>body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;}img{max-width:80%;max-height:80%;}@media print{body{margin:20mm;}@page{size:A4;margin:20mm;}}</style></head><body><img src="${dataUrl}" onload="window.print();setTimeout(()=>window.close(),500)"/></body></html>`);
+      win.document.close();
+    };
+    img.src = url;
   }
 
   return (
@@ -560,7 +628,7 @@ function CreatePageInner() {
 
   return (
     <>
-    <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <button onClick={() => router.push("/dashboard")}
@@ -605,25 +673,38 @@ function CreatePageInner() {
       {/* Step 1: Type Selection */}
       {step === 1 && (
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <h2 className="text-sm font-semibold text-[#0F172A] mb-4">What type of QR code?</h2>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5 mb-6">
-            {QR_TYPES.map(({ id, icon: Icon, label, desc }) => (
-              <button key={id} onClick={() => { setSelectedType(id); setStep(2); }}
-                className={`flex flex-col items-center gap-2 p-3.5 rounded-xl border transition-all group ${
-                  selectedType === id
-                    ? "bg-[rgba(0,212,255,0.08)] border-[rgba(0,212,255,0.25)] shadow-[0_0_16px_rgba(0,212,255,0.08)]"
-                    : "bg-[#FFFFFF] border-[rgba(226,232,240,1)] hover:border-[rgba(0,212,255,0.15)] hover:bg-[rgba(6,182,212,0.04)]"
-                }`}>
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
-                  selectedType === id ? "bg-[rgba(0,212,255,0.10)]" : "bg-[#F8FAFC] group-hover:bg-[rgba(0,212,255,0.06)]"
-                }`}>
-                  <Icon size={20} className={selectedType === id ? "text-[#0891B2]" : "text-[#94A3B8] group-hover:text-[#0891B2] transition-colors"} />
+          <h2 className="text-sm font-semibold text-[#0F172A] mb-5">What type of QR code?</h2>
+          <div className="space-y-5 mb-6">
+            {QR_CATEGORIES_LIST.map(cat => (
+              <div key={cat.label}>
+                <div className="flex items-center gap-2 mb-2.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                    style={{ color: cat.color, background: `${cat.color}15`, border: `1px solid ${cat.color}30` }}>
+                    {cat.label}
+                  </span>
+                  <div className="flex-1 h-px bg-slate-100" />
                 </div>
-                <div className="text-center">
-                  <div className={`text-xs font-semibold ${selectedType === id ? "text-[#0891B2]" : "text-[#475569]"}`}>{label}</div>
-                  <div className="text-[9px] text-[#94A3B8] mt-0.5">{desc}</div>
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                  {QR_TYPES.filter(t => cat.types.includes(t.id)).map(({ id, icon: Icon, label, desc }) => (
+                    <button key={id} onClick={() => { setSelectedType(id); setStep(2); }}
+                      className={`flex flex-col items-center gap-2 p-3.5 rounded-xl border transition-all group ${
+                        selectedType === id
+                          ? "bg-[#00D4FF]/08 border-[#00D4FF]/25"
+                          : "bg-white border-slate-200 hover:border-[#00D4FF]/30 hover:bg-[#00D4FF]/04"
+                      }`}>
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                        selectedType === id ? "bg-[#00D4FF]/10" : "bg-slate-50 group-hover:bg-[#00D4FF]/06"
+                      }`}>
+                        <Icon size={18} className={selectedType === id ? "text-[#0891B2]" : "text-[#94A3B8] group-hover:text-[#0891B2]"} strokeWidth={1.5} />
+                      </div>
+                      <div className="text-center">
+                        <div className={`text-[10px] font-semibold leading-tight ${selectedType === id ? "text-[#0891B2]" : "text-[#475569]"}`}>{label}</div>
+                        <div className="text-[9px] text-[#94A3B8] mt-0.5 leading-tight">{desc}</div>
+                      </div>
+                    </button>
+                  ))}
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         </motion.div>
@@ -664,6 +745,12 @@ function CreatePageInner() {
                   </div>
                 )}
 
+                {selectedType && TYPE_HINTS[selectedType] && (
+                  <div className="bg-[#00D4FF]/06 border border-[#00D4FF]/20 rounded-xl px-4 py-3 mb-4 flex items-start gap-2">
+                    <span className="text-sm flex-shrink-0 mt-0.5">💡</span>
+                    <p className="text-xs text-[#0891B2] leading-relaxed">{TYPE_HINTS[selectedType]}</p>
+                  </div>
+                )}
                 <QRForm
                   type={selectedType}
                   data={formData}
