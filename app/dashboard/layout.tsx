@@ -38,6 +38,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (!session?.id) { router.replace("/auth"); return; }
     setUser(session);
     if (window.innerWidth < 900) setCollapsed(true);
+
+    // Always refresh plan from Supabase on every page load
+    import("@supabase/supabase-js").then(({ createClient }) => {
+      const db = createClient(
+        "https://igbbfjushjmiafohvgdt.supabase.co",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnYmJmanVzaGptaWFmb2h2Z2R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTgxNDQsImV4cCI6MjA5MjYzNDE0NH0.xIvQiHWm4IVlkGSwgRK0Owyhhna5qz8HCGCtPL2JexI"
+      );
+      db.from("users").select("plan").eq("id", session.id).single()
+        .then(({ data }) => {
+          if (data?.plan) {
+            const updated = { ...session, plan: data.plan };
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify(updated));
+            setUser(updated);
+          }
+        });
+    });
   }, [router]);
 
   function logout() {
