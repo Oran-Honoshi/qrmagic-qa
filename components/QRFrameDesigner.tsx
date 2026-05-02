@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Download, Check, X, Type, Palette } from "lucide-react";
 
-type FrameId = "none" | "modern" | "rounded" | "badge" | "ticket" | "bubble" | "minimal" | "neon";
+type FrameId = "none" | "modern" | "rounded" | "badge" | "ticket" | "bubble" | "minimal" | "neon" | "sign" | "tag" | "arrow" | "circle";
 
 interface FramePreset {
   id: FrameId;
@@ -84,6 +84,38 @@ const FRAMES: Record<FrameId, FramePreset> = {
     textPos: { x: 100, y: 218 },
     strokeColor: "#00FF88", fillColor: "#0F172A", strokeWidth: 2,
   },
+  sign: {
+    id: "sign", name: "Sign", emoji: "🪧",
+    path: "M4 4 H196 V196 H110 L100 216 L90 196 H4 Z",
+    viewBox: "0 0 200 220",
+    qrPos: { x: 16, y: 16, size: 168 },
+    textPos: { x: 100, y: 190 },
+    strokeColor: "#00D4FF", fillColor: "#FFFFFF", strokeWidth: 2,
+  },
+  tag: {
+    id: "tag", name: "Tag", emoji: "🏷",
+    path: "M4 20 H160 L196 100 L160 180 H4 Z",
+    viewBox: "0 0 200 200",
+    qrPos: { x: 16, y: 16, size: 140 },
+    textPos: { x: 90, y: 190 },
+    strokeColor: "#8B5CF6", fillColor: "#FFFFFF", strokeWidth: 2,
+  },
+  arrow: {
+    id: "arrow", name: "Arrow", emoji: "➡️",
+    path: "M4 40 H130 L196 100 L130 160 H4 Z",
+    viewBox: "0 0 200 200",
+    qrPos: { x: 12, y: 36, size: 128 },
+    textPos: { x: 70, y: 188 },
+    strokeColor: "#FB923C", fillColor: "#FFFFFF", strokeWidth: 2,
+  },
+  circle: {
+    id: "circle", name: "Circle", emoji: "⭕",
+    path: "M100 4 A96 96 0 1 1 99.99 4 Z",
+    viewBox: "0 0 200 200",
+    qrPos: { x: 30, y: 30, size: 140 },
+    textPos: { x: 100, y: 190 },
+    strokeColor: "#F472B6", fillColor: "#FFFFFF", strokeWidth: 2,
+  },
 };
 
 const CTA_PRESETS = [
@@ -118,6 +150,15 @@ const COLORS = {
   fill:   ["#FFFFFF","#F8FAFC","#0F172A","#1E293B","#F0FFF4","#EFF6FF","#FFF7ED","#FDF4FF"],
 };
 
+// Corner dot styles for the QR code itself
+const CORNER_STYLES = [
+  { id: "square",        label: "Square",      preview: "⬛" },
+  { id: "extra-rounded", label: "Rounded",     preview: "🔵" },
+  { id: "dot",           label: "Dot",         preview: "⚫" },
+  { id: "classy",        label: "Classy",      preview: "💠" },
+  { id: "classy-rounded",label: "Soft",        preview: "🔷" },
+];
+
 function ColorDot({ color, selected, onClick }: { color: string; selected: boolean; onClick: () => void }) {
   return (
     <button onClick={onClick}
@@ -144,6 +185,7 @@ export function QRFrameDesigner({
   const [textColor, setTextColor] = useState("#0F172A");
   const [fillColor, setFillColor] = useState("#FFFFFF");
   const [downloaded, setDownloaded] = useState(false);
+  const [cornerStyle, setCornerStyle] = useState("extra-rounded");
   const [symbol, setSymbol] = useState("none");
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -357,6 +399,30 @@ export function QRFrameDesigner({
                   </motion.button>
                 ))}
               </div>
+            </div>
+
+            {/* Corner style */}
+            <div>
+              <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">
+                Corner Style
+              </p>
+              <div className="flex gap-1.5 flex-wrap">
+                {CORNER_STYLES.map(cs => (
+                  <motion.button key={cs.id} whileTap={{ scale: 0.95 }}
+                    onClick={() => setCornerStyle(cs.id)}
+                    className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl border transition-all ${
+                      cornerStyle === cs.id
+                        ? "bg-[#00D4FF]/08 border-[#00D4FF]/30"
+                        : "bg-slate-50 border-slate-200 hover:border-[#00D4FF]/20"
+                    }`}>
+                    <span className="text-base">{cs.preview}</span>
+                    <span className={`text-[8px] font-semibold ${cornerStyle === cs.id ? "text-[#0891B2]" : "text-[#94A3B8]"}`}>{cs.label}</span>
+                  </motion.button>
+                ))}
+              </div>
+              <p className="text-[9px] text-[#CBD5E1] mt-1.5">
+                Corner style applies when QR is regenerated in the dashboard creator.
+              </p>
             </div>
 
             {/* Colors */}

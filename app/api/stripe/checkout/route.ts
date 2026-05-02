@@ -1,53 +1,51 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Stripe price IDs - set these in Vercel environment variables
-const PRICE_IDS: Record<string, string> = {
-  basic_monthly:  process.env.STRIPE_PRICE_BASIC_MONTHLY  || "",
-  basic_annual:   process.env.STRIPE_PRICE_BASIC_ANNUAL   || "",
-  plus_monthly:   process.env.STRIPE_PRICE_PLUS_MONTHLY   || "",
-  plus_annual:    process.env.STRIPE_PRICE_PLUS_ANNUAL    || "",
+const PRICE_IDS: Record<string, Record<string, string>> = {
+  basic: {
+    monthly: process.env.STRIPE_PRICE_BASIC_MONTHLY || "",
+    annual:  process.env.STRIPE_PRICE_BASIC_ANNUAL  || "",
+  },
+  plus: {
+    monthly: process.env.STRIPE_PRICE_PLUS_MONTHLY || "",
+    annual:  process.env.STRIPE_PRICE_PLUS_ANNUAL  || "",
+  },
 };
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
+  const stripeSecret = process.env.STRIPE_SECRET_KEY;
+
+  if (!stripeSecret) {
+    return NextResponse.json(
+      { error: "Payments are not configured yet. Please contact us at office@honoshi.co.il" },
+      { status: 503 }
+    );
+  }
+
   try {
-    const { plan, billing, userId, email } = await request.json();
+    const { plan, billing, userId, email } = await req.json();
 
-    const priceKey = `${plan}_${billing}`;
-    const priceId = PRICE_IDS[priceKey];
-
+    const priceId = PRICE_IDS[plan]?.[billing];
     if (!priceId) {
-      return NextResponse.json(
-        { error: `Invalid plan or Stripe not configured yet. Price key: ${priceKey}` },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid plan or billing period" }, { status: 400 });
     }
 
-    // Dynamic import of Stripe to avoid SSR issues
+    // Dynamic import so Stripe is never imported at build time
     const Stripe = (await import("stripe")).default;
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-      apiVersion: "2026-04-22.dahlia",
-    });
+    const stripe = new Stripe(stripeSecret, { apiVersion: "2025-04-30" as any });
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${request.nextUrl.origin}/dashboard?upgraded=true`,
-      cancel_url:  `${request.nextUrl.origin}/#pricing`,
-      client_reference_id: userId,
+      success_url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://sqrly.net"}/dashboard?upgraded=1`,
+      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://sqrly.net"}/pricing`,
       customer_email: email,
       metadata: { userId, plan, billing },
-      subscription_data: {
-        metadata: { userId, plan },
-      },
     });
 
     return NextResponse.json({ url: session.url });
-  } catch (err) {
-    console.error("Stripe error:", err);
-    return NextResponse.json(
-      { error: "Failed to create checkout session" },
-      { status: 500 }
-    );
+  } catch (err: any) {
+    console.error("Stripe checkout error:", err);
+    return NextResponse.json({ error: err.message || "Checkout failed" }, { status: 500 });
   }
 }

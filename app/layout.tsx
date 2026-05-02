@@ -7,11 +7,11 @@ import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: {
-    default: "Sqrly — Free Dynamic QR Code Generator",
-    template: "%s | Sqrly",
+    default: "Free QR Code Generator — Sqrly",
+    template: "%s — Free QR Code Generator | Sqrly",
   },
   description:
-    "Generate dynamic QR codes with real-time analytics. Privacy-first, 100% client-side. SVG vector export, 18 QR types, custom branding. No watermark, no ads, free forever.",
+    "Free QR code generator — create dynamic QR codes with real-time analytics. SVG vector export, 22 QR types, custom frames & logo. No watermark, no signup required. Free forever.",
   keywords: [
     "free QR code generator",
     "dynamic QR code",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   creator: "Sqrly",
   metadataBase: new URL("https://sqrly.net"),
   openGraph: {
-    title: "Sqrly — Free Dynamic QR Code Generator",
+    title: "Free QR Code Generator — Sqrly",
     description:
       "Privacy-first QR codes with analytics, SVG export, and 18 types. Free forever. No watermark.",
     url: "https://sqrly.net",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sqrly — Free Dynamic QR Code Generator",
+    title: "Free QR Code Generator — Sqrly",
     description: "Privacy-first QR codes with analytics and SVG export. Free forever.",
     images: ["/mascot.png"],
   },
