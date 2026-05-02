@@ -38,9 +38,7 @@ function generateShortId(): string {
 }
 
 // Base URL for redirects
-const BASE_URL = typeof window !== "undefined"
-  ? window.location.origin
-  : "https://qrmagic-qa-oran-honoshis-projects.vercel.app";
+const BASE_URL = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || "https://sqrly.net");
 
 /* Types */
 const QR_TYPES = [
@@ -585,6 +583,14 @@ function QRPreview({
       <p className="text-center text-[9px] text-[#94A3B8] mt-2">
         SVG is print-ready &amp; EU DPP compliant
       </p>
+      <button onClick={downloadPDF}
+        className="w-full mt-1.5 flex items-center justify-center gap-1 py-2 text-[11px] font-semibold bg-[#F8FAFC] border border-[rgba(226,232,240,1)] rounded-xl text-[#475569] hover:border-[rgba(0,212,255,0.25)] hover:text-[#0891B2] transition-all">
+        <Download size={11} /> PDF (Print)
+      </button>
+      <button onClick={onOpenFrame}
+        className="w-full mt-1.5 flex items-center justify-center gap-1 py-2 text-[11px] font-semibold bg-[#F8FAFC] border border-[rgba(0,255,136,0.25)] rounded-xl text-[#00CC6E] hover:bg-[#00FF88]/10 transition-all">
+        🖼 Add Frame &amp; Sticker
+      </button>
     </div>
   );
 }
@@ -934,6 +940,42 @@ function CreatePageInner() {
                   </FormField>
 
                   {/* Logo upload */}
+                  {/* Pre-made logo presets */}
+                  <div className="mb-3">
+                    <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">Quick Logo Presets</p>
+                    <div className="grid grid-cols-6 gap-1.5">
+                      {[
+                        { label: "None", emoji: "✕", val: null },
+                        { label: "WiFi", emoji: "📶", val: "wifi" },
+                        { label: "Link", emoji: "🔗", val: "link" },
+                        { label: "Shop", emoji: "🛒", val: "shop" },
+                        { label: "Mail", emoji: "✉️", val: "mail" },
+                        { label: "Phone", emoji: "📞", val: "phone" },
+                        { label: "Map", emoji: "📍", val: "map" },
+                        { label: "Video", emoji: "▶️", val: "video" },
+                        { label: "Star", emoji: "⭐", val: "star" },
+                        { label: "Heart", emoji: "❤️", val: "heart" },
+                        { label: "Menu", emoji: "🍽", val: "menu" },
+                        { label: "Gift", emoji: "🎁", val: "gift" },
+                      ].map(p => (
+                        <button key={p.val || "none"} onClick={() => {
+                          if (!p.val) { setLogo(null); return; }
+                          // Create SVG data URL for emoji symbol
+                          const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="white" stroke="#E2E8F0" stroke-width="2"/><text x="50" y="65" text-anchor="middle" font-size="52">${p.emoji}</text></svg>`;
+                          const url = `data:image/svg+xml;base64,${btoa(svg)}`;
+                          setLogo(url);
+                        }}
+                          className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg border text-[8px] font-medium transition-all ${
+                            !p.val && !logo ? "bg-[#00D4FF]/08 border-[#00D4FF]/30 text-[#0891B2]"
+                            : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/30"
+                          }`}>
+                          <span className="text-lg leading-none">{p.emoji}</span>
+                          {p.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <FormField label="Logo Overlay" hint="Recommended: use EC Level H with logos">
                     <label className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all ${
                       logo

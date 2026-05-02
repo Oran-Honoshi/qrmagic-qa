@@ -252,6 +252,7 @@ function HeroGenerator() {
   const [showModal, setShowModal] = useState(false);
   const [activeCategory, setActiveCategory] = useState("Essential");
   const [qrName, setQrName] = useState("");
+  const [logoSymbol, setLogoSymbol] = useState<string | null>(null);
   const [showFrameDesigner, setShowFrameDesigner] = useState(false);
   const [qrSvgContent, setQrSvgContent] = useState("");
   const ref = useRef<HTMLDivElement>(null);
@@ -306,11 +307,13 @@ function HeroGenerator() {
     if (!qrRef.current) return;
     const t = setTimeout(() => {
       (qrRef.current as any)?.update({
-        data: value || "https://sqrly.io",
+        data: value || "https://sqrly.net",
         dotsOptions: { color, type: "rounded" },
         cornersSquareOptions: { color, type: "extra-rounded" },
         cornersDotOptions: { color },
         backgroundOptions: { color: bgColor },
+        image: logoSymbol || undefined,
+        imageOptions: { crossOrigin: "anonymous", margin: 4, imageSize: 0.3, hideBackgroundDots: true },
       });
     }, 300);
     return () => clearTimeout(t);
@@ -466,6 +469,42 @@ function HeroGenerator() {
                   placeholder={placeholder[selectedType] || "Enter content..."}
                   rows={2}
                   className="w-full bg-slate-50 border border-slate-200 focus:border-[#00D4FF] focus:bg-white rounded-xl px-4 py-3 text-sm text-[#0F172A] placeholder:text-[#CBD5E1] outline-none transition-all resize-none focus:shadow-[0_0_0_3px_rgba(0,212,255,0.10)]" />
+              </div>
+
+              {/* Logo Presets */}
+              <div className="mb-4">
+                <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">Center Symbol (optional)</p>
+                <div className="flex gap-1.5 flex-wrap">
+                  {[
+                    { emoji: "✕", val: null, label: "None" },
+                    { emoji: "📶", val: "wifi", label: "WiFi" },
+                    { emoji: "🔗", val: "link", label: "Link" },
+                    { emoji: "🛒", val: "shop", label: "Shop" },
+                    { emoji: "✉️", val: "mail", label: "Mail" },
+                    { emoji: "📞", val: "phone", label: "Call" },
+                    { emoji: "📍", val: "map", label: "Map" },
+                    { emoji: "▶️", val: "video", label: "Video" },
+                    { emoji: "⭐", val: "star", label: "Star" },
+                    { emoji: "❤️", val: "heart", label: "Heart" },
+                    { emoji: "🍽", val: "menu", label: "Menu" },
+                    { emoji: "🎁", val: "gift", label: "Gift" },
+                  ].map(p => (
+                    <motion.button key={p.val || "none"} whileTap={{ scale: 0.9 }}
+                      onClick={() => {
+                        if (!p.val) { setLogoSymbol(null); return; }
+                        const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="white" stroke="#E2E8F0" stroke-width="2"/><text x="50" y="65" text-anchor="middle" font-size="52">${p.emoji}</text></svg>`;
+                        setLogoSymbol(`data:image/svg+xml;base64,${btoa(svg)}`);
+                      }}
+                      className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg border text-[8px] font-medium transition-all ${
+                        (!p.val && !logoSymbol) || (p.val && logoSymbol?.includes(p.emoji))
+                          ? "bg-[#00D4FF]/08 border-[#00D4FF]/30 text-[#0891B2]"
+                          : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/30"
+                      }`}>
+                      <span className="text-lg leading-none">{p.emoji}</span>
+                      {p.label}
+                    </motion.button>
+                  ))}
+                </div>
               </div>
 
               {/* Colors */}

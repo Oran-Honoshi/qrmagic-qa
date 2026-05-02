@@ -39,7 +39,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setUser(session);
     if (window.innerWidth < 900) setCollapsed(true);
 
-    // Always refresh plan from Supabase on every page load
+    // Always refresh plan from Supabase — if changed, reload so all pages get fresh session
     import("@supabase/supabase-js").then(({ createClient }) => {
       const db = createClient(
         "https://igbbfjushjmiafohvgdt.supabase.co",
@@ -47,10 +47,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       );
       db.from("users").select("plan").eq("id", session.id).single()
         .then(({ data }) => {
-          if (data?.plan) {
+          if (data?.plan && data.plan !== session.plan) {
+            // Plan changed — update session and reload page so all components get fresh data
             const updated = { ...session, plan: data.plan };
             sessionStorage.setItem(SESSION_KEY, JSON.stringify(updated));
-            setUser(updated);
+            window.location.reload();
           }
         });
     });
