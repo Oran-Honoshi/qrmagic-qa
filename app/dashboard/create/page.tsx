@@ -384,7 +384,7 @@ function buildQRValue(type: string, data: Record<string, string>): string {
   const v = (k: string) => data[k] || "";
   switch (type) {
     case "url": {
-      let base = v("url") || "https://qrmagic.io";
+      let base = v("url") || "https://sqrly.net";
       const params = [
         v("utmSource") && `utm_source=${encodeURIComponent(v("utmSource"))}`,
         v("utmMedium") && `utm_medium=${encodeURIComponent(v("utmMedium"))}`,
@@ -413,20 +413,26 @@ function buildQRValue(type: string, data: Record<string, string>): string {
       const fmt = (d: string) => d ? d.replace(/[-:T]/g, "").substring(0, 15) + "Z" : "";
       return `BEGIN:VEVENT\nSUMMARY:${v("title")}\nLOCATION:${v("location")}\nDTSTART:${fmt(v("start"))}\nDTEND:${fmt(v("end"))}\nDESCRIPTION:${v("description")}\nEND:VEVENT`;
     }
-    case "social":  return v("url") || "https://qrmagic.io";
+    case "social":  return v("url") || "https://sqrly.net";
     case "youtube": return v("url") || "https://youtube.com";
     case "appstore": {
       const p = v("platform");
       if (p === "ios") return v("iosUrl") || "https://apps.apple.com";
       if (p === "android") return v("androidUrl") || "https://play.google.com";
-      return v("iosUrl") || v("androidUrl") || "https://qrmagic.io";
+      return v("iosUrl") || v("androidUrl") || "https://sqrly.net";
     }
     case "bitcoin": return `${v("currency")||"bitcoin"}:${v("address")}${v("amount") ? `?amount=${v("amount")}` : ""}`;
     case "zoom":    return v("url") || "https://zoom.us";
-    case "pdf":     return v("url") || "https://qrmagic.io";
+    case "pdf":     return v("url") || "https://sqrly.net";
     case "paypal":  return v("url") || "https://paypal.me";
-    case "image":   return v("url") || "https://qrmagic.io";
-    default:        return "https://qrmagic.io";
+    case "image":   return v("url") || "https://sqrly.net";
+    case "multilink": return v("name") ? `${BASE_URL}/l/${Date.now()}` : "https://sqrly.net";
+    case "spotify":   return v("url") || "https://open.spotify.com";
+    case "menu":      return v("url") || "https://sqrly.net";
+    case "feedback":  return v("url") || "https://sqrly.net";
+    case "coupon":    return v("url") || "https://sqrly.net";
+    case "package":   return v("url") || "https://sqrly.net";
+    default:        return "https://sqrly.net";
   }
 }
 
@@ -449,7 +455,7 @@ function QRPreview({
       const qr = new QRCodeStyling({
         width: 220, height: 220,
         type: "svg",
-        data: value || "https://qrmagic.io",
+        data: value || "https://sqrly.net",
         image: logo || undefined,
         dotsOptions: { color, type: dotStyle as "rounded" },
         cornersSquareOptions: { color, type: "extra-rounded" },
@@ -474,7 +480,7 @@ function QRPreview({
     const t = setTimeout(() => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (qrRef.current as any)?.update({
-        data: value || "https://qrmagic.io",
+        data: value || "https://sqrly.net",
         image: logo || undefined,
         dotsOptions: { color, type: dotStyle as "rounded" },
         cornersSquareOptions: { color, type: "extra-rounded" },
@@ -618,7 +624,7 @@ function CreatePageInner() {
     }
   }
 
-  const qrValue = selectedType ? buildQRValue(selectedType, formData) : "https://qrmagic.io";
+  const qrValue = selectedType ? buildQRValue(selectedType, formData) : "https://sqrly.net";
 
   useEffect(() => {
     if (!session) return;
@@ -659,6 +665,29 @@ function CreatePageInner() {
         }
         // The QR code encodes the redirect URL, not the real URL
         savedValue = `${BASE_URL}/r/${shortId}`;
+      }
+
+      // Multilink — save to multilink_pages and encode /l/[id] URL
+      if (selectedType === "multilink") {
+        const mlId = generateShortId();
+        const rawLinks = (formData.links || "").split("\n").filter(Boolean);
+        const links = rawLinks.map((line: string) => {
+          const [label, ...rest] = line.split("|");
+          return { label: label.trim(), url: rest.join("|").trim() };
+        }).filter((l: {label: string; url: string}) => l.label && l.url);
+
+        await supabase.from("multilink_pages").insert({
+          user_id: session.id,
+          short_id: mlId,
+          title: formData.name || "My Links",
+          bio: formData.bio || "",
+          avatar: formData.avatar || "",
+          links,
+          color: qrColor,
+          scans: 0,
+        });
+        savedValue = `${BASE_URL}/l/${mlId}`;
+        shortId = mlId;
       }
 
       const { data } = await supabase.from("qr_codes").insert({

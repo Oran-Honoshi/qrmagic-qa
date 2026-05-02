@@ -57,7 +57,7 @@ export async function GET(
     <div class="links">
       ${links.map(l => `<a href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`).join("")}
     </div>
-    <p class="footer">Create your own at <a href="https://sqrly.io">Sqrly</a></p>
+    <p class="footer">Create your own at <a href="https://sqrly.net">Sqrly</a></p>
   </div>
 </body>
 </html>`;
