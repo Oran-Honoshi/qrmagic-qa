@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { LangProvider } from "@/components/LangContext";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: {
@@ -24,14 +25,14 @@ export const metadata: Metadata = {
     "GDPR compliant QR generator",
     "sqrly",
   ],
-  authors: [{ name: "Sqrly", url: "https://qrmagic-qa.vercel.app" }],
+  authors: [{ name: "Sqrly", url: "https://sqrly.net" }],
   creator: "Sqrly",
-  metadataBase: new URL("https://qrmagic-qa.vercel.app"),
+  metadataBase: new URL("https://sqrly.net"),
   openGraph: {
     title: "Sqrly — Free Dynamic QR Code Generator",
     description:
       "Privacy-first QR codes with analytics, SVG export, and 18 types. Free forever. No watermark.",
-    url: "https://qrmagic-qa.vercel.app",
+    url: "https://sqrly.net",
     siteName: "Sqrly",
     type: "website",
     images: [{ url: "/mascot.png", width: 1200, height: 630, alt: "Sqrly" }],
@@ -99,6 +100,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LangProvider>
           <div className="relative z-10">{children}</div>
         </LangProvider>
+        <Analytics />
       </body>
     </html>
   );
