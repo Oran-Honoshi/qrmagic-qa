@@ -302,7 +302,15 @@ export default function CodesPage() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [folderFilter, setFolderFilter] = useState("all");
 
-  const session = getSession();
+  const [sessionState, setSessionState] = useState(getSession());
+
+  useEffect(() => {
+    const s = getSession();
+    if (s) setSessionState(s);
+    const t = setTimeout(() => { const s2 = getSession(); if (s2) setSessionState(s2); }, 800);
+    return () => clearTimeout(t);
+  }, []);
+  const session = sessionState;
 
   useEffect(() => {
     if (!session) return;

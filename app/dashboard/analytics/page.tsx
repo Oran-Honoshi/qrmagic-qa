@@ -146,7 +146,15 @@ function StatCard({ icon: Icon, value, label, color, bg, tip }: {
 }
 
 function AnalyticsContent() {
-  const session = getSession();
+  const [sessionState, setSessionState] = useState(getSession());
+
+  useEffect(() => {
+    const s = getSession();
+    if (s) setSessionState(s);
+    const t = setTimeout(() => { const s2 = getSession(); if (s2) setSessionState(s2); }, 800);
+    return () => clearTimeout(t);
+  }, []);
+  const session = sessionState;
   const plan = session?.plan || "free";
   const isBasic = ["basic", "plus"].includes(plan);
   const isPlus = plan === "plus";

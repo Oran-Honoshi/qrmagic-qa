@@ -600,8 +600,20 @@ function QRPreview({
 function CreatePageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const session = getSession();
+  const [session, setSession] = useState(getSession());
   const plan = session?.plan || "free";
+
+  // Re-read session after layout potentially updates it
+  useEffect(() => {
+    const s = getSession();
+    if (s) setSession(s);
+    // Re-check after a short delay in case layout is still refreshing
+    const t = setTimeout(() => {
+      const s2 = getSession();
+      if (s2) setSession(s2);
+    }, 800);
+    return () => clearTimeout(t);
+  }, []);
   const [step, setStep] = useState(1);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [formData, setFormData] = useState<Record<string, string>>({});
