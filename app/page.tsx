@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useLang, LangSwitcher } from "@/components/LangContext";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Zap, ArrowRight, Shield, Lock, CheckCircle,
@@ -93,6 +94,7 @@ function Nav() {
           ))}
         </div>
         <div className="hidden md:flex items-center gap-2">
+          <LangSwitcher compact />
           <a href="/auth" className="px-4 py-2 text-sm font-medium text-[#475569] hover:text-[#0F172A] transition-colors">Log In</a>
           <motion.a href="/auth?mode=signup" whileTap={{ scale: 0.95 }}
             className="px-5 py-2 text-sm font-bold bg-[#00FF88] text-[#0F172A] rounded-full hover:bg-[#00CC6E] transition-all shadow-[0_4px_16px_rgba(0,255,136,0.35)]">
@@ -116,6 +118,7 @@ function Nav() {
               <a href="/auth" className="flex-1 py-2.5 text-sm text-center border border-slate-200 rounded-full text-[#475569]">Log In</a>
               <a href="/auth?mode=signup" className="flex-1 py-2.5 text-sm font-bold text-center bg-[#00FF88] text-[#0F172A] rounded-full">Sign Up Free</a>
             </div>
+            <div className="pt-1 flex justify-center"><LangSwitcher /></div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -239,6 +242,7 @@ function DownloadModal({ onClose, onSignup }: { onClose: () => void; onSignup: (
 
 /* ── Hero Generator ───────────────────────────────────── */
 function HeroGenerator() {
+  const { t, dir } = useLang();
   const [selectedType, setSelectedType] = useState("url");
   const [value, setValue] = useState("");
   const [color, setColor] = useState("#0F172A");
@@ -372,7 +376,7 @@ function HeroGenerator() {
         {/* Generator card */}
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="bg-white border border-slate-200 rounded-3xl shadow-xl overflow-hidden">
+          className="bg-white border border-slate-200 rounded-3xl shadow-xl overflow-hidden" dir={dir}>
           <div className="grid lg:grid-cols-[1fr_300px]">
 
             {/* Left */}
@@ -437,7 +441,7 @@ function HeroGenerator() {
               {/* Name field */}
               <div className="mb-3">
                 <input value={qrName} onChange={e => setQrName(e.target.value)}
-                  placeholder="Name this QR code (optional)"
+                  placeholder={t("hero_name_placeholder")}
                   className="w-full bg-slate-50 border border-slate-200 focus:border-[#00D4FF] rounded-xl px-4 py-2.5 text-sm text-[#0F172A] placeholder:text-[#CBD5E1] outline-none transition-all" />
               </div>
 
@@ -508,7 +512,7 @@ function HeroGenerator() {
               <div className="w-full space-y-2">
                 <motion.button whileTap={{ scale: 0.95 }} onClick={() => download("svg")}
                   className="w-full flex items-center justify-center gap-2 py-3 bg-[#00FF88] text-[#0F172A] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all shadow-[0_4px_16px_rgba(0,255,136,0.30)]">
-                  <Download size={14} strokeWidth={2} /> Download SVG (Vector)
+                  <Download size={14} strokeWidth={2} /> {t("hero_download_svg")}
                 </motion.button>
                 <div className="grid grid-cols-2 gap-2">
                   <motion.button whileTap={{ scale: 0.95 }} onClick={() => download("png")}
@@ -661,6 +665,168 @@ function Features() {
               <p className="text-xs text-[#475569] leading-relaxed">{f.desc}</p>
             </motion.div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+/* ── App Screenshots ──────────────────────────────────── */
+function AppScreenshots() {
+  const screens = [
+    {
+      title: "Create in seconds",
+      desc: "22 QR types, live preview, custom colors and logo overlay.",
+      mockup: "create",
+      accent: "#00D4FF",
+    },
+    {
+      title: "Manage everything",
+      desc: "All your QR codes in one place. Edit, preview, download, delete.",
+      mockup: "codes",
+      accent: "#00FF88",
+    },
+    {
+      title: "Track every scan",
+      desc: "Real-time analytics — scans, clicks, CTR, top performers.",
+      mockup: "analytics",
+      accent: "#8B5CF6",
+    },
+  ];
+
+  const mockupContent: Record<string, React.ReactNode> = {
+    create: (
+      <div className="p-4 space-y-3">
+        <div className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider">Choose Type</div>
+        <div className="grid grid-cols-4 gap-1.5">
+          {["URL","Wi-Fi","vCard","Email","SMS","Phone","Location","Event"].map(t => (
+            <div key={t} className={`rounded-lg p-1.5 text-center text-[8px] font-semibold border ${t === "URL" ? "bg-[#00D4FF]/10 border-[#00D4FF]/30 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569]"}`}>{t}</div>
+          ))}
+        </div>
+        <div className="h-px bg-slate-100" />
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-2 flex items-center justify-center" style={{ height: 80 }}>
+          <div className="w-14 h-14 bg-[#0F172A] rounded-lg opacity-80" style={{
+            backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 3px, white 3px, white 4px), repeating-linear-gradient(90deg, transparent, transparent 3px, white 3px, white 4px)",
+          }} />
+        </div>
+        <div className="flex gap-1.5">
+          <div className="flex-1 bg-[#00FF88] text-[#0F172A] text-[8px] font-bold rounded-full py-1.5 text-center">Download SVG</div>
+          <div className="flex-1 border border-slate-200 text-[8px] font-medium rounded-full py-1.5 text-center text-[#475569]">Download PNG</div>
+        </div>
+      </div>
+    ),
+    codes: (
+      <div className="p-4 space-y-2">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-[10px] font-bold text-[#0F172A]">My Codes</div>
+          <div className="text-[8px] bg-[#00FF88] text-[#0F172A] font-bold px-2 py-0.5 rounded-full">+ Create</div>
+        </div>
+        {[
+          { name: "Homepage", type: "URL", scans: 142, dynamic: true },
+          { name: "Guest WiFi", type: "Wi-Fi", scans: 89, dynamic: false },
+          { name: "Business Card", type: "vCard", scans: 56, dynamic: true },
+          { name: "Menu QR", type: "Menu", scans: 234, dynamic: true },
+        ].map((code, i) => (
+          <div key={i} className="flex items-center gap-2 p-2 bg-white border border-slate-100 rounded-xl">
+            <div className="w-6 h-6 bg-[#00D4FF]/10 rounded-lg flex items-center justify-center">
+              <div className="w-3 h-3 bg-[#00D4FF] rounded-sm opacity-60" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[9px] font-bold text-[#0F172A] truncate">{code.name}</div>
+              <div className="text-[8px] text-[#94A3B8]">{code.scans} scans</div>
+            </div>
+            <span className={`text-[7px] font-bold px-1.5 py-0.5 rounded-full ${code.dynamic ? "bg-[#00D4FF]/10 text-[#0891B2]" : "bg-slate-100 text-[#94A3B8]"}`}>
+              {code.dynamic ? "dynamic" : "static"}
+            </span>
+          </div>
+        ))}
+      </div>
+    ),
+    analytics: (
+      <div className="p-4 space-y-3">
+        <div className="grid grid-cols-2 gap-2">
+          {[{ label: "Total Scans", val: "521", color: "#00D4FF" }, { label: "Avg CTR", val: "38%", color: "#00FF88" }, { label: "Active Codes", val: "4", color: "#8B5CF6" }, { label: "This Week", val: "+23%", color: "#FB923C" }].map(s => (
+            <div key={s.label} className="bg-white border border-slate-100 rounded-xl p-2">
+              <div className="text-[11px] font-black" style={{ color: s.color }}>{s.val}</div>
+              <div className="text-[7px] text-[#94A3B8]">{s.label}</div>
+            </div>
+          ))}
+        </div>
+        <div className="bg-white border border-slate-100 rounded-xl p-2">
+          <div className="text-[8px] font-bold text-[#0F172A] mb-2">Weekly Scans</div>
+          <div className="flex items-end gap-1 h-12">
+            {[40, 65, 45, 80, 60, 90, 70].map((h, i) => (
+              <div key={i} className="flex-1 rounded-t"
+                style={{ height: `${h}%`, background: "linear-gradient(180deg, #00D4FF, #0891B2)" }} />
+            ))}
+          </div>
+        </div>
+      </div>
+    ),
+  };
+
+  return (
+    <section className="py-20 px-4 md:px-6">
+      <div className="max-w-6xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }} className="text-center mb-14">
+          <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#0F172A] mb-3">
+            See How Easy It Is
+          </h2>
+          <p className="text-[#475569] max-w-lg mx-auto">
+            Create, manage, and track your QR codes — all from one clean dashboard.
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {screens.map((screen, i) => (
+            <motion.div key={i}
+              initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ delay: i * 0.12 }}
+              className="flex flex-col"
+            >
+              {/* Phone mockup */}
+              <div className="relative mx-auto mb-5" style={{ width: 200 }}>
+                {/* Phone frame */}
+                <div className="bg-[#0F172A] rounded-[28px] p-2 shadow-2xl"
+                  style={{ boxShadow: `0 24px 60px ${screen.accent}25, 0 8px 20px rgba(0,0,0,0.3)` }}>
+                  {/* Screen */}
+                  <div className="bg-[#F8FAFC] rounded-[22px] overflow-hidden" style={{ minHeight: 260 }}>
+                    {/* Status bar */}
+                    <div className="bg-white flex items-center justify-between px-3 py-1.5 border-b border-slate-100">
+                      <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
+                      <div className="w-12 h-3 rounded-full" style={{ background: "#0F172A" }} />
+                      <div className="flex gap-1">
+                        {[...Array(3)].map((_,j) => <div key={j} className="w-1.5 h-1.5 bg-slate-200 rounded-full" />)}
+                      </div>
+                    </div>
+                    {mockupContent[screen.mockup]}
+                  </div>
+                </div>
+                {/* Glow */}
+                <div className="absolute inset-0 rounded-[28px] pointer-events-none"
+                  style={{ boxShadow: `0 0 40px ${screen.accent}20` }} />
+              </div>
+
+              {/* Label */}
+              <div className="text-center">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold mb-2"
+                  style={{ background: `${screen.accent}15`, color: screen.accent, border: `1px solid ${screen.accent}30` }}>
+                  {i + 1 < 10 ? `0${i+1}` : i+1}
+                </div>
+                <h3 className="text-sm font-bold text-[#0F172A] mb-1">{screen.title}</h3>
+                <p className="text-xs text-[#475569] leading-relaxed">{screen.desc}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="text-center mt-10">
+          <motion.a href="/auth?mode=signup" whileTap={{ scale: 0.95 }}
+            className="inline-flex items-center gap-2 px-7 py-3 bg-[#0F172A] text-white font-bold rounded-full text-sm hover:bg-[#1E293B] transition-all shadow-lg">
+            <ArrowRight size={15} strokeWidth={2} /> Try it yourself — it&apos;s free
+          </motion.a>
         </div>
       </div>
     </section>
@@ -933,6 +1099,7 @@ export default function LandingPage() {
       <HeroGenerator />
       <RealWorldSection />
       <Features />
+      <AppScreenshots />
       <StaticVsDynamic />
       <Pricing />
       <FAQ />
