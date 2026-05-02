@@ -103,7 +103,24 @@ export default function DashboardPage() {
   useEffect(() => {
     const s = getSession();
     if (!s) return;
-    setSession(s);
+
+    // If returning from Stripe checkout, refresh plan from DB
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upgraded") === "1") {
+      supabase.from("users").select("plan").eq("id", s.id).single()
+        .then(({ data }) => {
+          if (data?.plan) {
+            const updated = { ...s, plan: data.plan };
+            sessionStorage.setItem("qrmagic_session", JSON.stringify(updated));
+            setSession(updated);
+          }
+        });
+      // Clean the URL
+      window.history.replaceState({}, "", "/dashboard");
+    } else {
+      setSession(s);
+    }
+
     supabase.from("qr_codes").select("*").eq("user_id", s.id)
       .order("created_at", { ascending: false })
       .then(({ data }) => { setCodes(data || []); setLoading(false); });
