@@ -312,12 +312,29 @@ function HeroGenerator() {
         cornersSquareOptions: { color, type: "extra-rounded" },
         cornersDotOptions: { color },
         backgroundOptions: { color: bgColor },
-        image: logoSymbol || undefined,
-        imageOptions: { crossOrigin: "anonymous", margin: 4, imageSize: 0.3, hideBackgroundDots: true },
+        image: logoSymbol ? (() => {
+          const p = ([
+            { val: "wifi", path: "M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" },
+            { val: "link", path: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" },
+            { val: "store", path: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10" },
+            { val: "mail", path: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6" },
+            { val: "phone", path: "M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" },
+            { val: "map", path: "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z M12 7m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" },
+            { val: "video", path: "M23 7l-7 5 7 5V7z M1 5h15a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H1a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" },
+            { val: "star", path: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" },
+            { val: "heart", path: "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" },
+            { val: "globe", path: "M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zM2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" },
+            { val: "gift", path: "M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" },
+          ]).find(x => x.val === logoSymbol);
+          if (!p) return undefined;
+          const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%230F172A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="11" fill="white" stroke="%23E2E8F0"/><path d="${p.path}"/></svg>`;
+          return `data:image/svg+xml,${svg}`;
+        })() : undefined,
+        imageOptions: { crossOrigin: "anonymous", margin: 2, imageSize: 0.35, hideBackgroundDots: true },
       });
     }, 300);
     return () => clearTimeout(t);
-  }, [value, color, bgColor]);
+  }, [value, color, bgColor, logoSymbol]);
 
   function download(ext: "svg" | "png") {
     (qrRef.current as any)?.download({ name: qrName || "sqrly-qr", extension: ext });
@@ -475,35 +492,41 @@ function HeroGenerator() {
               <div className="mb-4">
                 <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">Center Symbol (optional)</p>
                 <div className="flex gap-1.5 flex-wrap">
-                  {[
-                    { emoji: "✕", val: null, label: "None" },
-                    { emoji: "📶", val: "wifi", label: "WiFi" },
-                    { emoji: "🔗", val: "link", label: "Link" },
-                    { emoji: "🛒", val: "shop", label: "Shop" },
-                    { emoji: "✉️", val: "mail", label: "Mail" },
-                    { emoji: "📞", val: "phone", label: "Call" },
-                    { emoji: "📍", val: "map", label: "Map" },
-                    { emoji: "▶️", val: "video", label: "Video" },
-                    { emoji: "⭐", val: "star", label: "Star" },
-                    { emoji: "❤️", val: "heart", label: "Heart" },
-                    { emoji: "🍽", val: "menu", label: "Menu" },
-                    { emoji: "🎁", val: "gift", label: "Gift" },
-                  ].map(p => (
-                    <motion.button key={p.val || "none"} whileTap={{ scale: 0.9 }}
-                      onClick={() => {
-                        if (!p.val) { setLogoSymbol(null); return; }
-                        const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="white" stroke="#E2E8F0" stroke-width="2"/><text x="50" y="65" text-anchor="middle" font-size="52">${p.emoji}</text></svg>`;
-                        setLogoSymbol(`data:image/svg+xml;base64,${btoa(svg)}`);
-                      }}
-                      className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg border text-[8px] font-medium transition-all ${
-                        (!p.val && !logoSymbol) || (p.val && logoSymbol?.includes(p.emoji))
-                          ? "bg-[#00D4FF]/08 border-[#00D4FF]/30 text-[#0891B2]"
-                          : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/30"
-                      }`}>
-                      <span className="text-lg leading-none">{p.emoji}</span>
-                      {p.label}
-                    </motion.button>
-                  ))}
+                  {([
+                    { val: null, label: "None", path: null },
+                    { val: "wifi", label: "Wi-Fi", path: "M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" },
+                    { val: "link", label: "Link", path: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" },
+                    { val: "store", label: "Store", path: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10" },
+                    { val: "mail", label: "Email", path: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6" },
+                    { val: "phone", label: "Phone", path: "M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" },
+                    { val: "map", label: "Location", path: "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z M12 10m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" },
+                    { val: "video", label: "Video", path: "M23 7l-7 5 7 5V7z M1 5h15a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H1a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" },
+                    { val: "star", label: "Review", path: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" },
+                    { val: "heart", label: "Like", path: "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" },
+                    { val: "globe", label: "Website", path: "M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zM2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" },
+                    { val: "gift", label: "Promo", path: "M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" },
+                  ] as const).map(p => {
+                    const isActive = !p.val ? !logoSymbol : logoSymbol === p.val;
+                    return (
+                      <button key={p.val || "none"}
+                        onClick={() => setLogoSymbol(p.val)}
+                        className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg border text-[8px] font-medium transition-all cursor-pointer ${
+                          isActive ? "bg-[#00D4FF]/08 border-[#00D4FF]/30 text-[#0891B2]"
+                                   : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/30"
+                        }`}>
+                        {p.path ? (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke={isActive ? "#0891B2" : "#475569"} strokeWidth="1.5"
+                            strokeLinecap="round" strokeLinejoin="round">
+                            <path d={p.path} />
+                          </svg>
+                        ) : (
+                          <span className="text-base w-[18px] text-center">✕</span>
+                        )}
+                        {p.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
