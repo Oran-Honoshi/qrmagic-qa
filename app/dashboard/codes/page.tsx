@@ -42,6 +42,7 @@ type QRCode = {
   value: string; color: string; bg_color: string;
   scans: number; clicks: number; created_at: string;
   redirect_url?: string; short_id?: string;
+  folder?: string;
 };
 
 /* Mini QR renderer for preview */
@@ -137,17 +138,41 @@ function PreviewModal({ code, onClose }: { code: QRCode; onClose: () => void }) 
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={() => (qrRef.current as any)?.download({ name: code.name, extension: "png" })}
+          <button onClick={() => (qrRef.current as any)?.download({ name: code.name, extension: "png" })}
             className="flex items-center justify-center gap-1.5 py-2 text-xs font-semibold bg-[#F8FAFC] border border-[rgba(226,232,240,1)] rounded-xl text-[#475569] hover:border-[rgba(0,212,255,0.25)] hover:text-[#0891B2] transition-all"
           >
-            <Download size={12} /> Download PNG
+            <Download size={12} /> PNG
           </button>
-          <button
-            onClick={() => (qrRef.current as any)?.download({ name: code.name, extension: "svg" })}
-            className="flex items-center justify-center gap-1.5 py-2 text-xs font-semibold bg-[rgba(0,212,255,0.06)] border border-[rgba(0,212,255,0.15)] rounded-xl text-[#0891B2] hover:bg-[#00FF88] hover:text-[#F8FAFC] transition-all"
-          >
-            <Download size={12} /> Download SVG
+          <button onClick={() => (qrRef.current as any)?.download({ name: code.name, extension: "svg" })}
+            className="flex items-center justify-center gap-1.5 py-2 text-xs font-bold bg-[#00FF88] text-[#0F172A] rounded-xl hover:bg-[#00CC6E] transition-all">
+            <Download size={12} strokeWidth={2} /> SVG (Vector)
+          </button>
+          <button onClick={() => (qrRef.current as any)?.download({ name: code.name, extension: "jpeg" })}
+            className="flex items-center justify-center gap-1.5 py-2 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl text-[#475569] hover:border-[#00D4FF]/30 hover:text-[#0891B2] transition-all">
+            <Download size={11} /> JPG
+          </button>
+          <button onClick={() => {
+            const svgEl = containerRef.current?.querySelector("svg");
+            if (!svgEl) return;
+            const svgData = new XMLSerializer().serializeToString(svgEl);
+            const img = new window.Image();
+            const blob = new Blob([svgData], { type: "image/svg+xml" });
+            const url = URL.createObjectURL(blob);
+            img.onload = () => {
+              const cv = document.createElement("canvas");
+              cv.width = 600; cv.height = 600;
+              const ctx = cv.getContext("2d");
+              if (!ctx) return;
+              ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, 600, 600);
+              ctx.drawImage(img, 0, 0, 600, 600);
+              URL.revokeObjectURL(url);
+              const win = window.open("", "_blank");
+              if (!win) return;
+              win.document.write(`<html><head><style>body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;}img{max-width:80%;}@media print{@page{size:A4;margin:20mm;}}</style></head><body><img src="${cv.toDataURL()}" onload="window.print();setTimeout(()=>window.close(),500)"/></body></html>`);
+            };
+            img.src = url;
+          }} className="col-span-2 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl text-[#475569] hover:border-[#00D4FF]/30 hover:text-[#0891B2] transition-all">
+            <Download size={11} /> PDF (Print)
           </button>
         </div>
       </motion.div>
@@ -275,9 +300,11 @@ export default function CodesPage() {
   const [editCode, setEditCode] = useState<QRCode | null>(null);
   const [deleteCode, setDeleteCode] = useState<QRCode | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [folderFilter, setFolderFilter] = useState("all");
+
+  const session = getSession();
 
   useEffect(() => {
-    const session = getSession();
     if (!session) return;
     loadCodes(session.id);
   }, []);
@@ -292,22 +319,42 @@ export default function CodesPage() {
 
   async function confirmDelete() {
     if (!deleteCode) return;
-    await supabase.from("qr_codes").delete().eq("id", deleteCode.id);
+    await supabase.from("qr_codes").update({ deleted: true, deleted_at: new Date().toISOString() }).eq("id", deleteCode.id);
     setCodes(codes.filter(c => c.id !== deleteCode.id));
     setDeleteCode(null);
   }
+
+  const folders = [...new Set(codes.map(c => c.folder).filter(Boolean))] as string[];
 
   const filtered = codes.filter(c => {
     const q = search.toLowerCase();
     const matchQ = !q || (c.name || "").toLowerCase().includes(q) || (c.type || "").toLowerCase().includes(q);
     const matchT = !typeFilter || c.type === typeFilter;
-    return matchQ && matchT;
+    const matchF = folderFilter === "all" || (folderFilter === "none" ? !c.folder : c.folder === folderFilter);
+    return matchQ && matchT && matchF;
   });
 
   const typeIcon = (t: string) => {
     const Icon = TYPE_ICONS[t] || QrCode;
     return Icon;
   };
+
+  async function exportCSV() {
+    if (!session) return;
+    const { default: Papa } = await import("papaparse");
+    const rows = codes.map(c => ({
+      name: c.name || "", type: c.type || "url",
+      status: c.status || "static", folder: c.folder || "",
+      scans: c.scans || 0, clicks: c.clicks || 0,
+      created_at: c.created_at || "",
+    }));
+    const csv = Papa.unparse(rows);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "my-sqrly-codes.csv"; a.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -341,18 +388,38 @@ export default function CodesPage() {
           <Filter size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
           <select
             value={typeFilter} onChange={e => setTypeFilter(e.target.value)}
-            className="bg-[#FFFFFF] border border-[rgba(226,232,240,1)] rounded-xl pl-8 pr-8 py-2.5 text-sm text-[#0F172A] outline-none appearance-none focus:border-[rgba(6,182,212,0.4)] transition-all"
+            className="appearance-none bg-white border border-slate-200 rounded-xl pl-3 pr-7 py-2.5 text-sm text-[#0F172A] outline-none focus:border-[#00D4FF] transition-all"
           >
-            <option value="">All types</option>
-            {["url","wifi","vcard","text","email","whatsapp","location","event","social","bitcoin"].map(t => (
-              <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
-            ))}
+            <option value="">All Types</option>
+            <optgroup label="─── Essential">
+              {["url","text","email","sms","phone","location"].map(t => <option key={t} value={t}>{t}</option>)}
+            </optgroup>
+            <optgroup label="─── Professional">
+              {["vcard","wifi","pdf","zoom","event","appstore"].map(t => <option key={t} value={t}>{t}</option>)}
+            </optgroup>
+            <optgroup label="─── Social & Media">
+              {["whatsapp","social","youtube","multilink","spotify","image"].map(t => <option key={t} value={t}>{t}</option>)}
+            </optgroup>
+            <optgroup label="─── Financial">
+              {["paypal","bitcoin"].map(t => <option key={t} value={t}>{t}</option>)}
+            </optgroup>
+            <optgroup label="─── Retail & Promo">
+              {["menu","feedback","coupon","package"].map(t => <option key={t} value={t}>{t}</option>)}
+            </optgroup>
           </select>
         </div>
-        <div className="flex items-center gap-2 text-xs text-[#94A3B8]">
-          <div className="w-2 h-2 rounded-full bg-[#00FF88] shadow-[0_0_6px_#00D4FF]" />
-          Live from Supabase
-        </div>
+        {folders.length > 0 && (
+          <select value={folderFilter} onChange={e => setFolderFilter(e.target.value)}
+            className="appearance-none bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-[#0F172A] outline-none focus:border-[#00D4FF] transition-all">
+            <option value="all">All Folders</option>
+            <option value="none">No Folder</option>
+            {folders.map(f => <option key={f} value={f}>{f}</option>)}
+          </select>
+        )}
+        <button onClick={exportCSV} disabled={codes.length === 0}
+          className="flex items-center gap-1.5 px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-[#475569] hover:border-[#00D4FF] hover:text-[#00D4FF] transition-all disabled:opacity-40 ml-auto">
+          <Download size={12} strokeWidth={1.5} /> Export CSV
+        </button>
       </div>
 
       {/* Loading */}
@@ -455,7 +522,28 @@ export default function CodesPage() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-1">
-                      <button onClick={() => setPreviewCode(code)}
+                      <div className="relative group/dl">
+                    <button className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#00CC6E] hover:bg-[#00FF88]/08 transition-all" title="Download">
+                      <Download size={14} strokeWidth={1.5} />
+                    </button>
+                    <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-20 py-1 min-w-[100px] hidden group-hover/dl:block">
+                      {(["svg","png","jpeg"] as const).map(ext => (
+                        <button key={ext} onClick={() => {
+                          import("qr-code-styling").then(({ default: QR }) => {
+                            const q = new QR({ width: 300, height: 300, type: "svg",
+                              data: code.value || "https://sqrly.io",
+                              dotsOptions: { color: code.color || "#0F172A", type: "rounded" },
+                              backgroundOptions: { color: "#FFFFFF" },
+                            });
+                            q.download({ name: code.name || "sqrly-qr", extension: ext });
+                          });
+                        }} className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-[#475569] hover:bg-slate-50 hover:text-[#00D4FF]">
+                          <Download size={10} /> {ext.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <button onClick={() => setPreviewCode(code)}
                         title="Preview"
                         className="w-7 h-7 rounded-lg bg-[rgba(0,212,255,0.06)] border border-[rgba(0,212,255,0.10)] flex items-center justify-center text-[#0891B2] hover:bg-[rgba(0,212,255,0.10)] transition-all">
                         <Eye size={12} />
