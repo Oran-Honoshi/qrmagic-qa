@@ -56,6 +56,46 @@ function Toast({ msg, type }: { msg: string; type: "success" | "error" }) {
   );
 }
 
+/* ── Dev Plan Toggle ─────────────────────────────────── */
+function DevPlanToggle() {
+  const [currentPlan, setCurrentPlan] = useState("free");
+
+  useEffect(() => {
+    const s = getSession();
+    setCurrentPlan(s?.plan || "free");
+  }, []);
+
+  function switchPlan(plan: string) {
+    const s = getSession();
+    if (!s) return;
+    const updated = { ...s, plan };
+    sessionStorage.setItem("qrmagic_session", JSON.stringify(updated));
+    setCurrentPlan(plan);
+    window.location.reload();
+  }
+
+  return (
+    <div className="bg-amber-50 border border-amber-200 rounded-2xl overflow-hidden shadow-sm">
+      <div className="px-6 py-4 border-b border-amber-100">
+        <h2 className="text-sm font-bold text-amber-800">🛠 Dev Plan Toggle</h2>
+        <p className="text-xs text-amber-600 mt-0.5">Switch between plan tiers to test UI changes. Reloads the page.</p>
+      </div>
+      <div className="px-6 py-4 flex gap-2 flex-wrap">
+        {["free","basic","plus"].map(plan => (
+          <button key={plan} onClick={() => switchPlan(plan)}
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all capitalize ${
+              currentPlan === plan
+                ? "bg-amber-500 text-white shadow-sm"
+                : "bg-white border border-amber-200 text-amber-700 hover:bg-amber-100"
+            }`}>
+            {plan === currentPlan ? `✓ ${plan}` : plan}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ── Recovery Form ───────────────────────────────────── */
 function RecoveryForm({ plan, email }: { plan: string; email: string }) {
   const [codeName, setCodeName] = useState("");

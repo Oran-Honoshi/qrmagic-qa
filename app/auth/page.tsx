@@ -265,6 +265,22 @@ export default function AuthPage() {
               Continue with Google
             </motion.button>
 
+            {/* Apple OAuth */}
+            <motion.button whileTap={{ scale: 0.98 }}
+              onClick={async () => {
+                const { error } = await supabase.auth.signInWithOAuth({
+                  provider: "apple",
+                  options: { redirectTo: `${window.location.origin}/auth/callback` }
+                });
+                if (error) console.error("Apple OAuth error:", error);
+              }}
+              className="w-full flex items-center justify-center gap-3 py-3 bg-[#0F172A] border border-[#0F172A] text-white font-semibold rounded-xl text-sm hover:bg-[#1E293B] transition-all mb-3">
+              <svg width="16" height="16" viewBox="0 0 814 1000" fill="white">
+                <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.5-155.5-97.2C46.3 687 1 583.2 1 483.4 1 339.5 90.5 240.7 230 240.7c62.7 0 115.9 38.9 155.5 38.9 38.2 0 98.1-41.2 168.8-41.2 27.2 0 108.1 2.5 168.8 89.6zm-56.7-186.9c28.7-33.7 49.1-80.6 49.1-127.5 0-6.5-.6-13.1-1.9-18.5-46.9 1.9-101.9 31.2-135.5 69.9-26.6 29.8-50.1 77.5-50.1 125.1 0 7.1 1.3 14.1 1.9 16.3 2.6.5 6.9.9 11.2.9 42.4 0 95.5-27.3 125.3-66.2z"/>
+              </svg>
+              Continue with Apple
+            </motion.button>
+
             <div className="flex items-center gap-3 mb-4">
               <div className="flex-1 h-px bg-slate-100" />
               <span className="text-[11px] text-[#CBD5E1] font-medium">or</span>
