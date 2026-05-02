@@ -659,6 +659,14 @@ function CreatePageInner() {
       let shortId: string | null = null;
       let savedValue = qrValue;
 
+      // Check plan limits before saving
+      const dynLimit = plan === "plus" ? 100 : plan === "basic" ? 10 : 1;
+      if (isDynamic && dynamicUsed >= dynLimit) {
+        setUpgradeReason("dynamic_limit");
+        setSaving(false);
+        return;
+      }
+
       if (isDynamic && selectedType === "url") {
         // Generate unique short_id (retry if collision)
         let attempts = 0;
@@ -826,7 +834,11 @@ function CreatePageInner() {
                 {selectedType === "url" && (
                   <div className="mb-4">
                     <div className="flex bg-[#F8FAFC] border border-[rgba(226,232,240,1)] rounded-full p-1 gap-1 w-fit mb-2">
-                      <button onClick={() => dynamicUsed < 1 ? setIsDynamic(true) : null}
+                      <button onClick={() => {
+                          const dynLimit = plan === "plus" ? 100 : plan === "basic" ? 10 : 1;
+                          if (dynamicUsed < dynLimit) { setIsDynamic(true); }
+                          else { setUpgradeReason("dynamic_limit"); }
+                        }}
                         className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
                           isDynamic ? "bg-[#00FF88] text-[#0F172A]" : "text-[#94A3B8] hover:text-[#475569]"
                         }`}>

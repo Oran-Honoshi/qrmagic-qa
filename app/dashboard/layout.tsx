@@ -128,19 +128,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="p-3 border-t border-slate-100 flex flex-col gap-2 flex-shrink-0">
           {!collapsed && (
             <div className="bg-gradient-to-r from-[#00FF88]/10 to-[#00D4FF]/10 border border-[#00FF88]/20 rounded-xl p-3">
-              <div className="text-[10px] font-bold text-[#475569] uppercase tracking-wider mb-1.5">Free Plan</div>
-              <div className="h-1.5 bg-slate-100 rounded-full mb-1.5">
-                <div className="h-full w-0 bg-gradient-to-r from-[#00FF88] to-[#00D4FF] rounded-full" />
+              <div className="text-[10px] font-bold text-[#475569] uppercase tracking-wider mb-1.5 capitalize">
+                {user.plan === "plus" ? "Plus Plan" : user.plan === "basic" ? "Basic Plan" : "Free Plan"}
               </div>
-              <div className="text-[10px] text-[#94A3B8]">0/1 dynamic used</div>
+              <div className="h-1.5 bg-slate-100 rounded-full mb-1.5">
+                <div className={`h-full rounded-full bg-gradient-to-r from-[#00FF88] to-[#00D4FF] ${
+                  user.plan === "plus" ? "w-full" : user.plan === "basic" ? "w-2/3" : "w-0"
+                }`} />
+              </div>
+              <div className="text-[10px] text-[#94A3B8]">
+                {user.plan === "plus" ? "100 dynamic codes" : user.plan === "basic" ? "10 dynamic codes" : "1 dynamic code"}
+              </div>
             </div>
           )}
 
-          <button onClick={() => router.push("/pricing")}
-            className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#00FF88] text-[#0F172A] text-xs font-bold hover:bg-[#00CC6E] transition-all shadow-[0_4px_12px_rgba(0,255,136,0.3)] ${collapsed ? "px-0" : "px-3"}`}>
-            {!collapsed && <><Zap size={13} /> Upgrade</>}
-            {collapsed && <Zap size={15} />}
-          </button>
+          {user.plan !== "plus" && (
+            <button onClick={() => router.push("/pricing")}
+              className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#00FF88] text-[#0F172A] text-xs font-bold hover:bg-[#00CC6E] transition-all shadow-[0_4px_12px_rgba(0,255,136,0.3)] ${collapsed ? "px-0" : "px-3"}`}>
+              {!collapsed && <><Zap size={13} /> {user.plan === "basic" ? "Upgrade to Plus" : "Upgrade"}</>}
+              {collapsed && <Zap size={15} />}
+            </button>
+          )}
 
           <button onClick={logout}
             title={collapsed ? "Log Out" : undefined}
