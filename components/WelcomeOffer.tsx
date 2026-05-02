@@ -125,7 +125,7 @@ export function WelcomeOffer({ userId, createdAt }: { userId: string; createdAt:
                 Unique to your account. Expires 48 hours after signup. One use per account.
               </p>
               <motion.button whileTap={{ scale: 0.97 }}
-                onClick={() => { close(); window.location.href = "/pricing"; }}
+                onClick={() => { close(); window.location.href = "/pricing?from=offer"; }}
                 className="w-full flex items-center justify-center gap-2 py-3 bg-[#00FF88] text-[#0F172A] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all shadow-[0_4px_20px_rgba(0,255,136,0.30)]">
                 <Zap size={14} strokeWidth={2} /> Upgrade Now — Save 25%
               </motion.button>
@@ -156,13 +156,19 @@ export function FirstQRCelebration({ userId }: { userId: string }) {
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={() => setVisible(false)}>
       <motion.div
         initial={{ opacity: 0, scale: 0.88, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 24 }}
-        className="bg-white border border-slate-200 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl"
+        className="bg-white border border-slate-200 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl relative"
+        onClick={e => e.stopPropagation()}
       >
+        <button onClick={() => setVisible(false)}
+          className="absolute top-4 right-4 w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-[#94A3B8] hover:text-[#475569] transition-colors cursor-pointer">
+          <X size={13} />
+        </button>
         <img src="/mascot.png" alt="Sqrly" className="w-20 h-20 object-contain mx-auto mb-4"
           style={{ animation: "float 3.5s ease-in-out infinite" }} />
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00FF88]/15 border border-[#00FF88]/30 mb-4">
@@ -177,11 +183,11 @@ export function FirstQRCelebration({ userId }: { userId: string }) {
         </p>
         <motion.button whileTap={{ scale: 0.95 }}
           onClick={() => { setVisible(false); window.location.href = "/dashboard/codes"; }}
-          className="w-full flex items-center justify-center gap-2 py-3 bg-[#00FF88] text-[#0F172A] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all shadow-[0_4px_16px_rgba(0,255,136,0.30)]">
+          className="w-full flex items-center justify-center gap-2 py-3 bg-[#00FF88] text-[#0F172A] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all shadow-[0_4px_16px_rgba(0,255,136,0.30)] cursor-pointer">
           <Zap size={14} strokeWidth={2} /> View My Codes
         </motion.button>
         <button onClick={() => setVisible(false)}
-          className="w-full py-2 mt-2 text-xs text-[#94A3B8] hover:text-[#475569] transition-colors">
+          className="w-full py-2 mt-2 text-xs text-[#94A3B8] hover:text-[#475569] transition-colors cursor-pointer">
           Stay here
         </button>
       </motion.div>

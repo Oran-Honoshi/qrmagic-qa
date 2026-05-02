@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { CheckCircle, Zap, ArrowRight } from "lucide-react";
 
@@ -22,10 +24,13 @@ const PLANS = [
     features: ["100 dynamic QR codes","Folder organization","Campaign tracking","API access","Team collaboration","Priority support"] },
 ];
 
-export default function PricingPage() {
+function PricingContent() {
   const [annual, setAnnual] = useState(true);
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromOffer = searchParams.get("from") === "offer";
 
   async function handleUpgrade(planId: string) {
     const session = getSession();
@@ -55,9 +60,16 @@ export default function PricingPage() {
         </a>
         <div className="flex items-center gap-2">
           <a href="/auth" className="text-sm text-[#475569] hover:text-[#0F172A] transition-colors px-3">Log In</a>
-          <a href="/auth?mode=signup" className="px-4 py-2 text-sm font-bold bg-[#00FF88] text-[#0F172A] rounded-full hover:bg-[#00CC6E] transition-all shadow-[0_4px_12px_rgba(0,255,136,0.3)]">
-            Get Started Free
-          </a>
+          {fromOffer ? (
+            <button onClick={() => router.back()}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-slate-200 text-[#475569] rounded-full hover:border-[#00D4FF] hover:text-[#00D4FF] transition-all">
+              <ArrowLeft size={14} strokeWidth={1.5} /> Back to Dashboard
+            </button>
+          ) : (
+            <a href="/auth?mode=signup" className="px-4 py-2 text-sm font-bold bg-[#00FF88] text-[#0F172A] rounded-full hover:bg-[#00CC6E] transition-all shadow-[0_4px_12px_rgba(0,255,136,0.3)]">
+              Get Started Free
+            </a>
+          )}
         </div>
       </nav>
 
@@ -155,5 +167,13 @@ export default function PricingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PricingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center"><div className="w-5 h-5 border-2 border-slate-200 border-t-[#00D4FF] rounded-full animate-spin" /></div>}>
+      <PricingContent />
+    </Suspense>
   );
 }

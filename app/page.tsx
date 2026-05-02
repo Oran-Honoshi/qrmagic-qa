@@ -125,16 +125,37 @@ function Nav() {
 
 /* ── Download Success Modal ───────────────────────────── */
 function DownloadModal({ onClose, onSignup }: { onClose: () => void; onSignup: () => void }) {
+  const [rating, setRating] = useState(0);
+  const [hover, setHover] = useState(0);
+  const [feedback, setFeedback] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  function handleSubmitRating() {
+    if (rating === 0) return;
+    // Open Google Business review — replace with your actual Google Place ID
+    const googleReviewUrl = "https://g.page/r/YOUR_GOOGLE_PLACE_ID/review";
+    if (rating >= 4) {
+      window.open(googleReviewUrl, "_blank");
+    }
+    setSubmitted(true);
+  }
+
   return (
-    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div
+      className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+      onClick={onClose}
+    >
       <motion.div initial={{ opacity: 0, y: 60, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 40 }} transition={{ type: "spring", stiffness: 300, damping: 28 }}
-        className="w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
+        className="w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-200"
+        onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
         <div className="relative px-6 pt-6 pb-5 text-center"
           style={{ background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)" }}>
           <div className="absolute inset-0 bg-grid opacity-20" />
           <button onClick={onClose}
-            className="absolute top-4 right-4 w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors">
+            className="absolute top-4 right-4 w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors z-10">
             <X size={13} />
           </button>
           <div className="relative z-10">
@@ -145,16 +166,52 @@ function DownloadModal({ onClose, onSignup }: { onClose: () => void; onSignup: (
             <p className="text-sm text-white/50">Your QR code is ready to use.</p>
           </div>
         </div>
-        <div className="px-6 py-4 border-b border-slate-100 text-center">
-          <p className="text-xs font-semibold text-[#94A3B8] uppercase tracking-wider mb-3">Was this helpful?</p>
-          <div className="flex justify-center gap-2">
-            {[1,2,3,4,5].map(i => (
-              <motion.button key={i} whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }} className="text-2xl">⭐</motion.button>
-            ))}
-          </div>
+
+        {/* Rating */}
+        <div className="px-6 py-4 border-b border-slate-100">
+          {!submitted ? (
+            <>
+              <p className="text-xs font-semibold text-[#94A3B8] uppercase tracking-wider mb-3 text-center">
+                Rate your experience
+              </p>
+              <div className="flex justify-center gap-2 mb-3">
+                {[1,2,3,4,5].map(i => (
+                  <motion.button key={i}
+                    whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}
+                    onClick={() => setRating(i)}
+                    onMouseEnter={() => setHover(i)}
+                    onMouseLeave={() => setHover(0)}
+                    className="text-2xl transition-all"
+                    style={{ filter: (hover || rating) >= i ? "none" : "grayscale(1) opacity(0.4)" }}>
+                    ⭐
+                  </motion.button>
+                ))}
+              </div>
+              {rating > 0 && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
+                  <textarea value={feedback} onChange={e => setFeedback(e.target.value)}
+                    placeholder={rating >= 4 ? "Love to hear what you liked! (optional)" : "How can we improve? (optional)"}
+                    rows={2}
+                    className="w-full bg-slate-50 border border-slate-200 focus:border-[#00D4FF] rounded-xl px-3 py-2 text-xs text-[#0F172A] placeholder:text-[#CBD5E1] outline-none resize-none transition-all mb-2" />
+                  <motion.button whileTap={{ scale: 0.95 }} onClick={handleSubmitRating}
+                    className="w-full py-2 bg-[#0F172A] text-white font-semibold rounded-full text-xs hover:bg-[#1E293B] transition-all">
+                    {rating >= 4 ? "Submit & Leave Google Review ⭐" : "Submit Feedback"}
+                  </motion.button>
+                </motion.div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-1">
+              <p className="text-sm font-semibold text-[#00CC6E]">
+                {rating >= 4 ? "Thanks! Opening Google Reviews... 🙏" : "Thanks for your feedback! We'll improve. 🙏"}
+              </p>
+            </div>
+          )}
         </div>
-        <div className="px-6 py-5">
-          <div className="bg-gradient-to-br from-[#00FF88]/08 to-[#00D4FF]/08 border border-[#00FF88]/20 rounded-2xl p-4 mb-4">
+
+        {/* Upsell */}
+        <div className="px-6 py-4">
+          <div className="bg-gradient-to-br from-[#00FF88]/08 to-[#00D4FF]/08 border border-[#00FF88]/20 rounded-2xl p-4 mb-3">
             <div className="flex items-start gap-3">
               <div className="w-9 h-9 rounded-xl bg-[#00FF88]/15 border border-[#00FF88]/25 flex items-center justify-center flex-shrink-0 mt-0.5">
                 <Zap size={16} className="text-[#00CC6E]" strokeWidth={1.5} />
@@ -162,16 +219,16 @@ function DownloadModal({ onClose, onSignup }: { onClose: () => void; onSignup: (
               <div>
                 <p className="text-sm font-bold text-[#0F172A] mb-1">Need to edit this link later?</p>
                 <p className="text-xs text-[#475569] leading-relaxed">
-                  With a <span className="font-semibold text-[#00CC6E]">Dynamic QR</span>, update your destination URL anytime — without reprinting. Plus get real-time scan analytics.
+                  With a <span className="font-semibold text-[#00CC6E]">Dynamic QR</span>, update your URL anytime without reprinting. Plus real-time scan analytics.
                 </p>
               </div>
             </div>
           </div>
           <motion.button onClick={onSignup} whileTap={{ scale: 0.97 }}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-[#00FF88] text-[#0F172A] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all shadow-[0_4px_20px_rgba(0,255,136,0.30)]">
+            className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#00FF88] text-[#0F172A] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all shadow-[0_4px_16px_rgba(0,255,136,0.30)]">
             <ArrowRight size={15} strokeWidth={2} /> Sign Up Free — Get Dynamic QR
           </motion.button>
-          <button onClick={onClose} className="w-full py-2 mt-2 text-xs text-[#94A3B8] hover:text-[#475569] transition-colors">
+          <button onClick={onClose} className="w-full py-2 mt-1.5 text-xs text-[#94A3B8] hover:text-[#475569] transition-colors">
             Continue without an account
           </button>
         </div>
@@ -189,11 +246,16 @@ function HeroGenerator() {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [activeCategory, setActiveCategory] = useState("Essential");
+  const [qrName, setQrName] = useState("");
   const ref = useRef<HTMLDivElement>(null);
   const qrRef = useRef<unknown>(null);
 
   const colors = ["#0F172A","#00D4FF","#00FF88","#8B5CF6","#F472B6","#FB923C","#EF4444","#0891B2"];
-  const bgColors = ["#FFFFFF","#F8FAFC","#F0FFF4","#EFF6FF","#FFF7ED","#FDF4FF","#0F172A","#1E293B"];
+  const bgColors = [
+    "#FFFFFF","#F8FAFC","#FFF9F0","#F0FFF4","#EFF6FF","#FFF0F6",
+    "#FFFBEB","#F5F0FF","#0F172A","#1E293B","#00FF88","#00D4FF",
+    "#FFB347","#FF6B9D","#C77DFF","#4FC3F7",
+  ];
 
   const filteredTypes = search
     ? ALL_TYPES.filter(t => t.label.toLowerCase().includes(search.toLowerCase()) || t.desc.toLowerCase().includes(search.toLowerCase()))
@@ -248,7 +310,40 @@ function HeroGenerator() {
   }, [value, color, bgColor]);
 
   function download(ext: "svg" | "png") {
-    (qrRef.current as any)?.download({ name: "sqrly-qr", extension: ext });
+    (qrRef.current as any)?.download({ name: qrName || "sqrly-qr", extension: ext });
+    setShowModal(true);
+  }
+
+  async function downloadPDF() {
+    // Generate PNG then wrap in PDF via data URL
+    const canvas = document.createElement("canvas");
+    canvas.width = 600; canvas.height = 600;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    // Get SVG and draw to canvas
+    const svgEl = ref.current?.querySelector("svg");
+    if (!svgEl) return;
+    const svgData = new XMLSerializer().serializeToString(svgEl);
+    const img = new Image();
+    const svgBlob = new Blob([svgData], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(svgBlob);
+    img.onload = () => {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, 600, 600);
+      ctx.drawImage(img, 0, 0, 600, 600);
+      URL.revokeObjectURL(url);
+      // Convert to PDF using print trick
+      const dataUrl = canvas.toDataURL("image/png");
+      const win = window.open("");
+      if (!win) return;
+      win.document.write(`<html><head><style>
+        body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;}
+        img{max-width:100%;max-height:100%;}
+        @media print{body{margin:20mm;}@page{size:A4;margin:20mm;}}
+      </style></head><body><img src="${dataUrl}" onload="window.print();window.close()"/></body></html>`);
+      win.document.close();
+    };
+    img.src = url;
     setShowModal(true);
   }
 
@@ -316,7 +411,10 @@ function HeroGenerator() {
                 {filteredTypes.slice(0, 12).map(type => (
                   <motion.button key={type.id} whileTap={{ scale: 0.95 }}
                     whileHover={{ y: -2, transition: { duration: 0.15 } }}
-                    onClick={() => { setSelectedType(type.id); setValue(""); }}
+                    onClick={() => {
+                      setSelectedType(type.id);
+                      setValue(type.id === "url" ? "https://" : "");
+                    }}
                     className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all duration-200 group ${
                       selectedType === type.id
                         ? "bg-[#00D4FF]/10 border-[#00D4FF]/40 shadow-sm"
@@ -334,6 +432,13 @@ function HeroGenerator() {
                     }`}>{type.label}</span>
                   </motion.button>
                 ))}
+              </div>
+
+              {/* Name field */}
+              <div className="mb-3">
+                <input value={qrName} onChange={e => setQrName(e.target.value)}
+                  placeholder="Name this QR code (optional)"
+                  className="w-full bg-slate-50 border border-slate-200 focus:border-[#00D4FF] rounded-xl px-4 py-2.5 text-sm text-[#0F172A] placeholder:text-[#CBD5E1] outline-none transition-all" />
               </div>
 
               {/* Input */}
@@ -405,17 +510,23 @@ function HeroGenerator() {
                   className="w-full flex items-center justify-center gap-2 py-3 bg-[#00FF88] text-[#0F172A] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all shadow-[0_4px_16px_rgba(0,255,136,0.30)]">
                   <Download size={14} strokeWidth={2} /> Download SVG (Vector)
                 </motion.button>
-                <motion.button whileTap={{ scale: 0.95 }} onClick={() => download("png")}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-[#475569] font-semibold rounded-full text-sm hover:border-[#00D4FF] hover:text-[#00D4FF] transition-all">
-                  <Download size={13} strokeWidth={1.5} /> Download PNG
-                </motion.button>
+                <div className="grid grid-cols-2 gap-2">
+                  <motion.button whileTap={{ scale: 0.95 }} onClick={() => download("png")}
+                    className="flex items-center justify-center gap-1.5 py-2 border border-slate-200 text-[#475569] font-semibold rounded-full text-xs hover:border-[#00D4FF] hover:text-[#00D4FF] transition-all">
+                    <Download size={11} strokeWidth={1.5} /> PNG
+                  </motion.button>
+                  <motion.button whileTap={{ scale: 0.95 }} onClick={() => downloadPDF()}
+                    className="flex items-center justify-center gap-1.5 py-2 border border-slate-200 text-[#475569] font-semibold rounded-full text-xs hover:border-[#00D4FF] hover:text-[#00D4FF] transition-all">
+                    <Download size={11} strokeWidth={1.5} /> PDF
+                  </motion.button>
+                </div>
                 <p className="text-center text-[9.5px] text-[#CBD5E1]">SVG is print-ready · EU DPP compliant · No watermark</p>
               </div>
 
               <div className="w-full bg-gradient-to-br from-[#0F172A] to-[#1E293B] rounded-2xl p-4 text-center">
                 <p className="text-[11px] font-bold text-white mb-1">Want to track scans?</p>
                 <p className="text-[10px] text-white/50 mb-3 leading-relaxed">Sign up free for dynamic QR codes with real-time analytics.</p>
-                <a href="/auth?mode=signup"
+                <a href={`/auth?mode=signup${qrName ? `&qrname=${encodeURIComponent(qrName)}` : ""}&qrtype=${selectedType || "url"}`}
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#00FF88] text-[#0F172A] font-bold rounded-full text-xs hover:bg-[#00CC6E] transition-all">
                   <Zap size={11} strokeWidth={2} /> Sign Up Free
                 </a>
@@ -436,14 +547,14 @@ function HeroGenerator() {
 /* ── Real World Images ────────────────────────────────── */
 function RealWorldSection() {
   const images = [
-    { file: "computer screen with qr code in it.jpg",            caption: "Digital presence",       tag: "Web" },
-    { file: "business card with qr code on it.jpg",              caption: "Smart business cards",   tag: "Networking" },
-    { file: "restaurant table with a qr code to order by.jpg",   caption: "Contactless ordering",   tag: "Hospitality" },
-    { file: "wedding table with qr code.jpg",                    caption: "Wedding menus & RSVPs",  tag: "Events" },
-    { file: "woman with shopping bag holdoing a qr code.jpg",     caption: "Retail & promotions",    tag: "Retail" },
-    { file: "package delivered with qr code on it.jpg",          caption: "Product tracking",       tag: "Logistics" },
-    { file: "table in cafe with qr code on it.jpg",              caption: "Café menus",             tag: "F&B" },
-    { file: "someone scanning a qr code for ordering.jpg",       caption: "Self-service ordering",  tag: "UX" },
+    { file: "computer screen with qr code in it.jpg",            caption: "Digital presence",       tag: "Web",         span: 2 },
+    { file: "business card with qr code on it.jpg",              caption: "Smart business cards",   tag: "Networking",  span: 1 },
+    { file: "restaurant table with a qr code to order by.jpg",   caption: "Contactless ordering",   tag: "Hospitality", span: 1 },
+    { file: "wedding table with qr code.jpg",                    caption: "Wedding menus & RSVPs",  tag: "Events",      span: 1 },
+    { file: "woman with shopping bag holdoing a qr code.jpg",    caption: "Retail & promotions",    tag: "Retail",      span: 1 },
+    { file: "package delivered with qr code on it.jpg",          caption: "Product tracking",       tag: "Logistics",   span: 1 },
+    { file: "table in cafe with qr code on it.jpg",              caption: "Café menus",             tag: "F&B",         span: 1 },
+    { type: "cta" as const, span: 2 },
   ];
 
   return (
@@ -459,29 +570,57 @@ function RealWorldSection() {
           </p>
         </motion.div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          {images.map((img, i) => (
-            <motion.div key={i}
-              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ delay: i * 0.06 }}
-              whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className={`relative overflow-hidden rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 ${i === 0 || i === 5 ? "md:col-span-2" : ""}`}
-              style={{ aspectRatio: i === 0 || i === 5 ? "2/1" : "1/1" }}
-            >
-              <img src={IMG(img.file)} alt={img.caption} className="w-full h-full object-cover"
-                onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A]/70 via-transparent to-transparent" />
-              <div className="absolute top-0 left-0 right-0 h-1/3"
-                style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.15), transparent)" }} />
-              <div className="absolute top-3 left-3">
-                <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white">
-                  {img.tag}
-                </span>
-              </div>
-              <div className="absolute bottom-3 left-3 right-3">
-                <p className="text-xs font-bold text-white leading-tight">{img.caption}</p>
-              </div>
-            </motion.div>
-          ))}
+          {images.map((item, i) => {
+            if ("type" in item && item.type === "cta") {
+              return (
+                <motion.div key="cta"
+                  initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }} transition={{ delay: 0.5 }}
+                  className="relative overflow-hidden rounded-2xl col-span-2"
+                  style={{ aspectRatio: "2/1", background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)" }}
+                >
+                  <div className="absolute inset-0 bg-grid opacity-20" />
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full"
+                    style={{ background: "radial-gradient(circle, rgba(0,255,136,0.15) 0%, transparent 70%)" }} />
+                  <div className="relative z-10 h-full flex flex-col items-center justify-center text-center p-6 gap-3">
+                    <span className="text-3xl">🚀</span>
+                    <h3 className="text-lg font-black text-white leading-tight">
+                      So much more ideas &amp; usage.<br />
+                      <span className="text-[#00FF88]">The sky is the limit.</span>
+                    </h3>
+                    <p className="text-xs text-white/50 max-w-xs leading-relaxed">
+                      Restaurants, real estate, events, healthcare, logistics, retail — every industry has a QR story. What&apos;s yours?
+                    </p>
+                    <a href="/auth?mode=signup"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#00FF88] text-[#0F172A] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all shadow-[0_4px_16px_rgba(0,255,136,0.3)]">
+                      <ArrowRight size={14} strokeWidth={2} /> Start Free Now
+                    </a>
+                  </div>
+                </motion.div>
+              );
+            }
+            const img = item as { file: string; caption: string; tag: string; span: number };
+            return (
+              <motion.div key={i}
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ delay: i * 0.06 }}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className={`relative overflow-hidden rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 ${img.span === 2 ? "col-span-2" : ""}`}
+                style={{ aspectRatio: img.span === 2 ? "2/1" : "1/1" }}
+              >
+                <img src={IMG(img.file)} alt={img.caption} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A]/70 via-transparent to-transparent" />
+                <div className="absolute top-3 left-3">
+                  <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white">
+                    {img.tag}
+                  </span>
+                </div>
+                <div className="absolute bottom-3 left-3 right-3">
+                  <p className="text-xs font-bold text-white leading-tight">{img.caption}</p>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

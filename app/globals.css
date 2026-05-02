@@ -120,6 +120,12 @@
 /* ── Base ─────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 
+/* Cursor pointer on interactive elements */
+button, a, [role="button"], [tabindex]:not([tabindex="-1"]), label[for],
+input[type="radio"], input[type="checkbox"], select {
+  cursor: pointer;
+}
+
 html {
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
