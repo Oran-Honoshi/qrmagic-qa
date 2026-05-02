@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { User, Shield, Bell, Trash2, Check, X, Eye, EyeOff, LogOut, Zap } from "lucide-react";
+import { User, Shield, Bell, Trash2, Check, X, Eye, EyeOff, LogOut, Zap, CheckCircle, Mail, Lock as LockIcon } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -53,6 +53,90 @@ function Toast({ msg, type }: { msg: string; type: "success" | "error" }) {
       }`}>
       {type === "success" ? <Check size={14} /> : <X size={14} />} {msg}
     </motion.div>
+  );
+}
+
+/* ── Recovery Form ───────────────────────────────────── */
+function RecoveryForm({ plan, email }: { plan: string; email: string }) {
+  const [codeName, setCodeName] = useState("");
+  const [accountEmail, setAccountEmail] = useState(email);
+  const [note, setNote] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const isEligible = ["basic", "plus"].includes(plan);
+
+  async function handleSubmit() {
+    if (!codeName || !accountEmail) return;
+    setSubmitting(true);
+    // Send recovery request via email (mailto fallback)
+    const subject = encodeURIComponent(`QR Code Recovery Request - ${accountEmail}`);
+    const body = encodeURIComponent(
+      `Account email: ${accountEmail}\nQR Code name: ${codeName}\nAdditional info: ${note}\n\nPlease restore this code within 7 days of deletion.`
+    );
+    window.location.href = `mailto:office@honoshi.co.il?subject=${subject}&body=${body}`;
+    setSubmitted(true);
+    setSubmitting(false);
+  }
+
+  if (!isEligible) {
+    return (
+      <div className="flex items-center gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+        <LockIcon size={16} className="text-[#94A3B8] flex-shrink-0" strokeWidth={1.5} />
+        <div>
+          <p className="text-xs font-semibold text-[#475569]">Available on Basic and Plus plans</p>
+          <a href="/pricing" className="text-xs text-[#00D4FF] hover:underline font-medium">Upgrade to unlock recovery →</a>
+        </div>
+      </div>
+    );
+  }
+
+  if (submitted) {
+    return (
+      <div className="flex items-center gap-3 p-4 bg-[#00FF88]/08 border border-[#00FF88]/25 rounded-xl">
+        <CheckCircle size={16} className="text-[#00CC6E] flex-shrink-0" strokeWidth={2} />
+        <div>
+          <p className="text-xs font-semibold text-[#0F172A]">Recovery request sent!</p>
+          <p className="text-xs text-[#475569]">We&apos;ll get back to you within 1 business day.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="grid sm:grid-cols-2 gap-3">
+        <div>
+          <label className="text-xs font-semibold text-[#475569] block mb-1.5">QR Code Name *</label>
+          <input value={codeName} onChange={e => setCodeName(e.target.value)}
+            placeholder="e.g. Homepage QR, Menu QR..."
+            className="w-full bg-slate-50 border border-slate-200 focus:border-[#00D4FF] rounded-xl px-3 py-2.5 text-sm text-[#0F172A] placeholder:text-[#CBD5E1] outline-none transition-all" />
+        </div>
+        <div>
+          <label className="text-xs font-semibold text-[#475569] block mb-1.5">Account Email *</label>
+          <input value={accountEmail} onChange={e => setAccountEmail(e.target.value)}
+            placeholder="your@email.com"
+            className="w-full bg-slate-50 border border-slate-200 focus:border-[#00D4FF] rounded-xl px-3 py-2.5 text-sm text-[#0F172A] placeholder:text-[#CBD5E1] outline-none transition-all" />
+        </div>
+      </div>
+      <div>
+        <label className="text-xs font-semibold text-[#475569] block mb-1.5">Additional Info (optional)</label>
+        <textarea value={note} onChange={e => setNote(e.target.value)}
+          placeholder="When was it deleted? Any other details to help us identify it..."
+          rows={2}
+          className="w-full bg-slate-50 border border-slate-200 focus:border-[#00D4FF] rounded-xl px-3 py-2.5 text-sm text-[#0F172A] placeholder:text-[#CBD5E1] outline-none resize-none transition-all" />
+      </div>
+      <p className="text-[10px] text-[#94A3B8]">
+        Codes are recoverable within 7 days of deletion. We&apos;ll verify your identity and restore the code to your account.
+      </p>
+      <motion.button whileTap={{ scale: 0.95 }} onClick={handleSubmit}
+        disabled={!codeName || !accountEmail || submitting}
+        className="flex items-center gap-2 px-5 py-2.5 bg-[#0F172A] text-white font-semibold rounded-full text-xs hover:bg-[#1E293B] transition-all disabled:opacity-40">
+        {submitting
+          ? <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          : <Mail size={12} strokeWidth={2} />}
+        Send Recovery Request
+      </motion.button>
+    </div>
   );
 }
 

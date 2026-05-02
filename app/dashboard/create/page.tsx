@@ -14,6 +14,7 @@ import {
 import type QRCodeStylingType from "qr-code-styling";
 import { createClient } from "@supabase/supabase-js";
 import { QRFrameDesigner } from "@/components/QRFrameDesigner";
+import { UpgradeModal } from "@/components/UpgradeModal";
 
 const supabase = createClient(
   "https://igbbfjushjmiafohvgdt.supabase.co",
@@ -523,6 +524,8 @@ function QRPreview({
 function CreatePageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const session = getSession();
+  const plan = session?.plan || "free";
   const [step, setStep] = useState(1);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [formData, setFormData] = useState<Record<string, string>>({});
@@ -537,6 +540,7 @@ function CreatePageInner() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showFrameDesigner, setShowFrameDesigner] = useState(false);
+  const [upgradeReason, setUpgradeReason] = useState<"dynamic_limit" | "static_limit" | null>(null);
   const [qrSvgContent, setQrSvgContent] = useState("");
 
   const qrPreviewRef = useRef<HTMLDivElement>(null);
@@ -552,7 +556,6 @@ function CreatePageInner() {
   const qrValue = selectedType ? buildQRValue(selectedType, formData) : "https://qrmagic.io";
 
   useEffect(() => {
-    const session = getSession();
     if (!session) return;
     // Check dynamic usage
     supabase.from("qr_codes").select("*", { count: "exact", head: true })
@@ -572,7 +575,6 @@ function CreatePageInner() {
   }
 
   async function handleSave() {
-    const session = getSession();
     if (!session) return;
     setSaving(true);
     try {
@@ -739,7 +741,7 @@ function CreatePageInner() {
                     </div>
                     {dynamicUsed >= 1 && (
                       <div className="flex items-center gap-2 text-xs text-[#FCD34D] bg-[rgba(245,158,11,0.08)] border border-[rgba(245,158,11,0.2)] rounded-lg px-3 py-2">
-                        <Info size={12} /> Free plan: 1 dynamic used. Upgrade for more.
+                        <Info size={12} /> Free plan: 1 dynamic used. <button onClick={() => setUpgradeReason("dynamic_limit")} className="underline font-bold">Upgrade for more.</button>
                       </div>
                     )}
                   </div>
@@ -914,6 +916,13 @@ function CreatePageInner() {
         <QRFrameDesigner
           qrSvgContent={qrSvgContent}
           onClose={() => setShowFrameDesigner(false)}
+        />
+      )}
+      {upgradeReason && (
+        <UpgradeModal
+          reason={upgradeReason}
+          currentPlan={plan}
+          onClose={() => setUpgradeReason(null)}
         />
       )}
     </>
