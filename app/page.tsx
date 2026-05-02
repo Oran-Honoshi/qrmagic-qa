@@ -901,7 +901,7 @@ function Pricing() {
       features: ["Unlimited static codes","10 dynamic QR codes","Advanced analytics","Custom frames & logo","Bulk import (50 codes)","Email support"] },
     { name: "Plus", price: { monthly: 18, annual: 14 }, period: "/mo",
       desc: "For teams and campaigns.", cta: "Start Free Trial", href: "/auth?mode=signup", featured: false,
-      features: ["100 dynamic QR codes","Folder organization","Campaign tracking","API access","Bulk import (500 codes)","Priority support"] },
+      features: ["100 dynamic QR codes","Folder organization","Campaign tracking","Bulk import (500 codes)","Geographic analytics","3 team seats (soon)","Email support"] },
   ];
   return (
     <section id="pricing" className="py-20 px-4 md:px-6">

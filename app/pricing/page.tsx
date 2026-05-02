@@ -100,6 +100,7 @@ const PLANS = [
       { text: "Bulk import (500 codes/CSV)", tip: "Scale up — import and generate up to 500 QR codes in a single CSV upload." },
       { text: "Custom short domain (soon)", tip: "Use your own domain for QR redirects instead of sqrly.io/r/... — coming soon." },
       { text: "Email support", tip: "Priority email support from the Sqrly team." },
+    { text: "3 team seats (soon)", tip: "Invite up to 2 additional team members to manage QR codes together under one account. Owner + 2 members." },
     ],
   },
 ];
@@ -116,6 +117,7 @@ const COMPARE_ROWS = [
   { label: "Campaign tracking",   tips: "Group codes into campaigns and compare.",                       free: "—",           basic: "—",           plus: "✅" },
   { label: "Geographic data",     tips: "Country-level scan location data.",                             free: "—",           basic: "—",           plus: "✅" },
   { label: "Custom short domain", tips: "Use your own domain for QR redirects.",                        free: "—",           basic: "—",           plus: "Soon" },
+  { label: "Team seats",          tips: "Owner + up to 2 additional members on the same account.",   free: "—",           basic: "—",           plus: "3 (soon)" },
   { label: "Support",             tips: "",                                                              free: "Community",   basic: "Email",       plus: "Email" },
   { label: "Price (annual)",      tips: "Billed annually. Cancel anytime.",                             free: "Free",        basic: "$4/mo",       plus: "$14/mo" },
 ];

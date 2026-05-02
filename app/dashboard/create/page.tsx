@@ -316,6 +316,65 @@ function QRForm({ type, data, onChange }: {
       {f("amount", "Amount (optional)", "10.00", "number")}
     </div>;
     case "image": return <div className="space-y-3">{f("url", "Image URL", "https://example.com/image.jpg", "url")}</div>;
+    case "multilink": return (
+      <div className="space-y-3">
+        {f("name", "Page Title", "My Links")}
+        <div>
+          <label className="text-xs font-semibold text-[#475569] uppercase tracking-wider mb-2 block">
+            Links <span className="text-[#94A3B8] normal-case font-normal">(one per line: Label | URL)</span>
+          </label>
+          <textarea
+            value={data.links || ""}
+            onChange={e => onChange("links", e.target.value)}
+            placeholder="My Website | URL · Instagram | URL · Book a Call | URL"
+            rows={5}
+            className="w-full bg-slate-50 border border-slate-200 focus:border-[#00D4FF] rounded-xl px-3 py-2.5 text-xs font-mono text-[#0F172A] placeholder:text-[#CBD5E1] outline-none resize-none transition-all"
+          />
+          <p className="text-[10px] text-[#94A3B8] mt-1.5">Each link on its own line. Format: Label | https://url.com</p>
+        </div>
+        {f("bio", "Short Bio (optional)", "Designer & creator based in Tel Aviv")}
+        {f("avatar", "Profile Image URL (optional)", "https://...")}
+      </div>
+    );
+
+    case "spotify": return (
+      <div className="space-y-3">
+        {f("url", "Spotify URL", "https://open.spotify.com/track/...")}
+        {f("name", "QR Code Name", "My Playlist QR")}
+      </div>
+    );
+
+    case "menu": return (
+      <div className="space-y-3">
+        {f("url", "Menu URL", "https://your-menu.com")}
+        {f("name", "QR Code Name", "Restaurant Menu")}
+        {f("restaurant", "Restaurant/Venue Name (optional)", "Café Bella")}
+      </div>
+    );
+
+    case "feedback": return (
+      <div className="space-y-3">
+        {f("url", "Feedback Form URL", "https://forms.google.com/...")}
+        {f("name", "QR Code Name", "Customer Feedback")}
+      </div>
+    );
+
+    case "coupon": return (
+      <div className="space-y-3">
+        {f("url", "Coupon / Promo Page URL", "https://your-store.com/promo")}
+        {f("code", "Discount Code (optional)", "SAVE20")}
+        {f("name", "QR Code Name", "Summer Sale")}
+      </div>
+    );
+
+    case "package": return (
+      <div className="space-y-3">
+        {f("url", "Product Page URL", "https://your-store.com/product")}
+        {f("name", "QR Code Name", "Product QR")}
+        {f("product", "Product Name (optional)", "Premium Widget v2")}
+      </div>
+    );
+
     default: return null;
   }
 }
@@ -374,11 +433,11 @@ function buildQRValue(type: string, data: Record<string, string>): string {
 /* Holographic QR Preview */
 /* Holographic QR Preview */
 function QRPreview({
-  value, color, bgColor, dotStyle, ecLevel, logo, isHolo, onOpenFrame,
+  value, color, bgColor, dotStyle, ecLevel, logo, isHolo, onOpenFrame, logoPlacement = "center",
 }: {
   value: string; color: string; bgColor: string;
   dotStyle: string; ecLevel: string; logo: string | null; isHolo: boolean;
-  onOpenFrame: () => void;
+  onOpenFrame: () => void; logoPlacement?: "center" | "behind" | "background";
 }): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   const qrRef = useRef<unknown>(null);
@@ -396,7 +455,12 @@ function QRPreview({
         cornersSquareOptions: { color, type: "extra-rounded" },
         cornersDotOptions: { color },
         backgroundOptions: { color: bgColor },
-        imageOptions: { crossOrigin: "anonymous", margin: 4 },
+        imageOptions: {
+          crossOrigin: "anonymous",
+          margin: logoPlacement === "behind" ? 0 : 4,
+          imageSize: logoPlacement === "behind" ? 0.6 : 0.3,
+          hideBackgroundDots: logoPlacement !== "behind",
+        },
         qrOptions: { errorCorrectionLevel: ecLevel as "H" },
       });
       ref.current.innerHTML = "";
@@ -536,6 +600,7 @@ function CreatePageInner() {
   const [dotStyle, setDotStyle] = useState("rounded");
   const [ecLevel, setEcLevel] = useState("H");
   const [logo, setLogo] = useState<string | null>(null);
+  const [logoPlacement, setLogoPlacement] = useState<"center" | "behind" | "background">("center");
   const [isHolo, setIsHolo] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -869,6 +934,34 @@ function CreatePageInner() {
                       )}
                     </label>
                   </FormField>
+
+                  {/* Logo Placement */}
+                  {logo && (
+                    <div className="mb-4">
+                      <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">
+                        Logo Placement
+                      </label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {([
+                          { id: "center" as const, label: "Center", desc: "In the middle", emoji: "⬛" },
+                          { id: "behind" as const, label: "Behind Dots", desc: "Logo behind dots", emoji: "🔳" },
+                          { id: "background" as const, label: "Background", desc: "Full background", emoji: "🖼" },
+                        ]).map(p => (
+                          <button key={p.id} onClick={() => setLogoPlacement(p.id)}
+                            className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border transition-all ${
+                              logoPlacement === p.id
+                                ? "bg-[#00D4FF]/08 border-[#00D4FF]/30"
+                                : "bg-slate-50 border-slate-200 hover:border-[#00D4FF]/20"
+                            }`}>
+                            <span className="text-lg">{p.emoji}</span>
+                            <span className={`text-[9px] font-bold ${logoPlacement === p.id ? "text-[#0891B2]" : "text-[#475569]"}`}>{p.label}</span>
+                            <span className="text-[8px] text-[#94A3B8] leading-tight text-center">{p.desc}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                 </div>
               </div>
 
@@ -904,6 +997,7 @@ function CreatePageInner() {
                   logo={logo}
                   isHolo={isHolo}
                   onOpenFrame={openFrameDesigner}
+                  logoPlacement={logoPlacement}
                 />
               </div>
             </div>
