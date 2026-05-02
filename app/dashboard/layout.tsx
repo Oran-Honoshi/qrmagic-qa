@@ -45,20 +45,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         "https://igbbfjushjmiafohvgdt.supabase.co",
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnYmJmanVzaGptaWFmb2h2Z2R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTgxNDQsImV4cCI6MjA5MjYzNDE0NH0.xIvQiHWm4IVlkGSwgRK0Owyhhna5qz8HCGCtPL2JexI"
       );
-      db.from("users").select("id, plan").eq("id", session.id).maybeSingle()
-        .then(async ({ data }) => {
-          // Fallback: if not found by id, try by email
-          if (!data && session.email) {
-            const { data: byEmail } = await db.from("users").select("id, plan").eq("email", session.email).maybeSingle();
-            if (byEmail?.plan && byEmail.plan !== session.plan) {
-              const updated = { ...session, id: byEmail.id, plan: byEmail.plan };
-              sessionStorage.setItem(SESSION_KEY, JSON.stringify(updated));
-              window.location.reload();
-            }
-            return;
-          }
-          if (data?.plan && data.plan !== session.plan) {
-            const updated = { ...session, plan: data.plan };
+      // Always look up by email — most reliable since email never changes
+      db.from("users").select("id, plan")
+        .eq("email", session.email).maybeSingle()
+        .then(({ data }) => {
+          if (!data) return;
+          const planChanged = data.plan !== session.plan;
+          const idChanged = data.id !== session.id;
+          if (planChanged || idChanged) {
+            // Update session with correct id and plan, then reload
+            const updated = { ...session, id: data.id, plan: data.plan };
             sessionStorage.setItem(SESSION_KEY, JSON.stringify(updated));
             window.location.reload();
           }
