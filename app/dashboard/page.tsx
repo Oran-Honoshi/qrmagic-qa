@@ -104,21 +104,22 @@ export default function DashboardPage() {
     const s = getSession();
     if (!s) return;
 
-    // If returning from Stripe checkout, refresh plan from DB
+    // Always refresh plan from DB to catch Stripe updates
+    supabase.from("users").select("plan, name, email").eq("id", s.id).single()
+      .then(({ data }) => {
+        if (data) {
+          const updated = { ...s, plan: data.plan || s.plan };
+          sessionStorage.setItem("qrmagic_session", JSON.stringify(updated));
+          setSession(updated);
+        } else {
+          setSession(s);
+        }
+      });
+
+    // Clean upgraded param if present
     const params = new URLSearchParams(window.location.search);
     if (params.get("upgraded") === "1") {
-      supabase.from("users").select("plan").eq("id", s.id).single()
-        .then(({ data }) => {
-          if (data?.plan) {
-            const updated = { ...s, plan: data.plan };
-            sessionStorage.setItem("qrmagic_session", JSON.stringify(updated));
-            setSession(updated);
-          }
-        });
-      // Clean the URL
       window.history.replaceState({}, "", "/dashboard");
-    } else {
-      setSession(s);
     }
 
     supabase.from("qr_codes").select("*").eq("user_id", s.id)
