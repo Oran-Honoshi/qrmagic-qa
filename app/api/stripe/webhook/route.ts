@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+  apiVersion: "2026-04-22.dahlia" as any,
+});
 
 const supabase = createClient(
   "https://igbbfjushjmiafohvgdt.supabase.co",
@@ -7,131 +12,61 @@ const supabase = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnYmJmanVzaGptaWFmb2h2Z2R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTgxNDQsImV4cCI6MjA5MjYzNDE0NH0.xIvQiHWm4IVlkGSwgRK0Owyhhna5qz8HCGCtPL2JexI"
 );
 
-// Map Stripe price IDs to plan names
-function getPlanFromPriceId(priceId: string): string {
-  const basicPrices = [
-    process.env.STRIPE_PRICE_BASIC_MONTHLY,
-    process.env.STRIPE_PRICE_BASIC_ANNUAL,
-  ];
-  const plusPrices = [
-    process.env.STRIPE_PRICE_PLUS_MONTHLY,
-    process.env.STRIPE_PRICE_PLUS_ANNUAL,
-  ];
-  if (basicPrices.includes(priceId)) return "basic";
-  if (plusPrices.includes(priceId)) return "plus";
-  return "free";
-}
+// App Router: disable body parsing by reading raw body manually
+export async function POST(req: NextRequest) {
+  const rawBody = await req.text();
+  const sig = req.headers.get("stripe-signature") || "";
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
 
-export async function POST(request: NextRequest) {
-  const body = await request.text();
-  const sig = request.headers.get("stripe-signature");
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  let event: Stripe.Event;
 
-  if (!webhookSecret || !sig) {
-    return NextResponse.json({ error: "Webhook not configured" }, { status: 400 });
-  }
-
-  let event;
   try {
-    const Stripe = (await import("stripe")).default;
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-      apiVersion: "2026-04-22.dahlia",
-    });
-    event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
-  } catch (err) {
-    console.error("Webhook signature verification failed:", err);
+    event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
+  } catch (err: any) {
+    console.error("Webhook signature verification failed:", err.message);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
   try {
-    switch (event.type) {
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const userId = session.metadata?.userId;
+      const plan = session.metadata?.plan || "basic";
 
-      // Payment succeeded — upgrade the user
-      case "checkout.session.completed": {
-        const session = event.data.object as {
-          client_reference_id?: string;
-          subscription?: string;
-          metadata?: Record<string, string>;
-        };
-        const userId = session.client_reference_id ||
-                       session.metadata?.userId;
-        const plan = session.metadata?.plan || "basic";
-
-        if (userId) {
-          await supabase.from("users")
-            .update({
-              plan,
-              stripe_subscription_id: session.subscription || null,
-            })
-            .eq("id", userId);
-          console.log(`Upgraded user ${userId} to ${plan}`);
-        }
-        break;
+      if (userId) {
+        await supabase.from("users").update({
+          plan,
+          stripe_customer_id: session.customer as string,
+          stripe_subscription_id: session.subscription as string,
+        }).eq("id", userId);
       }
-
-      // Subscription renewed — keep plan active
-      case "invoice.payment_succeeded": {
-        const invoice = event.data.object as {
-          subscription?: string;
-          subscription_details?: { metadata?: Record<string, string> };
-          lines?: { data?: Array<{ price?: { id?: string } }> };
-        };
-        const subId = invoice.subscription;
-        const userId = invoice.subscription_details?.metadata?.userId;
-        const priceId = invoice.lines?.data?.[0]?.price?.id;
-        const plan = priceId ? getPlanFromPriceId(priceId) : "basic";
-
-        if (userId) {
-          await supabase.from("users")
-            .update({ plan })
-            .eq("id", userId);
-        } else if (subId) {
-          // Fallback: find by subscription ID
-          await supabase.from("users")
-            .update({ plan })
-            .eq("stripe_subscription_id", subId);
-        }
-        break;
-      }
-
-      // Subscription cancelled or payment failed — downgrade to free
-      case "customer.subscription.deleted":
-      case "invoice.payment_failed": {
-        const obj = event.data.object as {
-          id?: string;
-          metadata?: Record<string, string>;
-        };
-        const userId = obj.metadata?.userId;
-        const subId = obj.id;
-
-        if (userId) {
-          await supabase.from("users")
-            .update({ plan: "free" })
-            .eq("id", userId);
-        } else if (subId) {
-          await supabase.from("users")
-            .update({ plan: "free" })
-            .eq("stripe_subscription_id", subId);
-        }
-        console.log(`Downgraded user to free — sub: ${subId}`);
-        break;
-      }
-
-      default:
-        console.log(`Unhandled webhook event: ${event.type}`);
     }
 
-    return NextResponse.json({ received: true });
+    if (event.type === "invoice.paid") {
+      const invoice = event.data.object as Stripe.Invoice;
+      const customerId = invoice.customer as string;
+      if (customerId) {
+        const sub = await stripe.subscriptions.list({ customer: customerId, limit: 1 });
+        const plan = sub.data[0]?.metadata?.plan || "basic";
+        await supabase.from("users").update({ plan }).eq("stripe_customer_id", customerId);
+      }
+    }
+
+    if (
+      event.type === "customer.subscription.deleted" ||
+      event.type === "customer.subscription.paused"
+    ) {
+      const subscription = event.data.object as Stripe.Subscription;
+      const customerId = subscription.customer as string;
+      await supabase.from("users").update({ plan: "free" }).eq("stripe_customer_id", customerId);
+    }
+
   } catch (err) {
     console.error("Webhook handler error:", err);
-    return NextResponse.json(
-      { error: "Webhook handler failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Handler failed" }, { status: 500 });
   }
+
+  return NextResponse.json({ received: true });
 }
 
-// Stripe requires raw body — disable body parsing
-export const config = {
-  api: { bodyParser: false },
-};
+// No config export needed — App Router reads raw body via req.text()
