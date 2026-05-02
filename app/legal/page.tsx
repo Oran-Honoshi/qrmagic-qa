@@ -45,6 +45,74 @@ function LegalContent() {
             <p>These terms are governed by the laws of Israel. Disputes shall be resolved in the courts of Tel Aviv.</p></section>
           <section><h2 className="text-base font-bold text-[#0F172A] mb-2">5. Contact</h2>
             <p>Honoshi · Israel · <a href="mailto:office@honoshi.co.il" className="text-[#00D4FF] hover:underline">office@honoshi.co.il</a></p></section>
+
+          <section className="border border-[#00FF88]/30 bg-[#00FF88]/04 rounded-2xl p-5 space-y-4 mt-2">
+            <h2 className="text-base font-bold text-[#0F172A] flex items-center gap-2">
+              🛡️ 6. Service Continuity &amp; Reliability
+            </h2>
+            <p className="text-xs text-[#94A3B8] italic border-b border-[#00FF88]/15 pb-3">
+              Most SaaS companies bury a &quot;we can shut down without notice&quot; clause deep in their terms.
+              We think that&apos;s wrong — especially when your QR codes might be printed on thousands of
+              business cards or restaurant menus. Here is our commitment to you.
+            </p>
+
+            <div>
+              <h3 className="text-sm font-bold text-[#0F172A] mb-1">6.1 — The 60-Day Sunset Guarantee</h3>
+              <p>In the event that Sqrly decides to discontinue its Dynamic QR Code service or cease business operations,
+              we commit to providing all active paid subscribers with a minimum of <strong className="text-[#0F172A]">60 days&apos; written notice</strong> via
+              their primary account email address. This gives you ample time to update printed materials, redirect campaigns,
+              and transition to another provider without a single lost scan.</p>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-bold text-[#0F172A] mb-1">6.2 — 30-Day Legacy Redirection Period</h3>
+              <p>Following the 60-day notice period, Sqrly will make reasonable commercial efforts to maintain all
+              QR redirection servers for an <strong className="text-[#0F172A]">additional 30 days in a &quot;Legacy State&quot;</strong> before
+              final decommissioning. This is designed to catch stray scans that occur immediately after the official
+              shutdown date — because printed materials last far longer than digital campaigns.</p>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-bold text-[#0F172A] mb-1">6.3 — Data Portability &amp; Export Rights</h3>
+              <p>During any notice period — and at any time while your account is active — you have the right to
+              export a <strong className="text-[#0F172A]">full CSV or JSON report</strong> of all scan analytics, destination URLs,
+              and QR code configurations associated with your account. Your data belongs to you.
+              We make it easy to leave because we are confident you will not want to.</p>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-bold text-[#0F172A] mb-1">6.4 — Payment Grace Period &amp; Account Recovery</h3>
+              <p>If your subscription is cancelled or a payment fails, Sqrly will <strong className="text-[#0F172A]">not immediately deactivate</strong> your
+              Dynamic QR codes. We provide a <strong className="text-[#0F172A]">30-day grace period</strong> during which your codes
+              may redirect to a &quot;Subscription Inactive&quot; notice page rather than a dead link — protecting any
+              printed materials already in circulation.</p>
+              <p className="mt-2">Your account data, QR code configurations, and analytics history are
+              <strong className="text-[#0F172A]"> retained for 6 months</strong> after expiration. Renewing your subscription
+              within that window fully restores all your codes — no reprinting required.</p>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-bold text-[#0F172A] mb-1">6.5 — Service Level Objective (SLO)</h3>
+              <p>Sqrly targets <strong className="text-[#0F172A]">99.9% uptime</strong> for its QR redirection servers —
+              the critical infrastructure your printed materials depend on. While we do not offer a financial
+              Service Level Agreement at this stage, we treat server stability as our highest engineering priority
+              above all feature development. Scheduled maintenance will be communicated at least
+              <strong className="text-[#0F172A]"> 48 hours in advance</strong> and performed during off-peak hours.</p>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-bold text-[#0F172A] mb-1">6.6 — Static QR Codes: Zero Server Dependency</h3>
+              <p>Static QR codes generated on Sqrly have <strong className="text-[#0F172A]">no dependency on our servers</strong>.
+              They encode data directly into the QR pattern and will continue to function indefinitely,
+              regardless of Sqrly&apos;s operational status. Only Dynamic QR codes use our redirection infrastructure.</p>
+            </div>
+
+            <p className="text-xs text-[#94A3B8] border-t border-[#00FF88]/20 pt-3">
+              These commitments reflect our values, not just our legal obligations. They are made in good faith
+              as a startup that respects its users. Questions? <a href="mailto:office@honoshi.co.il" className="text-[#00D4FF] hover:underline">office@honoshi.co.il</a>
+            </p>
+          </section>
+
         </div>
       ),
     },
