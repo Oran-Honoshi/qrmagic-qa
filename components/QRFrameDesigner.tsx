@@ -92,6 +92,26 @@ const CTA_PRESETS = [
   "BOOK NOW", "JOIN US", "WATCH VIDEO", "FREE WIFI",
 ];
 
+// Symbol overlays — emoji/icon placed in center of QR
+const SYMBOLS = [
+  { id: "none",     label: "None",      icon: "—" },
+  { id: "wifi",     label: "Wi-Fi",     icon: "📶" },
+  { id: "link",     label: "Link",      icon: "🔗" },
+  { id: "store",    label: "Store",     icon: "🏪" },
+  { id: "menu",     label: "Menu",      icon: "🍽" },
+  { id: "heart",    label: "Like",      icon: "❤️" },
+  { id: "star",     label: "Review",    icon: "⭐" },
+  { id: "phone",    label: "Call",      icon: "📞" },
+  { id: "mail",     label: "Email",     icon: "✉️" },
+  { id: "map",      label: "Location",  icon: "📍" },
+  { id: "video",    label: "Video",     icon: "▶️" },
+  { id: "cart",     label: "Shop",      icon: "🛒" },
+  { id: "gift",     label: "Promo",     icon: "🎁" },
+  { id: "book",     label: "Info",      icon: "📖" },
+  { id: "music",    label: "Music",     icon: "🎵" },
+  { id: "camera",   label: "Photo",     icon: "📷" },
+];
+
 const COLORS = {
   stroke: ["#00D4FF","#00FF88","#8B5CF6","#F472B6","#FB923C","#0F172A","#EF4444","#FCD34D"],
   text:   ["#0F172A","#FFFFFF","#00D4FF","#00FF88","#8B5CF6","#F472B6","#FB923C","#EF4444"],
@@ -124,6 +144,7 @@ export function QRFrameDesigner({
   const [textColor, setTextColor] = useState("#0F172A");
   const [fillColor, setFillColor] = useState("#FFFFFF");
   const [downloaded, setDownloaded] = useState(false);
+  const [symbol, setSymbol] = useState("none");
   const svgRef = useRef<SVGSVGElement>(null);
 
   const frame = FRAMES[frameId];
@@ -189,6 +210,27 @@ export function QRFrameDesigner({
                 {/* QR Code layer */}
                 <g transform={`translate(${frame.qrPos.x}, ${frame.qrPos.y}) scale(${frame.qrPos.size / 200})`}
                   dangerouslySetInnerHTML={{ __html: qrSvgContent }} />
+
+                {/* Symbol overlay — centered on QR */}
+                {symbol !== "none" && (() => {
+                  const sym = SYMBOLS.find(s => s.id === symbol);
+                  if (!sym) return null;
+                  const cx = frame.qrPos.x + frame.qrPos.size / 2;
+                  const cy = frame.qrPos.y + frame.qrPos.size / 2;
+                  return (
+                    <>
+                      <circle cx={cx} cy={cy} r={18}
+                        fill={effectiveFillColor}
+                        stroke={effectiveStroke}
+                        strokeWidth={1.5} />
+                      <text x={cx} y={cy + 1}
+                        textAnchor="middle" dominantBaseline="middle"
+                        fontSize="18">
+                        {sym.icon}
+                      </text>
+                    </>
+                  );
+                })()}
 
                 {/* Corner accents for modern/rounded */}
                 {(frameId === "modern" || frameId === "rounded") && (
@@ -290,6 +332,29 @@ export function QRFrameDesigner({
                     }`}>
                     {preset}
                   </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Symbol overlay */}
+            <div>
+              <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">
+                Center Symbol (optional)
+              </p>
+              <div className="grid grid-cols-4 gap-1.5">
+                {SYMBOLS.map(s => (
+                  <motion.button key={s.id} whileTap={{ scale: 0.95 }}
+                    onClick={() => setSymbol(s.id)}
+                    className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all ${
+                      symbol === s.id
+                        ? "bg-[#00D4FF]/08 border-[#00D4FF]/30"
+                        : "bg-slate-50 border-slate-200 hover:border-[#00D4FF]/20"
+                    }`}>
+                    <span className="text-base leading-none">{s.icon}</span>
+                    <span className={`text-[8px] font-semibold text-center ${
+                      symbol === s.id ? "text-[#0891B2]" : "text-[#94A3B8]"
+                    }`}>{s.label}</span>
+                  </motion.button>
                 ))}
               </div>
             </div>

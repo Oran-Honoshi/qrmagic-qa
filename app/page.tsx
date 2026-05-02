@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useLang, LangSwitcher } from "@/components/LangContext";
+import { QRFrameDesigner } from "@/components/QRFrameDesigner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Zap, ArrowRight, Shield, Lock, CheckCircle,
@@ -251,6 +252,8 @@ function HeroGenerator() {
   const [showModal, setShowModal] = useState(false);
   const [activeCategory, setActiveCategory] = useState("Essential");
   const [qrName, setQrName] = useState("");
+  const [showFrameDesigner, setShowFrameDesigner] = useState(false);
+  const [qrSvgContent, setQrSvgContent] = useState("");
   const ref = useRef<HTMLDivElement>(null);
   const qrRef = useRef<unknown>(null);
 
@@ -316,6 +319,14 @@ function HeroGenerator() {
   function download(ext: "svg" | "png") {
     (qrRef.current as any)?.download({ name: qrName || "sqrly-qr", extension: ext });
     setShowModal(true);
+  }
+
+  function openFrameDesigner() {
+    const svgEl = ref.current?.querySelector("svg");
+    if (svgEl) {
+      setQrSvgContent(svgEl.innerHTML);
+      setShowFrameDesigner(true);
+    }
   }
 
   async function downloadPDF() {
@@ -525,6 +536,10 @@ function HeroGenerator() {
                   </motion.button>
                 </div>
                 <p className="text-center text-[9.5px] text-[#CBD5E1]">SVG is print-ready · EU DPP compliant · No watermark</p>
+                <button onClick={openFrameDesigner}
+                  className="w-full flex items-center justify-center gap-1.5 py-2 text-[11px] font-semibold bg-slate-50 border border-slate-200 rounded-full text-[#475569] hover:border-[#00D4FF]/30 hover:text-[#0891B2] transition-all">
+                  🖼 Add Frame &amp; Sticker
+                </button>
               </div>
 
               <div className="w-full bg-gradient-to-br from-[#0F172A] to-[#1E293B] rounded-2xl p-4 text-center">
@@ -542,6 +557,12 @@ function HeroGenerator() {
 
       <AnimatePresence>
         {showModal && <DownloadModal onClose={() => setShowModal(false)} onSignup={() => { window.location.href = "/auth?mode=signup"; }} />}
+        {showFrameDesigner && qrSvgContent && (
+          <QRFrameDesigner
+            qrSvgContent={qrSvgContent}
+            onClose={() => setShowFrameDesigner(false)}
+          />
+        )}
       </AnimatePresence>
     </section>
   );
