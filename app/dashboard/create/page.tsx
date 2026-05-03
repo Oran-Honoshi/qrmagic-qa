@@ -863,11 +863,23 @@ function CreatePageInner() {
                         <Lock size={10} className="inline mr-1" />Static
                       </button>
                     </div>
-                    {dynamicUsed >= 1 && (
-                      <div className="flex items-center gap-2 text-xs text-[#FCD34D] bg-[rgba(245,158,11,0.08)] border border-[rgba(245,158,11,0.2)] rounded-lg px-3 py-2">
-                        <Info size={12} /> Free plan: 1 dynamic used. <button onClick={() => setUpgradeReason("dynamic_limit")} className="underline font-bold">Upgrade for more.</button>
-                      </div>
-                    )}
+                    {(() => {
+                      const dynLimit = plan === "plus" ? 100 : plan === "basic" ? 10 : 1;
+                      const nearLimit = dynamicUsed >= dynLimit;
+                      const approachingLimit = plan !== "plus" && dynamicUsed >= dynLimit * 0.8 && !nearLimit;
+                      if (nearLimit) return (
+                        <div className="flex items-center gap-2 text-xs text-[#FCD34D] bg-[rgba(245,158,11,0.08)] border border-[rgba(245,158,11,0.2)] rounded-lg px-3 py-2">
+                          <Info size={12} /> {plan === "free" ? "Free" : plan === "basic" ? "Basic" : "Plus"} plan limit reached ({dynamicUsed}/{dynLimit} dynamic).{" "}
+                          {plan !== "plus" && <button onClick={() => setUpgradeReason("dynamic_limit")} className="underline font-bold">Upgrade for more.</button>}
+                        </div>
+                      );
+                      if (approachingLimit) return (
+                        <div className="flex items-center gap-2 text-xs text-[#94A3B8] bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+                          <Info size={12} /> {dynamicUsed}/{dynLimit} dynamic codes used on {plan} plan.
+                        </div>
+                      );
+                      return null;
+                    })()}
                   </div>
                 )}
 
