@@ -187,6 +187,10 @@ export function QRFrameDesigner({
   const [downloaded, setDownloaded] = useState(false);
   const [cornerStyle, setCornerStyle] = useState("extra-rounded");
   const [symbol, setSymbol] = useState("none");
+  const [useGradient, setUseGradient] = useState(false);
+  const [gradientColor2, setGradientColor2] = useState("#00D4FF");
+  const [gradientType, setGradientType] = useState<"linear" | "radial">("linear");
+  const [ctaInput, setCtaInput] = useState("SCAN ME");
   const svgRef = useRef<SVGSVGElement>(null);
 
   const frame = FRAMES[frameId];
@@ -243,10 +247,27 @@ export function QRFrameDesigner({
                 className="w-full h-full" xmlns="http://www.w3.org/2000/svg"
                 style={{ filter: frameId === "neon" ? "drop-shadow(0 0 8px rgba(0,255,136,0.4))" : "drop-shadow(0 4px 12px rgba(0,0,0,0.08))" }}>
 
+                {/* Gradient defs */}
+                {useGradient && (
+                  <defs>
+                    {gradientType === "linear" ? (
+                      <linearGradient id="frameGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor={effectiveStroke} />
+                        <stop offset="100%" stopColor={gradientColor2} />
+                      </linearGradient>
+                    ) : (
+                      <radialGradient id="frameGrad" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor={effectiveStroke} />
+                        <stop offset="100%" stopColor={gradientColor2} />
+                      </radialGradient>
+                    )}
+                  </defs>
+                )}
+
                 {/* Background */}
                 {frame.path && (
                   <path d={frame.path} fill={effectiveFillColor}
-                    stroke={effectiveStroke} strokeWidth={frame.strokeWidth || 2} />
+                    stroke={useGradient ? "url(#frameGrad)" : effectiveStroke} strokeWidth={frame.strokeWidth || 2} />
                 )}
 
                 {/* QR Code layer */}
@@ -361,7 +382,7 @@ export function QRFrameDesigner({
               <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 flex items-center gap-1.5">
                 <Type size={10} strokeWidth={2} /> CTA Label
               </p>
-              <input value={ctaText} onChange={e => setCtaText(e.target.value.slice(0, 20))}
+              <input value={ctaInput || ctaText} onChange={e => setCtaText(e.target.value.slice(0, 20))}
                 placeholder="e.g. SCAN TO ORDER"
                 className="w-full bg-slate-50 border border-slate-200 focus:border-[#00D4FF] rounded-xl px-3 py-2.5 text-sm font-bold text-[#0F172A] placeholder:text-[#CBD5E1] outline-none transition-all uppercase tracking-wide mb-2" />
               <div className="flex flex-wrap gap-1.5">
@@ -377,6 +398,44 @@ export function QRFrameDesigner({
                 ))}
               </div>
             </div>
+
+            {/* Gradient frame color */}
+            {frameId !== "none" && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider">Gradient Frame</p>
+                  <button onClick={() => setUseGradient((g: boolean) => !g)}
+                    className={`w-9 h-5 rounded-full transition-all relative ${useGradient ? "bg-[#00D4FF]" : "bg-slate-200"}`}>
+                    <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${useGradient ? "left-4" : "left-0.5"}`} />
+                  </button>
+                </div>
+                {useGradient && (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <p className="text-[9px] text-[#94A3B8] mb-1">Color 1</p>
+                        <input type="color" value={effectiveStroke}
+                          className="w-full h-8 rounded-lg border border-slate-200 cursor-pointer" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[9px] text-[#94A3B8] mb-1">Color 2</p>
+                        <input type="color" value={gradientColor2}
+                          onChange={e => setGradientColor2(e.target.value)}
+                          className="w-full h-8 rounded-lg border border-slate-200 cursor-pointer" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {(["linear", "radial"] as const).map(t => (
+                        <button key={t} onClick={() => setGradientType(t)}
+                          className={`py-1.5 rounded-lg text-[10px] font-semibold border capitalize transition-all ${
+                            gradientType === t ? "bg-[#00D4FF]/08 border-[#00D4FF]/30 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569]"
+                          }`}>{t}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Symbol overlay */}
             <div>

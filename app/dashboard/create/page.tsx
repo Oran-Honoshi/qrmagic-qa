@@ -437,11 +437,16 @@ function buildQRValue(type: string, data: Record<string, string>): string {
 /* Holographic QR Preview */
 /* Holographic QR Preview */
 function QRPreview({
-  value, color, bgColor, dotStyle, ecLevel, logo, isHolo, onOpenFrame, logoPlacement = "center",
+  value, color, bgColor, dotStyle, ecLevel, logo, isHolo, onOpenFrame,
+  logoPlacement = "center", cornerSquareStyle = "extra-rounded",
+  cornerDotStyle = "dot", cornerColor = "#0F172A", logoScale = 0.3,
+  showPhoneMockup = false, onTogglePhoneMockup,
 }: {
   value: string; color: string; bgColor: string;
   dotStyle: string; ecLevel: string; logo: string | null; isHolo: boolean;
   onOpenFrame: () => void; logoPlacement?: "center" | "behind" | "background";
+  cornerSquareStyle?: string; cornerDotStyle?: string; cornerColor?: string;
+  logoScale?: number; showPhoneMockup?: boolean; onTogglePhoneMockup?: () => void;
 }): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   const qrRef = useRef<unknown>(null);
@@ -462,7 +467,7 @@ function QRPreview({
         imageOptions: {
           crossOrigin: "anonymous",
           margin: logoPlacement === "behind" ? 0 : 4,
-          imageSize: logoPlacement === "behind" ? 0.6 : 0.3,
+          imageSize: logoPlacement === "behind" ? 0.6 : logoScale,
           hideBackgroundDots: logoPlacement !== "behind",
         },
         qrOptions: { errorCorrectionLevel: ecLevel as "H" },
@@ -625,6 +630,11 @@ function CreatePageInner() {
   const [ecLevel, setEcLevel] = useState("H");
   const [logo, setLogo] = useState<string | null>(null);
   const [logoPlacement, setLogoPlacement] = useState<"center" | "behind" | "background">("center");
+  const [cornerSquareStyle, setCornerSquareStyle] = useState("extra-rounded");
+  const [cornerDotStyle, setCornerDotStyle] = useState("dot");
+  const [cornerColor, setCornerColor] = useState("#0F172A");
+  const [logoScale, setLogoScale] = useState(0.3);
+  const [showPhoneMockup, setShowPhoneMockup] = useState(false);
   const [isHolo, setIsHolo] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -912,6 +922,18 @@ function CreatePageInner() {
                     </button>
                   </div>
 
+                  {/* Logo Scale */}
+                  {logo && (
+                    <FormField label={`Logo Scale: ${Math.round(logoScale * 100)}%`}>
+                      <input type="range" min="15" max="50" value={Math.round(logoScale * 100)}
+                        onChange={e => setLogoScale(Number(e.target.value) / 100)}
+                        className="w-full accent-[#00D4FF]" />
+                      <div className="flex justify-between text-[9px] text-[#94A3B8] mt-0.5">
+                        <span>Small</span><span>Large</span>
+                      </div>
+                    </FormField>
+                  )}
+
                   {/* Colors */}
                   <FormField label="QR Color">
                     <div className="flex gap-2 flex-wrap">
@@ -976,8 +998,22 @@ function CreatePageInner() {
                   </FormField>
 
                   {/* Logo upload */}
-                  {/* Logo Presets — clean SVG icons */}
+                  {/* Logo Presets — icons + brands */}
                   <div className="mb-3">
+                    <div className="flex gap-2 mb-2">
+                      <button id="logo-tab-icons" onClick={() => {
+                        document.getElementById("logo-tab-icons")?.classList.add("text-[#0891B2]","border-[#00D4FF]");
+                        document.getElementById("logo-tab-brands")?.classList.remove("text-[#0891B2]","border-[#00D4FF]");
+                        document.getElementById("logo-icons-grid")?.classList.remove("hidden");
+                        document.getElementById("logo-brands-grid")?.classList.add("hidden");
+                      }} className="text-[10px] font-bold text-[#0891B2] border-b-2 border-[#00D4FF] pb-0.5 transition-all">Icons</button>
+                      <button id="logo-tab-brands" onClick={() => {
+                        document.getElementById("logo-tab-brands")?.classList.add("text-[#0891B2]","border-[#00D4FF]");
+                        document.getElementById("logo-tab-icons")?.classList.remove("text-[#0891B2]","border-[#00D4FF]");
+                        document.getElementById("logo-brands-grid")?.classList.remove("hidden");
+                        document.getElementById("logo-icons-grid")?.classList.add("hidden");
+                      }} className="text-[10px] font-bold text-[#94A3B8] border-b-2 border-transparent pb-0.5 transition-all">Brands</button>
+                    </div>
                     <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">Quick Logo Presets</p>
                     <div className="grid grid-cols-6 gap-1.5">
                       {[
@@ -1013,6 +1049,37 @@ function CreatePageInner() {
                           </button>
                         );
                       })}
+                    </div>
+
+                    {/* Brand logos */}
+                    <div id="logo-brands-grid" className="hidden grid grid-cols-6 gap-1.5 mt-1">
+                      {[
+                        { label: "None", url: null, bg: "#f1f5f9", text: "✕" },
+                        { label: "WhatsApp", url: "https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg", bg: "#25D366" },
+                        { label: "Instagram", url: "https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg", bg: "#E1306C" },
+                        { label: "Facebook", url: "https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg", bg: "#1877F2" },
+                        { label: "YouTube", url: "https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg", bg: "#FF0000" },
+                        { label: "TikTok", url: "https://upload.wikimedia.org/wikipedia/en/a/a9/TikTok_logo.svg", bg: "#010101" },
+                        { label: "LinkedIn", url: "https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png", bg: "#0077B5" },
+                        { label: "X/Twitter", url: "https://upload.wikimedia.org/wikipedia/commons/5/53/X_logo_2023_original.svg", bg: "#000000" },
+                        { label: "Spotify", url: "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg", bg: "#1DB954" },
+                        { label: "PayPal", url: "https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg", bg: "#003087" },
+                        { label: "Stripe", url: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg", bg: "#635BFF" },
+                        { label: "Airbnb", url: "https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_B%C3%A9lo.svg", bg: "#FF5A5F" },
+                      ].map(b => (
+                        <button key={b.label} onClick={() => setLogo(b.url)}
+                          className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg border text-[8px] font-medium transition-all ${
+                            logo === b.url ? "border-[#00D4FF]/30 bg-[#00D4FF]/08" : "border-slate-200 bg-slate-50 hover:border-[#00D4FF]/30"
+                          }`}>
+                          {b.url ? (
+                            <div className="w-[18px] h-[18px] rounded-full flex items-center justify-center overflow-hidden"
+                              style={{ background: b.bg }}>
+                              <img src={b.url} alt={b.label} className="w-3 h-3 object-contain" />
+                            </div>
+                          ) : <span className="w-[18px] h-[18px] flex items-center justify-center font-bold">✕</span>}
+                          {b.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
 

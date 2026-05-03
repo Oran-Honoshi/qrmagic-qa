@@ -253,6 +253,12 @@ function HeroGenerator() {
   const [activeCategory, setActiveCategory] = useState("Essential");
   const [qrName, setQrName] = useState("");
   const [logoSymbol, setLogoSymbol] = useState<string | null>(null);
+  const [dotStyle, setDotStyle] = useState("rounded");
+  const [cornerStyle, setCornerStyle] = useState("extra-rounded");
+  const [cornerDotStyle, setCornerDotStyle] = useState("dot");
+  const [cornerColor, setCornerColor] = useState("#0F172A");
+  const [logoScale, setLogoScale] = useState(0.3);
+  const [showPhone, setShowPhone] = useState(false);
   const [showFrameDesigner, setShowFrameDesigner] = useState(false);
   const [qrSvgContent, setQrSvgContent] = useState("");
   const ref = useRef<HTMLDivElement>(null);
@@ -308,9 +314,9 @@ function HeroGenerator() {
     const t = setTimeout(() => {
       (qrRef.current as any)?.update({
         data: value || "https://sqrly.net",
-        dotsOptions: { color, type: "rounded" },
-        cornersSquareOptions: { color, type: "extra-rounded" },
-        cornersDotOptions: { color },
+        dotsOptions: { color, type: dotStyle as any },
+        cornersSquareOptions: { color: cornerColor, type: cornerStyle as any },
+        cornersDotOptions: { color: cornerColor, type: cornerDotStyle as any },
         backgroundOptions: { color: bgColor },
         image: logoSymbol ? (() => {
           const p = ([
@@ -330,11 +336,11 @@ function HeroGenerator() {
           const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%230F172A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="11" fill="white" stroke="%23E2E8F0"/><path d="${p.path}"/></svg>`;
           return `data:image/svg+xml,${svg}`;
         })() : undefined,
-        imageOptions: { crossOrigin: "anonymous", margin: 2, imageSize: 0.35, hideBackgroundDots: true },
+        imageOptions: { crossOrigin: "anonymous", margin: 2, imageSize: logoScale, hideBackgroundDots: true },
       });
     }, 300);
     return () => clearTimeout(t);
-  }, [value, color, bgColor, logoSymbol]);
+  }, [value, color, bgColor, logoSymbol, dotStyle, cornerStyle, cornerDotStyle, cornerColor, logoScale]);
 
   function download(ext: "svg" | "png") {
     (qrRef.current as any)?.download({ name: qrName || "sqrly-qr", extension: ext });
@@ -554,6 +560,72 @@ function HeroGenerator() {
                 </div>
               </div>
             </div>
+
+            {/* Dot Style */}
+            <div className="mt-4">
+              <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Dot Style</label>
+              <div className="flex gap-1.5 flex-wrap">
+                {[
+                  { v: "rounded", label: "Round" },
+                  { v: "dots", label: "Dots" },
+                  { v: "classy", label: "Classy" },
+                  { v: "classy-rounded", label: "Soft" },
+                  { v: "square", label: "Square" },
+                  { v: "extra-rounded", label: "Blob" },
+                ].map(d => (
+                  <button key={d.v} onClick={() => setDotStyle(d.v)}
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all ${
+                      dotStyle === d.v ? "bg-[#00D4FF]/10 border-[#00D4FF]/40 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/20"
+                    }`}>{d.label}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Corner Style */}
+            <div className="mt-3">
+              <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Corner Style</label>
+              <div className="flex gap-1.5 flex-wrap">
+                {[
+                  { v: "square", label: "⬛ Square" },
+                  { v: "extra-rounded", label: "🔵 Round" },
+                  { v: "dot", label: "⚫ Dot" },
+                  { v: "classy", label: "💠 Classy" },
+                  { v: "classy-rounded", label: "🔷 Soft" },
+                ].map(c => (
+                  <button key={c.v} onClick={() => setCornerStyle(c.v)}
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all ${
+                      cornerStyle === c.v ? "bg-[#00D4FF]/10 border-[#00D4FF]/40 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/20"
+                    }`}>{c.label}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Corner Color */}
+            <div className="mt-3">
+              <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Corner Color</label>
+              <div className="flex gap-1.5 flex-wrap items-center">
+                <input type="color" value={cornerColor}
+                  onChange={e => setCornerColor(e.target.value)}
+                  className="w-7 h-7 rounded-lg border border-slate-200 cursor-pointer" />
+                {["#0F172A","#00D4FF","#00FF88","#8B5CF6","#F472B6","#FB923C","#EF4444"].map(c => (
+                  <button key={c} onClick={() => setCornerColor(c)}
+                    style={{ background: c }}
+                    className={`w-6 h-6 rounded-full border-2 transition-all ${cornerColor === c ? "border-[#00D4FF] scale-125" : "border-white"}`} />
+                ))}
+              </div>
+            </div>
+
+            {/* Logo Scale */}
+            {logoSymbol && (
+              <div className="mt-3">
+                <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">
+                  Logo Scale: {Math.round(logoScale * 100)}%
+                </label>
+                <input type="range" min="15" max="50" value={Math.round(logoScale * 100)}
+                  onChange={e => setLogoScale(Number(e.target.value) / 100)}
+                  className="w-full accent-[#00D4FF]" />
+              </div>
+            )}
 
             {/* Right — Preview */}
             <div className="p-5 md:p-6 flex flex-col items-center justify-between gap-5">
