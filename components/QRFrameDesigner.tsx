@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Download, Check, X, Type, Palette } from "lucide-react";
 
-type FrameId = "none" | "modern" | "rounded" | "badge" | "ticket" | "bubble" | "minimal" | "neon" | "sign" | "tag" | "arrow" | "circle";
+type FrameId = string;
 
 interface FramePreset {
   id: FrameId;
@@ -20,101 +20,111 @@ interface FramePreset {
   strokeWidth?: number;
 }
 
-const FRAMES: Record<FrameId, FramePreset> = {
+const FRAMES: Record<string, FramePreset> = {
   none: {
-    id: "none", name: "Clean", emoji: "✨",
+    id: "none", name: "None", emoji: "✕",
     path: "", viewBox: "0 0 200 200",
     qrPos: { x: 0, y: 0, size: 200 },
     textPos: { x: 0, y: 0 },
   },
-  modern: {
-    id: "modern", name: "Modern", emoji: "🔲",
-    path: "M10 5 H190 A8 8 0 0 1 198 13 V215 A8 8 0 0 1 190 223 H10 A8 8 0 0 1 2 215 V13 A8 8 0 0 1 10 5 Z",
-    viewBox: "0 0 200 228",
+  rect_clean: {
+    id: "rect_clean", name: "Classic", emoji: "⬜",
+    path: "M4 4 H196 V220 H4 Z",
+    viewBox: "0 0 200 224",
     qrPos: { x: 12, y: 12, size: 176 },
     textPos: { x: 100, y: 218 },
-    strokeColor: "#00D4FF", fillColor: "#FFFFFF", strokeWidth: 2,
   },
-  rounded: {
-    id: "rounded", name: "Rounded", emoji: "⬜",
-    path: "M30 4 H170 A26 26 0 0 1 196 30 V210 A26 26 0 0 1 170 236 H30 A26 26 0 0 1 4 210 V30 A26 26 0 0 1 30 4 Z",
-    viewBox: "0 0 200 240",
-    qrPos: { x: 16, y: 16, size: 168 },
-    textPos: { x: 100, y: 228 },
-    strokeColor: "#00FF88", fillColor: "#FFFFFF", strokeWidth: 2,
-  },
-  badge: {
-    id: "badge", name: "Badge", emoji: "🏅",
-    path: "M100 4 L196 52 V148 L100 196 L4 148 V52 Z",
-    viewBox: "0 0 200 200",
-    qrPos: { x: 40, y: 40, size: 120 },
-    textPos: { x: 100, y: 186 },
-    strokeColor: "#8B5CF6", fillColor: "#FFFFFF", strokeWidth: 2,
-  },
-  ticket: {
-    id: "ticket", name: "Ticket", emoji: "🎟",
-    path: "M4 20 H196 V80 A12 12 0 0 1 196 100 A12 12 0 0 1 196 120 V180 H4 V120 A12 12 0 0 1 4 100 A12 12 0 0 1 4 80 V20 Z",
-    viewBox: "0 0 200 200",
-    qrPos: { x: 30, y: 30, size: 140 },
-    textPos: { x: 100, y: 14 },
-    textTop: true,
-    strokeColor: "#FB923C", fillColor: "#FFFFFF", strokeWidth: 1.5,
-  },
-  bubble: {
-    id: "bubble", name: "Bubble", emoji: "💬",
-    path: "M10 10 H190 A10 10 0 0 1 200 20 V180 A10 10 0 0 1 190 190 H110 L100 210 L90 190 H10 A10 10 0 0 1 0 180 V20 A10 10 0 0 1 10 10 Z",
-    viewBox: "0 0 200 215",
-    qrPos: { x: 15, y: 15, size: 170 },
-    textPos: { x: 0, y: 0 },
-    strokeColor: "#F472B6", fillColor: "#FFFFFF", strokeWidth: 2,
-  },
-  minimal: {
-    id: "minimal", name: "Minimal", emoji: "➕",
-    path: "",
-    viewBox: "0 0 200 220",
-    qrPos: { x: 0, y: 0, size: 200 },
-    textPos: { x: 100, y: 214 },
-    strokeColor: "#00D4FF", fillColor: "transparent",
-  },
-  neon: {
-    id: "neon", name: "Neon", emoji: "⚡",
-    path: "M10 5 H190 A8 8 0 0 1 198 13 V215 A8 8 0 0 1 190 223 H10 A8 8 0 0 1 2 215 V13 A8 8 0 0 1 10 5 Z",
-    viewBox: "0 0 200 228",
-    qrPos: { x: 12, y: 12, size: 176 },
+  rect_rounded: {
+    id: "rect_rounded", name: "Rounded", emoji: "▢",
+    path: "M16 4 H184 A12 12 0 0 1 196 16 V208 A12 12 0 0 1 184 220 H16 A12 12 0 0 1 4 208 V16 A12 12 0 0 1 16 4 Z",
+    viewBox: "0 0 200 224",
+    qrPos: { x: 14, y: 14, size: 172 },
     textPos: { x: 100, y: 218 },
-    strokeColor: "#00FF88", fillColor: "#0F172A", strokeWidth: 2,
   },
-  sign: {
-    id: "sign", name: "Sign", emoji: "🪧",
-    path: "M4 4 H196 V196 H110 L100 216 L90 196 H4 Z",
-    viewBox: "0 0 200 220",
+  double_border: {
+    id: "double_border", name: "Double", emoji: "🔲",
+    path: "M4 4 H196 V220 H4 Z M10 10 H190 V214 H10 Z",
+    viewBox: "0 0 200 224",
     qrPos: { x: 16, y: 16, size: 168 },
-    textPos: { x: 100, y: 190 },
-    strokeColor: "#00D4FF", fillColor: "#FFFFFF", strokeWidth: 2,
+    textPos: { x: 100, y: 218 },
   },
-  tag: {
-    id: "tag", name: "Tag", emoji: "🏷",
-    path: "M4 20 H160 L196 100 L160 180 H4 Z",
-    viewBox: "0 0 200 200",
-    qrPos: { x: 16, y: 16, size: 140 },
-    textPos: { x: 90, y: 190 },
-    strokeColor: "#8B5CF6", fillColor: "#FFFFFF", strokeWidth: 2,
+  speech_bottom: {
+    id: "speech_bottom", name: "Speech", emoji: "💬",
+    path: "M16 4 H184 A12 12 0 0 1 196 16 V196 A12 12 0 0 1 184 208 H116 L100 228 L84 208 H16 A12 12 0 0 1 4 196 V16 A12 12 0 0 1 16 4 Z",
+    viewBox: "0 0 200 232",
+    qrPos: { x: 14, y: 12, size: 172 },
+    textPos: { x: 100, y: 222 },
   },
-  arrow: {
-    id: "arrow", name: "Arrow", emoji: "➡️",
-    path: "M4 40 H130 L196 100 L130 160 H4 Z",
-    viewBox: "0 0 200 200",
-    qrPos: { x: 12, y: 36, size: 128 },
-    textPos: { x: 70, y: 188 },
-    strokeColor: "#FB923C", fillColor: "#FFFFFF", strokeWidth: 2,
+  banner_top: {
+    id: "banner_top", name: "Banner", emoji: "🏷",
+    path: "M4 30 H80 L100 4 L120 30 H196 V220 H4 Z",
+    viewBox: "0 0 200 224",
+    qrPos: { x: 12, y: 34, size: 172 },
+    textPos: { x: 100, y: 218 },
+  },
+  phone: {
+    id: "phone", name: "Phone", emoji: "📱",
+    path: "M44 2 H156 A18 18 0 0 1 174 20 V240 A18 18 0 0 1 156 258 H44 A18 18 0 0 1 26 240 V20 A18 18 0 0 1 44 2 Z M80 8 H120 A6 6 0 0 1 120 20 H80 A6 6 0 0 1 80 8 Z",
+    viewBox: "0 0 200 262",
+    qrPos: { x: 34, y: 28, size: 132 },
+    textPos: { x: 100, y: 252 },
   },
   circle: {
     id: "circle", name: "Circle", emoji: "⭕",
-    path: "M100 4 A96 96 0 1 1 99.99 4 Z",
+    path: "M100 4 A96 96 0 1 1 99.9 4 Z",
     viewBox: "0 0 200 200",
     qrPos: { x: 30, y: 30, size: 140 },
-    textPos: { x: 100, y: 190 },
-    strokeColor: "#F472B6", fillColor: "#FFFFFF", strokeWidth: 2,
+    textPos: { x: 100, y: 192 },
+  },
+  hexagon: {
+    id: "hexagon", name: "Hexagon", emoji: "⬡",
+    path: "M100 4 L190 54 L190 154 L100 204 L10 154 L10 54 Z",
+    viewBox: "0 0 200 208",
+    qrPos: { x: 30, y: 30, size: 140 },
+    textPos: { x: 100, y: 202 },
+  },
+  octagon: {
+    id: "octagon", name: "Octagon", emoji: "⬠",
+    path: "M60 4 H140 L196 60 V148 L140 204 H60 L4 148 V60 Z",
+    viewBox: "0 0 200 208",
+    qrPos: { x: 28, y: 28, size: 144 },
+    textPos: { x: 100, y: 202 },
+  },
+  sign: {
+    id: "sign", name: "Sign", emoji: "🪧",
+    path: "M4 4 H196 V190 H116 L100 218 L84 190 H4 Z",
+    viewBox: "0 0 200 222",
+    qrPos: { x: 14, y: 14, size: 172 },
+    textPos: { x: 100, y: 186 },
+  },
+  corner_cuts: {
+    id: "corner_cuts", name: "Corner Cut", emoji: "✂️",
+    path: "M24 4 H176 L196 24 V196 L176 216 H24 L4 196 V24 Z",
+    viewBox: "0 0 200 220",
+    qrPos: { x: 16, y: 16, size: 168 },
+    textPos: { x: 100, y: 214 },
+  },
+  tag_right: {
+    id: "tag_right", name: "Price Tag", emoji: "🏷",
+    path: "M4 4 H156 L196 100 L156 196 H4 Z",
+    viewBox: "0 0 200 200",
+    qrPos: { x: 14, y: 28, size: 144 },
+    textPos: { x: 90, y: 194 },
+  },
+  diamond: {
+    id: "diamond", name: "Diamond", emoji: "◇",
+    path: "M100 4 L196 104 L100 204 L4 104 Z",
+    viewBox: "0 0 200 208",
+    qrPos: { x: 40, y: 40, size: 120 },
+    textPos: { x: 100, y: 202 },
+  },
+  neon: {
+    id: "neon", name: "Neon", emoji: "⚡",
+    path: "M10 4 H190 A8 8 0 0 1 198 12 V212 A8 8 0 0 1 190 220 H10 A8 8 0 0 1 2 212 V12 A8 8 0 0 1 10 4 Z",
+    viewBox: "0 0 200 224",
+    qrPos: { x: 12, y: 12, size: 176 },
+    textPos: { x: 100, y: 218 },
+    strokeColor: "#00FF88", fillColor: "#0F172A", strokeWidth: 2,
   },
 };
 
@@ -124,25 +134,6 @@ const CTA_PRESETS = [
   "BOOK NOW", "JOIN US", "WATCH VIDEO", "FREE WIFI",
 ];
 
-// Symbol overlays — emoji/icon placed in center of QR
-const SYMBOLS = [
-  { id: "none",     label: "None",      icon: "—" },
-  { id: "wifi",     label: "Wi-Fi",     icon: "📶" },
-  { id: "link",     label: "Link",      icon: "🔗" },
-  { id: "store",    label: "Store",     icon: "🏪" },
-  { id: "menu",     label: "Menu",      icon: "🍽" },
-  { id: "heart",    label: "Like",      icon: "❤️" },
-  { id: "star",     label: "Review",    icon: "⭐" },
-  { id: "phone",    label: "Call",      icon: "📞" },
-  { id: "mail",     label: "Email",     icon: "✉️" },
-  { id: "map",      label: "Location",  icon: "📍" },
-  { id: "video",    label: "Video",     icon: "▶️" },
-  { id: "cart",     label: "Shop",      icon: "🛒" },
-  { id: "gift",     label: "Promo",     icon: "🎁" },
-  { id: "book",     label: "Info",      icon: "📖" },
-  { id: "music",    label: "Music",     icon: "🎵" },
-  { id: "camera",   label: "Photo",     icon: "📷" },
-];
 
 const COLORS = {
   stroke: ["#00D4FF","#00FF88","#8B5CF6","#F472B6","#FB923C","#0F172A","#EF4444","#FCD34D"],
@@ -179,14 +170,13 @@ export function QRFrameDesigner({
   qrSvgContent: string;
   onClose: () => void;
 }) {
-  const [frameId, setFrameId] = useState<FrameId>("modern");
+  const [frameId, setFrameId] = useState<FrameId>("rect_rounded");
   const [ctaText, setCtaText] = useState("SCAN ME");
   const [strokeColor, setStrokeColor] = useState("#00D4FF");
   const [textColor, setTextColor] = useState("#0F172A");
   const [fillColor, setFillColor] = useState("#FFFFFF");
   const [downloaded, setDownloaded] = useState(false);
   const [cornerStyle, setCornerStyle] = useState("extra-rounded");
-  const [symbol, setSymbol] = useState("none");
   const [useGradient, setUseGradient] = useState(false);
   const [gradientColor2, setGradientColor2] = useState("#00D4FF");
   const [gradientType, setGradientType] = useState<"linear" | "radial">("linear");
@@ -274,26 +264,7 @@ export function QRFrameDesigner({
                 <g transform={`translate(${frame.qrPos.x}, ${frame.qrPos.y}) scale(${frame.qrPos.size / 200})`}
                   dangerouslySetInnerHTML={{ __html: qrSvgContent }} />
 
-                {/* Symbol overlay — centered on QR */}
-                {symbol !== "none" && (() => {
-                  const sym = SYMBOLS.find(s => s.id === symbol);
-                  if (!sym) return null;
-                  const cx = frame.qrPos.x + frame.qrPos.size / 2;
-                  const cy = frame.qrPos.y + frame.qrPos.size / 2;
-                  return (
-                    <>
-                      <circle cx={cx} cy={cy} r={18}
-                        fill={effectiveFillColor}
-                        stroke={effectiveStroke}
-                        strokeWidth={1.5} />
-                      <text x={cx} y={cy + 1}
-                        textAnchor="middle" dominantBaseline="middle"
-                        fontSize="18">
-                        {sym.icon}
-                      </text>
-                    </>
-                  );
-                })()}
+
 
                 {/* Corner accents for modern/rounded */}
                 {(frameId === "modern" || frameId === "rounded") && (
@@ -437,52 +408,6 @@ export function QRFrameDesigner({
               </div>
             )}
 
-            {/* Symbol overlay */}
-            <div>
-              <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">
-                Center Symbol (optional)
-              </p>
-              <div className="grid grid-cols-4 gap-1.5">
-                {SYMBOLS.map(s => (
-                  <motion.button key={s.id} whileTap={{ scale: 0.95 }}
-                    onClick={() => setSymbol(s.id)}
-                    className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all ${
-                      symbol === s.id
-                        ? "bg-[#00D4FF]/08 border-[#00D4FF]/30"
-                        : "bg-slate-50 border-slate-200 hover:border-[#00D4FF]/20"
-                    }`}>
-                    <span className="text-base leading-none">{s.icon}</span>
-                    <span className={`text-[8px] font-semibold text-center ${
-                      symbol === s.id ? "text-[#0891B2]" : "text-[#94A3B8]"
-                    }`}>{s.label}</span>
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-
-            {/* Corner style */}
-            <div>
-              <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">
-                Corner Style
-              </p>
-              <div className="flex gap-1.5 flex-wrap">
-                {CORNER_STYLES.map(cs => (
-                  <motion.button key={cs.id} whileTap={{ scale: 0.95 }}
-                    onClick={() => setCornerStyle(cs.id)}
-                    className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl border transition-all ${
-                      cornerStyle === cs.id
-                        ? "bg-[#00D4FF]/08 border-[#00D4FF]/30"
-                        : "bg-slate-50 border-slate-200 hover:border-[#00D4FF]/20"
-                    }`}>
-                    <span className="text-base">{cs.preview}</span>
-                    <span className={`text-[8px] font-semibold ${cornerStyle === cs.id ? "text-[#0891B2]" : "text-[#94A3B8]"}`}>{cs.label}</span>
-                  </motion.button>
-                ))}
-              </div>
-              <p className="text-[9px] text-[#CBD5E1] mt-1.5">
-                Corner style applies when QR is regenerated in the dashboard creator.
-              </p>
-            </div>
 
             {/* Colors */}
             {frameId !== "none" && frameId !== "neon" && (

@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import type QRCodeStylingType from "qr-code-styling";
 import { createClient } from "@supabase/supabase-js";
-import { QRFrameDesigner } from "@/components/QRFrameDesigner";
 import { UpgradeModal } from "@/components/UpgradeModal";
 
 const supabase = createClient(
@@ -38,6 +37,22 @@ function generateShortId(): string {
 }
 
 // Base URL for redirects
+const INLINE_FRAMES: Record<string, {id: string; name: string; emoji: string; path: string; viewBox: string; qrPos: {x:number;y:number;size:number}; textPos: {x:number;y:number}}> = {
+  none: { id:"none", name:"None", emoji:"✕", path:"", viewBox:"0 0 200 200", qrPos:{x:0,y:0,size:200}, textPos:{x:0,y:0} },
+  rect_clean: { id:"rect_clean", name:"Classic", emoji:"⬜", path:"M4 4 H196 V220 H4 Z", viewBox:"0 0 200 224", qrPos:{x:12,y:12,size:176}, textPos:{x:100,y:218} },
+  rect_rounded: { id:"rect_rounded", name:"Rounded", emoji:"▢", path:"M16 4 H184 A12 12 0 0 1 196 16 V208 A12 12 0 0 1 184 220 H16 A12 12 0 0 1 4 208 V16 A12 12 0 0 1 16 4 Z", viewBox:"0 0 200 224", qrPos:{x:14,y:14,size:172}, textPos:{x:100,y:218} },
+  double_border: { id:"double_border", name:"Double", emoji:"🔲", path:"M4 4 H196 V220 H4 Z M10 10 H190 V214 H10 Z", viewBox:"0 0 200 224", qrPos:{x:16,y:16,size:168}, textPos:{x:100,y:218} },
+  speech: { id:"speech", name:"Speech", emoji:"💬", path:"M16 4 H184 A12 12 0 0 1 196 16 V196 A12 12 0 0 1 184 208 H116 L100 228 L84 208 H16 A12 12 0 0 1 4 196 V16 A12 12 0 0 1 16 4 Z", viewBox:"0 0 200 232", qrPos:{x:14,y:12,size:172}, textPos:{x:100,y:222} },
+  banner: { id:"banner", name:"Banner", emoji:"🏷", path:"M4 30 H80 L100 4 L120 30 H196 V220 H4 Z", viewBox:"0 0 200 224", qrPos:{x:12,y:34,size:172}, textPos:{x:100,y:218} },
+  phone: { id:"phone", name:"Phone", emoji:"📱", path:"M44 2 H156 A18 18 0 0 1 174 20 V240 A18 18 0 0 1 156 258 H44 A18 18 0 0 1 26 240 V20 A18 18 0 0 1 44 2 Z", viewBox:"0 0 200 262", qrPos:{x:34,y:28,size:132}, textPos:{x:100,y:252} },
+  circle: { id:"circle", name:"Circle", emoji:"⭕", path:"M100 4 A96 96 0 1 1 99.9 4 Z", viewBox:"0 0 200 200", qrPos:{x:30,y:30,size:140}, textPos:{x:100,y:192} },
+  hexagon: { id:"hexagon", name:"Hexagon", emoji:"⬡", path:"M100 4 L190 54 L190 154 L100 204 L10 154 L10 54 Z", viewBox:"0 0 200 208", qrPos:{x:30,y:30,size:140}, textPos:{x:100,y:202} },
+  octagon: { id:"octagon", name:"Octagon", emoji:"⬠", path:"M60 4 H140 L196 60 V148 L140 204 H60 L4 148 V60 Z", viewBox:"0 0 200 208", qrPos:{x:28,y:28,size:144}, textPos:{x:100,y:202} },
+  sign: { id:"sign", name:"Sign", emoji:"🪧", path:"M4 4 H196 V190 H116 L100 218 L84 190 H4 Z", viewBox:"0 0 200 222", qrPos:{x:14,y:14,size:172}, textPos:{x:100,y:186} },
+  corner_cut: { id:"corner_cut", name:"Corner Cut", emoji:"✂️", path:"M24 4 H176 L196 24 V196 L176 216 H24 L4 196 V24 Z", viewBox:"0 0 200 220", qrPos:{x:16,y:16,size:168}, textPos:{x:100,y:214} },
+  diamond: { id:"diamond", name:"Diamond", emoji:"◇", path:"M100 4 L196 104 L100 204 L4 104 Z", viewBox:"0 0 200 208", qrPos:{x:40,y:40,size:120}, textPos:{x:100,y:202} },
+};
+
 const BASE_URL = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || "https://sqrly.net");
 
 /* Types */
@@ -444,7 +459,7 @@ function QRPreview({
 }: {
   value: string; color: string; bgColor: string;
   dotStyle: string; ecLevel: string; logo: string | null; isHolo: boolean;
-  onOpenFrame: () => void; logoPlacement?: "center" | "behind" | "background";
+  onOpenFrame?: () => void; logoPlacement?: "center" | "behind" | "background";
   cornerSquareStyle?: string; cornerDotStyle?: string; cornerColor?: string;
   logoScale?: number; showPhoneMockup?: boolean; onTogglePhoneMockup?: () => void;
 }): React.ReactElement {
@@ -592,14 +607,45 @@ function QRPreview({
         className="w-full mt-1.5 flex items-center justify-center gap-1 py-2 text-[11px] font-semibold bg-[#F8FAFC] border border-[rgba(226,232,240,1)] rounded-xl text-[#475569] hover:border-[rgba(0,212,255,0.25)] hover:text-[#0891B2] transition-all">
         <Download size={11} /> PDF (Print)
       </button>
-      <button onClick={onOpenFrame}
-        className="w-full mt-1.5 flex items-center justify-center gap-1 py-2 text-[11px] font-semibold bg-[#F8FAFC] border border-[rgba(0,255,136,0.25)] rounded-xl text-[#00CC6E] hover:bg-[#00FF88]/10 transition-all">
-        🖼 Add Frame &amp; Sticker
-      </button>
+
     </div>
   );
 }
 
+
+/* ── All Frame Presets ───────────────────────────────── */
+const ALL_FRAMES = [
+  { id:"frame_coffee", name:"Coffee Cup", emoji:"☕", path:"M40,40 h120 v80 c0,40 -20,60 -60,60 s-60,-20 -60,-60 z M160,60 c15,0 25,10 25,25 s-10,25 -25,25 v-10 c10,0 15,-5 15,-15 s-5,-15 -15,-15 z", viewBox:"0 0 200 240", qrPos:{x:45,y:45,size:110}, textPos:{x:100,y:220} },
+  { id:"frame_bag", name:"Shopping Bag", emoji:"🛍", path:"M40,60 L30,190 H170 L160,60 Z M70,60 a30,30 0 0 1 60,0", viewBox:"0 0 200 240", qrPos:{x:50,y:80,size:100}, textPos:{x:100,y:225} },
+  { id:"frame_tag", name:"Price Tag", emoji:"🏷", path:"M30,40 L130,40 L180,100 L130,160 L30,160 Z M50,100 a10,10 0 1 0 20,0 a10,10 0 1 0 -20,0", viewBox:"0 0 200 240", qrPos:{x:50,y:55,size:90}, textPos:{x:100,y:210} },
+  { id:"frame_phone", name:"Smartphone", emoji:"📱", path:"M50,20 a20,20 0 0 0 -20,20 v140 a20,20 0 0 0 20,20 h100 a20,20 0 0 0 20,-20 v-140 a20,20 0 0 0 -20,-20 z M100,190 a5,5 0 1 1 0,-10 a5,5 0 0 1 0,10", viewBox:"0 0 200 240", qrPos:{x:45,y:40,size:110}, textPos:{x:100,y:235} },
+  { id:"frame_laptop", name:"Laptop", emoji:"💻", path:"M20,40 h160 v100 h-160 z M10,145 h180 l5,15 h-190 z", viewBox:"0 0 200 240", qrPos:{x:40,y:50,size:80}, textPos:{x:100,y:200} },
+  { id:"frame_bubble_round", name:"Speech Bubble", emoji:"💬", path:"M100,20 a80,80 0 1 0 50,140 l30,20 v-40 a80,80 0 0 0 -80,-120", viewBox:"0 0 200 240", qrPos:{x:45,y:45,size:110}, textPos:{x:100,y:220} },
+  { id:"frame_bubble_square", name:"Chat Box", emoji:"🗨", path:"M20,30 h160 v120 h-100 l-40,30 v-30 h-20 z", viewBox:"0 0 200 240", qrPos:{x:40,y:45,size:120}, textPos:{x:100,y:220} },
+  { id:"frame_heart", name:"Heart", emoji:"❤", path:"M100,180 L30,110 a40,40 0 1 1 70,-40 a40,40 0 1 1 70,40 z", viewBox:"0 0 200 240", qrPos:{x:55,y:65,size:90}, textPos:{x:100,y:220} },
+  { id:"frame_ticket", name:"Ticket", emoji:"🎫", path:"M20,50 v30 a10,10 0 0 0 0,20 v30 h160 v-30 a10,10 0 0 0 0,-20 v-30 z", viewBox:"0 0 200 240", qrPos:{x:50,y:60,size:100}, textPos:{x:100,y:200} },
+  { id:"frame_gift", name:"Gift Box", emoji:"🎁", path:"M30,70 h140 v100 h-140 z M25,50 h150 v20 h-150 z M100,50 v120 M70,50 c-10,-20 30,-20 30,0 c0,-20 40,-20 30,0", viewBox:"0 0 200 240", qrPos:{x:50,y:80,size:90}, textPos:{x:100,y:220} },
+  { id:"frame_pin", name:"Map Pin", emoji:"📍", path:"M100,20 a70,70 0 0 0 -70,70 c0,50 70,110 70,110 s70,-60 70,-110 a70,70 0 0 0 -70,-70 z", viewBox:"0 0 200 240", qrPos:{x:55,y:45,size:90}, textPos:{x:100,y:230} },
+  { id:"frame_house", name:"House", emoji:"🏠", path:"M100,20 L20,90 v90 h160 v-90 z M70,180 v-40 h60 v40", viewBox:"0 0 200 240", qrPos:{x:50,y:90,size:100}, textPos:{x:100,y:220} },
+  { id:"frame_hexagon", name:"Hexagon", emoji:"⬡", path:"M100,10 L180,55 v90 L100,190 L20,145 v-90 Z", viewBox:"0 0 200 240", qrPos:{x:50,y:50,size:100}, textPos:{x:100,y:220} },
+  { id:"frame_circle", name:"Circle", emoji:"⭕", path:"M100,100 m-90,0 a90,90 0 1 0 180,0 a90,90 0 1 0 -180,0", viewBox:"0 0 200 240", qrPos:{x:40,y:40,size:120}, textPos:{x:100,y:220} },
+  { id:"frame_star", name:"Star Burst", emoji:"⭐", path:"M100,10 l25,50 l55,-15 l-30,50 l50,25 l-50,25 l30,50 l-55,-15 l-25,50 l-25,-50 l-55,15 l30,-50 l-50,-25 l50,-25 l-30,-50 l55,15 z", viewBox:"0 0 200 240", qrPos:{x:60,y:60,size:80}, textPos:{x:100,y:230} },
+  { id:"frame_briefcase", name:"Briefcase", emoji:"💼", path:"M30,60 h140 v110 h-140 z M70,60 v-15 a10,10 0 0 1 10,-10 h40 a10,10 0 0 1 10,10 v15", viewBox:"0 0 200 240", qrPos:{x:50,y:75,size:100}, textPos:{x:100,y:220} },
+  { id:"frame_store", name:"Storefront", emoji:"🏪", path:"M20,80 h160 v100 h-160 z M10,60 l10,20 h160 l10,-20 z", viewBox:"0 0 200 240", qrPos:{x:50,y:90,size:90}, textPos:{x:100,y:225} },
+  { id:"frame_scanner", name:"Scanner", emoji:"🔍", path:"M30,30 h40 M130,30 h40 M30,170 h40 M130,170 h40 M30,30 v40 M170,30 v40 M30,170 v-40 M170,170 v-40", viewBox:"0 0 200 240", qrPos:{x:40,y:40,size:120}, textPos:{x:100,y:220} },
+  { id:"frame_chip", name:"Circuit Chip", emoji:"🔲", path:"M40,40 h120 v120 h-120 z M40,60 h-20 M40,100 h-20 M40,140 h-20 M160,60 h20 M160,100 h20 M160,140 h20 M60,40 v-20 M100,40 v-20 M140,40 v-20", viewBox:"0 0 200 240", qrPos:{x:50,y:50,size:100}, textPos:{x:100,y:220} },
+  { id:"frame_crown", name:"Crown", emoji:"👑", path:"M20,160 l20,-100 l40,40 l20,-60 l20,60 l40,-40 l20,100 z", viewBox:"0 0 200 240", qrPos:{x:55,y:80,size:90}, textPos:{x:100,y:220} },
+  { id:"frame_calendar", name:"Calendar", emoji:"📅", path:"M30,40 h140 v140 h-140 z M30,70 h140 M60,30 v20 M140,30 v20", viewBox:"0 0 200 240", qrPos:{x:45,y:80,size:90}, textPos:{x:100,y:220} },
+  { id:"frame_rounded", name:"Rounded Rect", emoji:"▢", path:"M40,20 h120 a20,20 0 0 1 20,20 v120 a20,20 0 0 1 -20,20 h-120 a20,20 0 0 1 -20,-20 v-120 a20,20 0 0 1 20,-20 z", viewBox:"0 0 200 240", qrPos:{x:40,y:40,size:120}, textPos:{x:100,y:220} },
+  { id:"frame_diamond", name:"Diamond", emoji:"💠", path:"M100,10 L190,100 L100,190 L10,100 Z", viewBox:"0 0 200 240", qrPos:{x:65,y:65,size:70}, textPos:{x:100,y:220} },
+  { id:"frame_octagon", name:"Octagon", emoji:"🛑", path:"M70,20 h60 l50,50 v60 l-50,50 h-60 l-50,-50 v-60 Z", viewBox:"0 0 200 240", qrPos:{x:50,y:50,size:100}, textPos:{x:100,y:220} },
+  { id:"frame_browser", name:"Browser", emoji:"🌐", path:"M20,40 h160 v130 h-160 z M20,65 h160 M40,52 a3,3 0 1 0 6,0 a3,3 0 1 0 -6,0 M55,52 a3,3 0 1 0 6,0 a3,3 0 1 0 -6,0", viewBox:"0 0 200 240", qrPos:{x:40,y:75,size:85}, textPos:{x:100,y:220} },
+  { id:"frame_burger", name:"Burger", emoji:"🍔", path:"M30,80 a70,70 0 0 1 140,0 v20 h-140 z M30,120 h140 v20 a70,70 0 0 1 -140,0 z M25,105 h150 v10 h-150 z", viewBox:"0 0 200 240", qrPos:{x:50,y:60,size:100}, textPos:{x:100,y:220} },
+  { id:"frame_signpost", name:"Signpost", emoji:"🪧", path:"M30,40 h140 v80 h-140 z M95,120 v60 h10 v-60 z", viewBox:"0 0 200 240", qrPos:{x:45,y:50,size:100}, textPos:{x:100,y:230} },
+  { id:"frame_cocktail", name:"Cocktail", emoji:"🍸", path:"M20,30 L100,110 L180,30 z M100,110 V180 M70,180 H130", viewBox:"0 0 200 240", qrPos:{x:60,y:35,size:80}, textPos:{x:100,y:220} },
+  { id:"frame_pizza", name:"Pizza", emoji:"🍕", path:"M100,20 L180,180 A180,180 0 0 1 20,180 Z M100,35 L45,165 A140,140 0 0 0 155,165 Z", viewBox:"0 0 200 240", qrPos:{x:65,y:70,size:70}, textPos:{x:100,y:220} },
+  { id:"frame_popper", name:"Party Popper", emoji:"🎉", path:"M40,180 l30,-30 l-30,-30 z M100,40 l10,10 M140,70 l10,-10 M160,110 l10,10", viewBox:"0 0 200 240", qrPos:{x:70,y:50,size:100}, textPos:{x:100,y:230} },
+];
 
 /* Main Create Page */
 function CreatePageInner() {
@@ -635,22 +681,36 @@ function CreatePageInner() {
   const [cornerColor, setCornerColor] = useState("#0F172A");
   const [logoScale, setLogoScale] = useState(0.3);
   const [showPhoneMockup, setShowPhoneMockup] = useState(false);
+  const [selectedFrame, setSelectedFrame] = useState<string | null>(null);
+  const [frameCtaText, setFrameCtaText] = useState("SCAN ME");
+  const [frameColor, setFrameColor] = useState("#0F172A");
+  const [frameTextColor, setFrameTextColor] = useState("#FFFFFF");
+  const [frameGradient, setFrameGradient] = useState(false);
+  const [frameGradientColor2, setFrameGradientColor2] = useState("#00D4FF");
+  const [frameGradientType, setFrameGradientType] = useState<"linear"|"radial">("linear");
   const [isHolo, setIsHolo] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [showFrameDesigner, setShowFrameDesigner] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState<"dynamic_limit" | "static_limit" | null>(null);
-  const [qrSvgContent, setQrSvgContent] = useState("");
 
   const qrPreviewRef = useRef<HTMLDivElement>(null);
 
-  function openFrameDesigner() {
-    const svgEl = qrPreviewRef.current?.querySelector("svg");
-    if (svgEl) {
-      setQrSvgContent(svgEl.innerHTML);
-      setShowFrameDesigner(true);
-    }
+  function downloadFramed() {
+    if (!selectedFrame || selectedFrame === "none") return;
+    const frame = INLINE_FRAMES[selectedFrame];
+    if (!frame || !qrPreviewRef.current) return;
+    const qrSvg = qrPreviewRef.current.querySelector("svg");
+    if (!qrSvg) return;
+    const qrContent = new XMLSerializer().serializeToString(qrSvg);
+    const { qrPos, textPos, viewBox, path } = frame;
+    const svgOut = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}"><path d="${path}" fill="white" stroke="${frameColor}" stroke-width="2.5" stroke-linejoin="round"/><g transform="translate(${qrPos.x},${qrPos.y}) scale(${qrPos.size/200})">${qrContent}</g><text x="${textPos.x}" y="${textPos.y}" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="800" letter-spacing="2" fill="${frameTextColor}">${frameCtaText.toUpperCase()}</text></svg>`;
+    const blob = new Blob([svgOut], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = "sqrly-framed.svg"; a.click();
+    URL.revokeObjectURL(url);
   }
+
+
 
   const qrValue = selectedType ? buildQRValue(selectedType, formData) : "https://sqrly.net";
 
@@ -671,6 +731,23 @@ function CreatePageInner() {
     const reader = new FileReader();
     reader.onload = (ev) => setLogo(ev.target?.result as string);
     reader.readAsDataURL(file);
+  }
+
+  function downloadFramedSVG() {
+    const frame = ALL_FRAMES.find(f => f.id === selectedFrame);
+    if (!frame) return;
+    const qrEl = qrPreviewRef.current?.querySelector("svg");
+    if (!qrEl) return;
+    const qrSvg = new XMLSerializer().serializeToString(qrEl);
+    const gradDefs = frameGradient ? `<defs><linearGradient id="fg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${frameColor}"/><stop offset="100%" stop-color="${frameGradientColor2}"/></linearGradient></defs>` : "";
+    const strokeVal = frameGradient ? "url(#fg)" : frameColor;
+    const [vw, vh] = frame.viewBox.split(" ").slice(2).map(Number);
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${frame.viewBox}" width="${vw}" height="${vh}">${gradDefs}<path d="${frame.path}" fill="white" stroke="${strokeVal}" stroke-width="3" stroke-linejoin="round"/><g transform="translate(${frame.qrPos.x},${frame.qrPos.y}) scale(${frame.qrPos.size/200})">${qrSvg}</g><text x="${frame.textPos.x}" y="${frame.textPos.y}" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="800" letter-spacing="3" fill="${frameTextColor}">${frameCtaText}</text></svg>`;
+    const blob = new Blob([svg], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `sqrly-framed-${frame.id}.svg`; a.click();
+    URL.revokeObjectURL(url);
   }
 
   async function handleSave() {
@@ -1018,18 +1095,43 @@ function CreatePageInner() {
                     <div className="grid grid-cols-6 gap-1.5">
                       {[
                         { label: "None", val: null, path: null },
+                        { label: "WhatsApp", val: "whatsapp", path: "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z" },
+                        { label: "Instagram", val: "instagram", path: "M16 3c2.717 0 3.056.01 4.122.058 1.064.048 1.79.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.637.417 1.363.465 2.427C21.99 8.944 22 9.283 22 12s-.01 3.056-.058 4.122c-.048 1.064-.218 1.79-.465 2.427a4.88 4.88 0 01-1.153 1.772 4.88 4.88 0 01-1.772 1.153c-.637.247-1.363.417-2.427.465C15.056 21.99 14.717 22 12 22s-3.056-.01-4.122-.058c-1.064-.048-1.79-.218-2.427-.465a4.89 4.89 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.637-.417-1.363-.465-2.427C2.01 15.056 2 14.717 2 12s.01-3.056.058-4.122c.048-1.064.218-1.79.465-2.427a4.88 4.88 0 011.153-1.772A4.88 4.88 0 015.448 4.52c.637-.247 1.363-.417 2.427-.465C8.944 2.01 9.283 2 12 2m0 5a5 5 0 100 10A5 5 0 0012 7zm6.5-.25a1.25 1.25 0 10-2.5 0 1.25 1.25 0 002.5 0z" },
+                        { label: "Facebook", val: "facebook", path: "M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" },
+                        { label: "TikTok", val: "tiktok", path: "M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" },
+                        { label: "LinkedIn", val: "linkedin", path: "M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2zM4 2a2 2 0 1 1-2 2 2 2 0 0 1 2-2z" },
+                        { label: "YouTube", val: "youtube", path: "M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2C1 8.11 1 12 1 12s0 3.89.46 5.58a2.78 2.78 0 0 0 1.94 2c1.72.42 8.6.42 8.6.42s6.88 0 8.6-.42a2.78 2.78 0 0 0 1.94-2C23 15.89 23 12 23 12s0-3.89-.46-5.58zM9.75 15.02V8.98L15 12l-5.25 3.02z" },
+                        { label: "X/Twitter", val: "twitter", path: "M4 4l11.733 16h4.267l-11.733-16z M4 20l6.768-6.768 M13.232 10.768l6.768-6.768" },
+                        { label: "Pinterest", val: "pinterest", path: "M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 3c2 0 3.5 1 3.5 2.5 0 1.5-1 3-2.5 3-.5 0-1-.2-1.3-.5-.3 1.2-.8 2.3-1.7 3l-.3-1.2c.5-.8 1-1.7 1.2-2.7-.5.2-1 .4-1.5.4-1.5 0-2.5-1-2.5-2.5S10 5 12 5z" },
+                        { label: "Discord", val: "discord", path: "M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.1 18.08.11 18.1.128 18.116a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.027c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z" },
+                        { label: "Telegram", val: "telegram", path: "m22 2-21 8 8 3 10-10-7 9 1 5 3-4 5 3z" },
+                        { label: "Spotify", val: "spotify", path: "M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm4.5 14.4c-.2.3-.6.4-.9.2-2.4-1.5-5.5-1.8-9.1-.9-.3.1-.7-.1-.8-.4-.1-.3.1-.7.4-.8 3.9-1 7.4-.6 10.1 1.1.3.1.4.5.3.8zm1.2-2.7c-.2.3-.7.5-1 .2-2.8-1.7-7-2.2-10.2-1.2-.4.1-.8-.1-.9-.5-.1-.4.1-.8.5-.9 3.7-1.1 8.3-.6 11.5 1.4.3.2.4.6.1 1zm.1-2.8c-3.3-2-8.8-2.1-12-1.2-.5.1-1-.2-1.1-.7-.1-.5.2-1 .7-1.1 3.6-1 9.7-.8 13.5 1.4.5.3.6.9.4 1.4-.3.4-.9.5-1.5.2z" },
+                        { label: "Shopify", val: "shopify", path: "M15.337 5.54L14.5 2H9L7.5 5.5 4 21h16L15.337 5.54zM12 19a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" },
+                        { label: "PayPal", val: "paypal", path: "M7 2h7c4 0 6 2 6 5s-2 5-6 5H9l-1 10H4L7 2zM12 9c2 0 3-1 3-2.5S14 4 12 4h-2l-1 5h3z" },
+                        { label: "Google", val: "google", path: "M12 11h9v2c0 5-3.5 8-9 8a9 9 0 1 1 0-18c2.5 0 4.5 1 6 2.5l-2.5 2.5c-1-1-2.5-1.5-3.5-1.5-4 0-7 3-7 7s3 7 7 7c3 0 5-2 5.5-5H12v-3z" },
+                        { label: "Stripe", val: "stripe", path: "M14 6c-2 0-3 1-3 2s1 2 3 2 3 1 3 2-1 2-3 2-3-1-3-2M9 4v16M15 4v16" },
+                        { label: "Scan", val: "scan", path: "M3 7V5a2 2 0 0 1 2-2h2m10 0h2a2 2 0 0 1 2 2v2m0 10v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" },
+                        { label: "Camera", val: "camera", path: "M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" },
+                        { label: "Download", val: "download", path: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" },
+                        { label: "Share", val: "share", path: "M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v13" },
+                        { label: "Bookmark", val: "bookmark", path: "M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" },
                         { label: "Wi-Fi", val: "wifi", path: "M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" },
                         { label: "Link", val: "link", path: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" },
-                        { label: "Store", val: "store", path: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM9 22V12h6v10" },
                         { label: "Email", val: "mail", path: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zM22 6l-10 7L2 6" },
                         { label: "Call", val: "phone", path: "M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" },
-                        { label: "Map", val: "map", path: "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0zM12 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" },
-                        { label: "Video", val: "video", path: "M23 7l-7 5 7 5V7zM1 5h15a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H1a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" },
-                        { label: "Review", val: "star", path: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" },
-                        { label: "Like", val: "heart", path: "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" },
-                        { label: "Web", val: "globe", path: "M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zM2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" },
-                        { label: "Promo", val: "gift", path: "M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" },
-                      ].map(p => {
+                        { label: "Location", val: "map", path: "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0zM12 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" },
+                        { label: "Store", val: "store", path: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10" },
+                        { label: "Cart", val: "cart", path: "M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4H6zM3 6h18M16 10a4 4 0 0 1-8 0" },
+                        { label: "Music", val: "music", path: "M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" },
+                        { label: "Coffee", val: "coffee", path: "M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3" },
+                        { label: "Play", val: "play", path: "M5 3l14 9-14 9V3z" },
+                        { label: "Star", val: "star", path: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" },
+                        { label: "Heart", val: "heart", path: "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" },
+                        { label: "Plane", val: "plane", path: "M17.8 19.2L16 11l3.5-3.5c.7-.7.7-1.8 0-2.5s-1.8-.7-2.5 0L13.5 8.5l-8.2-1.8c-.5-.1-1 .1-1.3.5l-.1.1 4.8 5.7-2.6 2.6-2.5-.6-.8.2 1.1 1.1.2.8 3.5 1.4 1.4 3.5.8.2 1.1-1.1.2-.8-.6-2.5 2.6-2.6 5.7 4.8.1-.1c.4-.3.6-.8.5-1.3z" },
+                        { label: "Car", val: "car", path: "M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.8C2.1 11.1 2 11.5 2 12v4c0 .6.4 1 1 1h2m14 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm-14 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" },
+                        { label: "Leaf", val: "leaf", path: "M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 21 2c-2 5-2.5 6.5-3.6 12.2A7 7 0 0 1 11 20zM11 20l2-2" },
+                        { label: "Building", val: "building", path: "M3 21h18M9 8h1M9 12h1M9 16h1M14 8h1M14 12h1M14 16h1M5 21V3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v18" },
+                                            ].map(p => {
                         const svgUrl = p.path
                           ? `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%230F172A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="11" fill="white" stroke="%23E2E8F0"/><path d="${p.path}"/></svg>`
                           : null;
@@ -1141,6 +1243,75 @@ function CreatePageInner() {
                   )}
 
                 </div>
+
+                  {/* ── Frame Designer (inline) ─────────────── */}
+                  <div className="border-t border-slate-100 pt-4 mt-2">
+                    <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-3">Frame</p>
+
+                    {/* Frame presets grid */}
+                    <div className="grid grid-cols-4 gap-1.5 mb-3">
+                      {Object.values(INLINE_FRAMES).map(f => (
+                        <button key={f.id} onClick={() => setSelectedFrame(f.id)}
+                          className={`flex flex-col items-center gap-1 p-2 rounded-xl border text-[9px] font-medium transition-all ${
+                            selectedFrame === f.id
+                              ? "bg-[#00D4FF]/08 border-[#00D4FF]/30 text-[#0891B2]"
+                              : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/20"
+                          }`}>
+                          <span className="text-base">{f.emoji}</span>
+                          {f.name}
+                        </button>
+                      ))}
+                    </div>
+
+                    {selectedFrame && selectedFrame !== "none" && (
+                      <div className="space-y-3">
+                        {/* CTA Text */}
+                        <div>
+                          <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-1.5 block">Frame Text</label>
+                          <input value={frameCtaText} onChange={e => setFrameCtaText(e.target.value)}
+                            placeholder="SCAN ME" maxLength={20}
+                            className="w-full bg-slate-50 border border-slate-200 focus:border-[#00D4FF] rounded-xl px-3 py-2 text-sm font-bold text-center text-[#0F172A] outline-none transition-all tracking-widest uppercase" />
+                        </div>
+
+                        {/* Frame color */}
+                        <div>
+                          <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-1.5 block">Frame Color</label>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <input type="color" value={frameColor}
+                              onChange={e => setFrameColor(e.target.value)}
+                              className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer flex-shrink-0" />
+                            {["#0F172A","#00D4FF","#00FF88","#8B5CF6","#F472B6","#FB923C","#EF4444","#FFFFFF"].map(c => (
+                              <button key={c} onClick={() => setFrameColor(c)}
+                                style={{ background: c }}
+                                className={`w-6 h-6 rounded-full border-2 transition-all flex-shrink-0 ${frameColor === c ? "border-[#00D4FF] scale-125" : "border-slate-200"}`} />
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Frame background */}
+                        <div>
+                          <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-1.5 block">Frame Background</label>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <input type="color" value={frameTextColor}
+                              onChange={e => setFrameTextColor(e.target.value)}
+                              className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer flex-shrink-0" />
+                            {["#FFFFFF","#0F172A","#F8FAFC","#F0FFF4","#EFF6FF","#FFF0F6","#FFFBEB","#F5F0FF"].map(c => (
+                              <button key={c} onClick={() => setFrameTextColor(c)}
+                                style={{ background: c }}
+                                className={`w-6 h-6 rounded-full border-2 transition-all flex-shrink-0 ${frameTextColor === c ? "border-[#00D4FF] scale-125" : "border-slate-200"}`} />
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Download framed */}
+                        <button onClick={downloadFramed}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#00FF88] text-[#0F172A] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all">
+                          <Download size={14} strokeWidth={2} /> Download Framed SVG
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
               </div>
 
               {/* Save button */}
@@ -1174,7 +1345,6 @@ function CreatePageInner() {
                   ecLevel={ecLevel}
                   logo={logo}
                   isHolo={isHolo}
-                  onOpenFrame={openFrameDesigner}
                   logoPlacement={logoPlacement}
                 />
               </div>
@@ -1184,12 +1354,6 @@ function CreatePageInner() {
       )}
     </div>
 
-      {showFrameDesigner && qrSvgContent && (
-        <QRFrameDesigner
-          qrSvgContent={qrSvgContent}
-          onClose={() => setShowFrameDesigner(false)}
-        />
-      )}
       {upgradeReason && (
         <UpgradeModal
           reason={upgradeReason}
