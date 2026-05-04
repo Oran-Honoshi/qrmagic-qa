@@ -148,10 +148,16 @@ function PricingContent() {
     if (!session) { window.location.href = "/auth?mode=signup"; return; }
     setLoading(planId); setError("");
     try {
-      const res = await fetch("/api/stripe/checkout", {
+      const res = await fetch("/api/paddle/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: planId, billing: annual ? "annual" : "monthly", userId: session.id, email: session.email }),
+        body: JSON.stringify({
+          plan: planId,
+          billing: annual ? "annual" : "monthly",
+          userId: session.id,
+          email: session.email,
+          createdAt: session.createdAt || null,
+        }),
       });
       const data = await res.json();
       if (data.error) { setError(data.error); setLoading(null); return; }
