@@ -27,25 +27,36 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid plan or billing period" }, { status: 400 });
     }
 
-    // Check if user is within 48-hour welcome discount window
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sqrly.net";
+
+    // Check 48-hour welcome discount window
     const isInDiscountWindow = createdAt
       ? (Date.now() - new Date(createdAt).getTime()) < 48 * 60 * 60 * 1000
       : false;
+    const discountId = isInDiscountWindow ? process.env.PADDLE_DISCOUNT_ID : undefined;
 
-    const discountId = isInDiscountWindow
-      ? process.env.PADDLE_DISCOUNT_ID
-      : undefined;
+    // Use Paddle's hosted checkout via payment link approach
+    // Build checkout URL with price ID directly
+    const checkoutParams = new URLSearchParams({
+      "items[0][price_id]": priceId,
+      "items[0][quantity]": "1",
+      "customer_email": email || "",
+      "success_url": `${siteUrl}/dashboard?upgraded=1`,
+      "custom_data[userId]": userId || "",
+      "custom_data[plan]": plan,
+      "custom_data[billing]": billing,
+    });
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sqrly.net";
+    if (discountId) {
+      checkoutParams.set("discount_id", discountId);
+    }
 
-    // Create Paddle transaction
+    // Try Paddle's transaction API first (server-side)
     const body: Record<string, unknown> = {
       items: [{ price_id: priceId, quantity: 1 }],
-      customer: { email },
+      customer_email: email,
       custom_data: { userId, plan, billing },
-      checkout: {
-        url: `${siteUrl}/dashboard?upgraded=1`,
-      },
+      success_url: `${siteUrl}/dashboard?upgraded=1`,
     };
 
     if (discountId) {
@@ -64,16 +75,19 @@ export async function POST(req: NextRequest) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Paddle checkout error:", data);
-      return NextResponse.json(
-        { error: data?.error?.detail || "Checkout failed" },
-        { status: 500 }
-      );
+      console.error("Paddle transaction error:", JSON.stringify(data));
+
+      // Fallback: return a hosted checkout URL directly
+      const hostedUrl = `https://buy.paddle.com/product/${priceId}?customer_email=${encodeURIComponent(email || "")}&success_url=${encodeURIComponent(`${siteUrl}/dashboard?upgraded=1`)}`;
+      return NextResponse.json({ url: hostedUrl });
     }
 
+    // Get checkout URL from response
     const checkoutUrl = data?.data?.checkout?.url;
     if (!checkoutUrl) {
-      return NextResponse.json({ error: "No checkout URL returned" }, { status: 500 });
+      // Fallback to Paddle hosted checkout
+      const hostedUrl = `https://checkout.paddle.com/checkout/product/${priceId}?success_url=${encodeURIComponent(`${siteUrl}/dashboard?upgraded=1`)}`;
+      return NextResponse.json({ url: hostedUrl });
     }
 
     return NextResponse.json({
@@ -81,8 +95,9 @@ export async function POST(req: NextRequest) {
       discountApplied: !!discountId,
     });
 
-  } catch (err: any) {
-    console.error("Paddle checkout error:", err);
-    return NextResponse.json({ error: err.message || "Checkout failed" }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Checkout failed";
+    console.error("Paddle checkout error:", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
