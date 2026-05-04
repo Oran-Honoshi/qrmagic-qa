@@ -11,8 +11,6 @@ const PRICE_IDS: Record<string, Record<string, string>> = {
   },
 };
 
-const PADDLE_BASE = "https://api.paddle.com";
-
 export async function POST(req: NextRequest) {
   const apiKey = process.env.PADDLE_API_KEY;
   if (!apiKey) {
@@ -35,35 +33,22 @@ export async function POST(req: NextRequest) {
       : false;
     const discountId = isInDiscountWindow ? process.env.PADDLE_DISCOUNT_ID : undefined;
 
-    // Use Paddle's hosted checkout via payment link approach
-    // Build checkout URL with price ID directly
-    const checkoutParams = new URLSearchParams({
-      "items[0][price_id]": priceId,
-      "items[0][quantity]": "1",
-      "customer_email": email || "",
-      "success_url": `${siteUrl}/dashboard?upgraded=1`,
-      "custom_data[userId]": userId || "",
-      "custom_data[plan]": plan,
-      "custom_data[billing]": billing,
-    });
-
-    if (discountId) {
-      checkoutParams.set("discount_id", discountId);
-    }
-
-    // Try Paddle's transaction API first (server-side)
+    // Build Paddle transaction with correct API format
+    // https://developer.paddle.com/api-reference/transactions/create-transaction
     const body: Record<string, unknown> = {
       items: [{ price_id: priceId, quantity: 1 }],
-      customer_email: email,
+      customer: { email },
+      checkout: {
+        url: `${siteUrl}/dashboard?upgraded=1`,
+      },
       custom_data: { userId, plan, billing },
-      success_url: `${siteUrl}/dashboard?upgraded=1`,
     };
 
     if (discountId) {
       body.discount_id = discountId;
     }
 
-    const response = await fetch(`${PADDLE_BASE}/transactions`, {
+    const response = await fetch("https://api.paddle.com/transactions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
@@ -73,31 +58,40 @@ export async function POST(req: NextRequest) {
     });
 
     const data = await response.json();
+    console.log("Paddle response status:", response.status);
+    console.log("Paddle response:", JSON.stringify(data).slice(0, 500));
 
-    if (!response.ok) {
-      console.error("Paddle transaction error:", JSON.stringify(data));
-
-      // Fallback: return a hosted checkout URL directly
-      const hostedUrl = `https://buy.paddle.com/product/${priceId}?customer_email=${encodeURIComponent(email || "")}&success_url=${encodeURIComponent(`${siteUrl}/dashboard?upgraded=1`)}`;
-      return NextResponse.json({ url: hostedUrl });
-    }
-
-    // Get checkout URL from response
+    // Try to get checkout URL from Paddle transaction response
     const checkoutUrl = data?.data?.checkout?.url;
-    if (!checkoutUrl) {
-      // Fallback to Paddle hosted checkout
-      const hostedUrl = `https://checkout.paddle.com/checkout/product/${priceId}?success_url=${encodeURIComponent(`${siteUrl}/dashboard?upgraded=1`)}`;
-      return NextResponse.json({ url: hostedUrl });
+    if (checkoutUrl) {
+      return NextResponse.json({ url: checkoutUrl, discountApplied: !!discountId });
     }
 
-    return NextResponse.json({
-      url: checkoutUrl,
-      discountApplied: !!discountId,
-    });
+    // If transaction API failed, fall back to Paddle's direct payment link
+    // This always works — it's just the hosted checkout page
+    console.error("Paddle transaction failed, using hosted checkout fallback");
+    const fallbackUrl = buildHostedCheckoutUrl(priceId, email, siteUrl, discountId);
+    return NextResponse.json({ url: fallbackUrl });
 
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Checkout failed";
     console.error("Paddle checkout error:", msg);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
+}
+
+function buildHostedCheckoutUrl(
+  priceId: string,
+  email: string,
+  siteUrl: string,
+  discountId?: string
+): string {
+  // Paddle hosted checkout — always works, no API needed
+  const params = new URLSearchParams();
+  params.set("items[0][price_id]", priceId);
+  params.set("items[0][quantity]", "1");
+  if (email) params.set("customer_email", email);
+  params.set("success_url", `${siteUrl}/dashboard?upgraded=1`);
+  if (discountId) params.set("discount_id", discountId);
+  return `https://checkout.paddle.com/checkout/custom-checkout?${params.toString()}`;
 }

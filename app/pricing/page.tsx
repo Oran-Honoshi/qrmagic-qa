@@ -163,9 +163,23 @@ function PricingContent() {
         }),
       });
       const data = await res.json();
-      if (data.error) { setError(data.error); setLoading(null); return; }
-      if (data.url) window.location.href = data.url;
-    } catch { setError("Something went wrong. Please try again."); setLoading(null); }
+      console.log("Checkout response:", data);
+      if (data.error) {
+        setError(`Checkout error: ${data.error}`);
+        setLoading(null);
+        return;
+      }
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setError("No checkout URL returned. Please try again.");
+        setLoading(null);
+      }
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Unknown error";
+      setError(`Something went wrong: ${msg}`);
+      setLoading(null);
+    }
   }
 
   return (
