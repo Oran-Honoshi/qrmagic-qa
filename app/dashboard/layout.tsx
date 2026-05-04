@@ -42,8 +42,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
 
   useEffect(() => {
+    // Small delay to allow localStorage restore after Paddle redirect
     const session = getSession();
-    if (!session?.id) { router.replace("/auth"); return; }
+
+    if (!session?.id) {
+      // Check if coming back from Paddle (upgraded=1 in URL)
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("upgraded")) {
+        setTimeout(() => {
+          const s2 = getSession();
+          if (!s2?.id) router.replace("/auth");
+          else { setUser(s2); if (window.innerWidth < 900) setCollapsed(true); }
+        }, 500);
+      } else {
+        router.replace("/auth");
+      }
+      return;
+    }
+
     setUser(session);
     if (window.innerWidth < 900) setCollapsed(true);
 

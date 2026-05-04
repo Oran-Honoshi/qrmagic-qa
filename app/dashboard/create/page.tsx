@@ -1141,23 +1141,25 @@ function CreatePageInner() {
         shortId = mlId;
       }
 
-      // Compress logo for DB storage (max 50KB)
+      // Compress logo for DB storage
       let logoForDb: string | null = null;
       if (logo) {
         try {
-          const img = new window.Image();
           await new Promise<void>((res) => {
-            img.onload = () => res();
+            const img = new window.Image();
+            img.onload = () => {
+              const c = document.createElement("canvas");
+              c.width = 64; c.height = 64;
+              const ctx = c.getContext("2d");
+              if (ctx) {
+                ctx.drawImage(img, 0, 0, 64, 64);
+                logoForDb = c.toDataURL("image/png", 0.8);
+              }
+              res();
+            };
             img.onerror = () => res();
             img.src = logo;
           });
-          const c = document.createElement("canvas");
-          c.width = 80; c.height = 80;
-          const ctx = c.getContext("2d");
-          if (ctx) {
-            ctx.drawImage(img, 0, 0, 80, 80);
-            logoForDb = c.toDataURL("image/png", 0.7);
-          }
         } catch { logoForDb = null; }
       }
 

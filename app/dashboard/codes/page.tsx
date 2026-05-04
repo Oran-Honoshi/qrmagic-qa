@@ -329,6 +329,7 @@ function DeleteModal({ code, onClose, onConfirm }: {
 export default function CodesPage() {
   const router = useRouter();
   const [codes, setCodes] = useState<QRCode[]>([]);
+  const [openDownloadId, setOpenDownloadId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
@@ -566,11 +567,14 @@ export default function CodesPage() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-1">
-                      <div className="relative group/dl">
-                    <button className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#00CC6E] hover:bg-[#00FF88]/08 transition-all" title="Download">
+                      <div className="relative">
+                    <button
+                      onClick={e => { e.stopPropagation(); setOpenDownloadId(openDownloadId === code.id ? null : code.id); }}
+                      className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#00CC6E] hover:bg-[#00FF88]/08 transition-all" title="Download">
                       <Download size={14} strokeWidth={1.5} />
                     </button>
-                    <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-20 py-1 min-w-[100px] hidden group-hover/dl:block">
+                    {openDownloadId === code.id && (
+                    <div className="absolute right-0 bottom-full mb-1 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 py-1 min-w-[110px]">
                       {(["svg","png","jpeg"] as const).map(ext => (
                         <button key={ext} onClick={() => {
                           import("qr-code-styling").then(({ default: QR }) => {
@@ -586,6 +590,7 @@ export default function CodesPage() {
                         </button>
                       ))}
                     </div>
+                    )}
                   </div>
                   <button onClick={() => setPreviewCode(code)}
                         title="Preview"
