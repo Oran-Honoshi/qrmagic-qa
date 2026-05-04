@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   Link, Wifi, User, FileText, Mail, MessageSquare, Phone,
   MapPin, Calendar, Share2, Video, File, CreditCard,
-  Bitcoin, Image, Check, ChevronDown, Upload, X,
+  Bitcoin, Image as ImageIcon, Check, ChevronDown, Upload, X,
   Download, Zap, Lock, ArrowLeft, Info
 ,
   Smartphone, Globe, Music, Coffee, Heart, ShoppingBag, Package
@@ -37,7 +37,8 @@ function generateShortId(): string {
 }
 
 // Base URL for redirects
-const INLINE_FRAMES: Record<string, {id: string; name: string; emoji: string; path: string; viewBox: string; qrPos: {x:number;y:number;size:number}; textPos: {x:number;y:number}}> = {
+// INLINE_FRAMES removed
+const _REMOVED = {
   none: { id:"none", name:"None", emoji:"✕", path:"", viewBox:"0 0 200 200", qrPos:{x:0,y:0,size:200}, textPos:{x:0,y:0} },
   rect_clean: { id:"rect_clean", name:"Classic", emoji:"⬜", path:"M4 4 H196 V220 H4 Z", viewBox:"0 0 200 224", qrPos:{x:12,y:12,size:176}, textPos:{x:100,y:218} },
   rect_rounded: { id:"rect_rounded", name:"Rounded", emoji:"▢", path:"M16 4 H184 A12 12 0 0 1 196 16 V208 A12 12 0 0 1 184 220 H16 A12 12 0 0 1 4 208 V16 A12 12 0 0 1 16 4 Z", viewBox:"0 0 200 224", qrPos:{x:14,y:14,size:172}, textPos:{x:100,y:218} },
@@ -77,7 +78,7 @@ const QR_TYPES = [
   { id: "youtube",   icon: Video,         label: "YouTube",    desc: "Video or channel link",      category: "Social" },
   { id: "multilink", icon: Globe,         label: "Multi-Link", desc: "Link-in-bio page",           category: "Social" },
   { id: "spotify",   icon: Music,         label: "Spotify",    desc: "Song or playlist",           category: "Social" },
-  { id: "image",     icon: Image,         label: "Image",      desc: "Photo or image URL",         category: "Social" },
+  { id: "image",     icon: ImageIcon,         label: "Image",      desc: "Photo or image URL",         category: "Social" },
   // Financial
   { id: "paypal",    icon: CreditCard,    label: "PayPal",     desc: "PayPal payment link",        category: "Financial" },
   { id: "bitcoin",   icon: Bitcoin,       label: "Crypto",     desc: "Crypto wallet address",      category: "Financial" },
@@ -449,7 +450,119 @@ function buildQRValue(type: string, data: Record<string, string>): string {
   }
 }
 
+
+/* ── FramePreview — CSS border wrapper around real QR ─── */
+function FramePreview({
+  frame, qrRef, frameColor, frameTextColor, frameCtaText,
+  showLabel, onDownloadSVG, onDownloadHiRes,
+}: {
+  frame: FrameDef;
+  qrRef: React.RefObject<HTMLDivElement | null>;
+  frameColor: string; frameTextColor: string; frameCtaText: string;
+  showLabel: boolean;
+  onDownloadSVG: () => void; onDownloadHiRes: () => void;
+}) {
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  // Clone the QR SVG into the preview
+  useEffect(() => {
+    if (!previewRef.current) return;
+    const qrSvg = qrRef.current?.querySelector("svg");
+    if (!qrSvg) return;
+    const clone = qrSvg.cloneNode(true) as SVGElement;
+    clone.setAttribute("width", "180");
+    clone.setAttribute("height", "180");
+    const container = previewRef.current.querySelector(".qr-slot");
+    if (container) {
+      container.innerHTML = "";
+      container.appendChild(clone);
+    }
+  });
+
+  const isBottomLabel = frame.id.includes("_b") || frame.id === "scanme_b" || frame.id === "border_solid" ||
+    frame.id.includes("border_") || frame.id.includes("fill_banner_b") || frame.id === "fill_solid" ||
+    frame.id === "shape_ticket" || frame.id === "minimal_bot" || frame.id === "minimal_all" || frame.id === "border_dashed" ||
+    frame.id === "border_dotted" || frame.id === "border_corners" || frame.id === "border_shadow" || frame.id === "fill_circle" ||
+    frame.id === "fill_hex" || frame.id === "minimal_top" || frame.id === "minimal_bot";
+  const isTopLabel = frame.id.includes("_t") || frame.id === "scanme_t" || frame.id === "fill_banner_t";
+
+  const borderColor = frameColor;
+  const isFilled = frame.id.startsWith("fill_") || frame.id === "scanme_b" || frame.id === "scanme_t";
+
+  return (
+    <div className="mt-4 bg-white border border-slate-200 rounded-2xl p-4">
+      <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-3 text-center">
+        Frame Preview — {frame.name}
+      </p>
+      <div className="flex justify-center items-center py-4" ref={previewRef}>
+        <div style={{
+          display: "inline-flex",
+          flexDirection: "column",
+          alignItems: "center",
+          color: borderColor,
+          ...Object.fromEntries(
+            frame.style.split(";")
+              .filter(s => s.trim())
+              .map(s => {
+                const [k, ...v] = s.split(":");
+                const key = k.trim().replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+                return [key, v.join(":").trim().replace("currentColor", borderColor)];
+              })
+          )
+        }}>
+          {isTopLabel && showLabel && (
+            <div style={{
+              background: isFilled ? "transparent" : borderColor,
+              color: isFilled ? borderColor : frameTextColor,
+              padding: "6px 16px",
+              fontSize: "11px",
+              fontWeight: 800,
+              letterSpacing: "3px",
+              textTransform: "uppercase",
+              width: "100%",
+              textAlign: "center",
+              marginBottom: "8px",
+            }}>
+              {frameCtaText || "SCAN ME"}
+            </div>
+          )}
+          <div className="qr-slot" style={{ lineHeight: 0, display: "block" }} />
+          {isBottomLabel && !isTopLabel && showLabel && (
+            <div style={{
+              background: isFilled ? "transparent" : borderColor,
+              color: isFilled ? borderColor : frameTextColor,
+              padding: "8px 16px",
+              fontSize: "11px",
+              fontWeight: 800,
+              letterSpacing: "3px",
+              textTransform: "uppercase",
+              width: "100%",
+              textAlign: "center",
+              marginTop: "8px",
+            }}>
+              {frameCtaText || "SCAN ME"}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2 mt-2">
+        <button onClick={onDownloadSVG}
+          className="flex items-center justify-center gap-1.5 py-2.5 bg-[#00FF88] text-[#0F172A] font-bold rounded-xl text-xs hover:bg-[#00CC6E] transition-all">
+          <Download size={12} /> SVG
+        </button>
+        <button onClick={onDownloadHiRes}
+          className="flex items-center justify-center gap-1.5 py-2.5 bg-[#0F172A] text-white font-bold rounded-xl text-xs hover:bg-[#1E293B] transition-all">
+          <Download size={12} /> Hi-Res
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
 /* Holographic QR Preview */
+
+
 /* Holographic QR Preview */
 function QRPreview({
   value, color, bgColor, dotStyle, ecLevel, logo, isHolo,
@@ -644,37 +757,54 @@ function QRPreview({
 
 /* ── All Frame Presets ───────────────────────────────── */
 const ALL_FRAMES = [
-  { id:"frame_coffee", name:"Coffee Cup", emoji:"☕", path:"M40,40 h120 v80 c0,40 -20,60 -60,60 s-60,-20 -60,-60 z M160,60 c15,0 25,10 25,25 s-10,25 -25,25 v-10 c10,0 15,-5 15,-15 s-5,-15 -15,-15 z", viewBox:"0 0 200 240", qrPos:{x:45,y:45,size:110}, textPos:{x:100,y:220} },
-  { id:"frame_bag", name:"Shopping Bag", emoji:"🛍", path:"M40,60 L30,190 H170 L160,60 Z M70,60 a30,30 0 0 1 60,0", viewBox:"0 0 200 240", qrPos:{x:50,y:80,size:100}, textPos:{x:100,y:225} },
-  { id:"frame_tag", name:"Price Tag", emoji:"🏷", path:"M30,40 L130,40 L180,100 L130,160 L30,160 Z M50,100 a10,10 0 1 0 20,0 a10,10 0 1 0 -20,0", viewBox:"0 0 200 240", qrPos:{x:50,y:55,size:90}, textPos:{x:100,y:210} },
-  { id:"frame_phone", name:"Smartphone", emoji:"📱", path:"M50,20 a20,20 0 0 0 -20,20 v140 a20,20 0 0 0 20,20 h100 a20,20 0 0 0 20,-20 v-140 a20,20 0 0 0 -20,-20 z M100,190 a5,5 0 1 1 0,-10 a5,5 0 0 1 0,10", viewBox:"0 0 200 240", qrPos:{x:45,y:40,size:110}, textPos:{x:100,y:235} },
-  { id:"frame_laptop", name:"Laptop", emoji:"💻", path:"M20,40 h160 v100 h-160 z M10,145 h180 l5,15 h-190 z", viewBox:"0 0 200 240", qrPos:{x:40,y:50,size:80}, textPos:{x:100,y:200} },
-  { id:"frame_bubble_round", name:"Speech Bubble", emoji:"💬", path:"M100,20 a80,80 0 1 0 50,140 l30,20 v-40 a80,80 0 0 0 -80,-120", viewBox:"0 0 200 240", qrPos:{x:45,y:45,size:110}, textPos:{x:100,y:220} },
-  { id:"frame_bubble_square", name:"Chat Box", emoji:"🗨", path:"M20,30 h160 v120 h-100 l-40,30 v-30 h-20 z", viewBox:"0 0 200 240", qrPos:{x:40,y:45,size:120}, textPos:{x:100,y:220} },
-  { id:"frame_heart", name:"Heart", emoji:"❤", path:"M100,180 L30,110 a40,40 0 1 1 70,-40 a40,40 0 1 1 70,40 z", viewBox:"0 0 200 240", qrPos:{x:55,y:65,size:90}, textPos:{x:100,y:220} },
-  { id:"frame_ticket", name:"Ticket", emoji:"🎫", path:"M20,50 v30 a10,10 0 0 0 0,20 v30 h160 v-30 a10,10 0 0 0 0,-20 v-30 z", viewBox:"0 0 200 240", qrPos:{x:50,y:60,size:100}, textPos:{x:100,y:200} },
-  { id:"frame_gift", name:"Gift Box", emoji:"🎁", path:"M30,70 h140 v100 h-140 z M25,50 h150 v20 h-150 z M100,50 v120 M70,50 c-10,-20 30,-20 30,0 c0,-20 40,-20 30,0", viewBox:"0 0 200 240", qrPos:{x:50,y:80,size:90}, textPos:{x:100,y:220} },
-  { id:"frame_pin", name:"Map Pin", emoji:"📍", path:"M100,20 a70,70 0 0 0 -70,70 c0,50 70,110 70,110 s70,-60 70,-110 a70,70 0 0 0 -70,-70 z", viewBox:"0 0 200 240", qrPos:{x:55,y:45,size:90}, textPos:{x:100,y:230} },
-  { id:"frame_house", name:"House", emoji:"🏠", path:"M100,20 L20,90 v90 h160 v-90 z M70,180 v-40 h60 v40", viewBox:"0 0 200 240", qrPos:{x:50,y:90,size:100}, textPos:{x:100,y:220} },
-  { id:"frame_hexagon", name:"Hexagon", emoji:"⬡", path:"M100,10 L180,55 v90 L100,190 L20,145 v-90 Z", viewBox:"0 0 200 240", qrPos:{x:50,y:50,size:100}, textPos:{x:100,y:220} },
-  { id:"frame_circle", name:"Circle", emoji:"⭕", path:"M100,100 m-90,0 a90,90 0 1 0 180,0 a90,90 0 1 0 -180,0", viewBox:"0 0 200 240", qrPos:{x:40,y:40,size:120}, textPos:{x:100,y:220} },
-  { id:"frame_star", name:"Star Burst", emoji:"⭐", path:"M100,10 l25,50 l55,-15 l-30,50 l50,25 l-50,25 l30,50 l-55,-15 l-25,50 l-25,-50 l-55,15 l30,-50 l-50,-25 l50,-25 l-30,-50 l55,15 z", viewBox:"0 0 200 240", qrPos:{x:60,y:60,size:80}, textPos:{x:100,y:230} },
-  { id:"frame_briefcase", name:"Briefcase", emoji:"💼", path:"M30,60 h140 v110 h-140 z M70,60 v-15 a10,10 0 0 1 10,-10 h40 a10,10 0 0 1 10,10 v15", viewBox:"0 0 200 240", qrPos:{x:50,y:75,size:100}, textPos:{x:100,y:220} },
-  { id:"frame_store", name:"Storefront", emoji:"🏪", path:"M20,80 h160 v100 h-160 z M10,60 l10,20 h160 l10,-20 z", viewBox:"0 0 200 240", qrPos:{x:50,y:90,size:90}, textPos:{x:100,y:225} },
-  { id:"frame_scanner", name:"Scanner", emoji:"🔍", path:"M30,30 h40 M130,30 h40 M30,170 h40 M130,170 h40 M30,30 v40 M170,30 v40 M30,170 v-40 M170,170 v-40", viewBox:"0 0 200 240", qrPos:{x:40,y:40,size:120}, textPos:{x:100,y:220} },
-  { id:"frame_chip", name:"Circuit Chip", emoji:"🔲", path:"M40,40 h120 v120 h-120 z M40,60 h-20 M40,100 h-20 M40,140 h-20 M160,60 h20 M160,100 h20 M160,140 h20 M60,40 v-20 M100,40 v-20 M140,40 v-20", viewBox:"0 0 200 240", qrPos:{x:50,y:50,size:100}, textPos:{x:100,y:220} },
-  { id:"frame_crown", name:"Crown", emoji:"👑", path:"M20,160 l20,-100 l40,40 l20,-60 l20,60 l40,-40 l20,100 z", viewBox:"0 0 200 240", qrPos:{x:55,y:80,size:90}, textPos:{x:100,y:220} },
-  { id:"frame_calendar", name:"Calendar", emoji:"📅", path:"M30,40 h140 v140 h-140 z M30,70 h140 M60,30 v20 M140,30 v20", viewBox:"0 0 200 240", qrPos:{x:45,y:80,size:90}, textPos:{x:100,y:220} },
-  { id:"frame_rounded", name:"Rounded Rect", emoji:"▢", path:"M40,20 h120 a20,20 0 0 1 20,20 v120 a20,20 0 0 1 -20,20 h-120 a20,20 0 0 1 -20,-20 v-120 a20,20 0 0 1 20,-20 z", viewBox:"0 0 200 240", qrPos:{x:40,y:40,size:120}, textPos:{x:100,y:220} },
-  { id:"frame_diamond", name:"Diamond", emoji:"💠", path:"M100,10 L190,100 L100,190 L10,100 Z", viewBox:"0 0 200 240", qrPos:{x:65,y:65,size:70}, textPos:{x:100,y:220} },
-  { id:"frame_octagon", name:"Octagon", emoji:"🛑", path:"M70,20 h60 l50,50 v60 l-50,50 h-60 l-50,-50 v-60 Z", viewBox:"0 0 200 240", qrPos:{x:50,y:50,size:100}, textPos:{x:100,y:220} },
-  { id:"frame_browser", name:"Browser", emoji:"🌐", path:"M20,40 h160 v130 h-160 z M20,65 h160 M40,52 a3,3 0 1 0 6,0 a3,3 0 1 0 -6,0 M55,52 a3,3 0 1 0 6,0 a3,3 0 1 0 -6,0", viewBox:"0 0 200 240", qrPos:{x:40,y:75,size:85}, textPos:{x:100,y:220} },
-  { id:"frame_burger", name:"Burger", emoji:"🍔", path:"M30,80 a70,70 0 0 1 140,0 v20 h-140 z M30,120 h140 v20 a70,70 0 0 1 -140,0 z M25,105 h150 v10 h-150 z", viewBox:"0 0 200 240", qrPos:{x:50,y:60,size:100}, textPos:{x:100,y:220} },
-  { id:"frame_signpost", name:"Signpost", emoji:"🪧", path:"M30,40 h140 v80 h-140 z M95,120 v60 h10 v-60 z", viewBox:"0 0 200 240", qrPos:{x:45,y:50,size:100}, textPos:{x:100,y:230} },
-  { id:"frame_cocktail", name:"Cocktail", emoji:"🍸", path:"M20,30 L100,110 L180,30 z M100,110 V180 M70,180 H130", viewBox:"0 0 200 240", qrPos:{x:60,y:35,size:80}, textPos:{x:100,y:220} },
-  { id:"frame_pizza", name:"Pizza", emoji:"🍕", path:"M100,20 L180,180 A180,180 0 0 1 20,180 Z M100,35 L45,165 A140,140 0 0 0 155,165 Z", viewBox:"0 0 200 240", qrPos:{x:65,y:70,size:70}, textPos:{x:100,y:220} },
-  { id:"frame_popper", name:"Party Popper", emoji:"🎉", path:"M40,180 l30,-30 l-30,-30 z M100,40 l10,10 M140,70 l10,-10 M160,110 l10,10", viewBox:"0 0 200 240", qrPos:{x:70,y:50,size:100}, textPos:{x:100,y:230} },
+  // ── No-label frames (clean borders around QR) ──────────
+  { id:"border_solid",    name:"Solid",        emoji:"⬛", label:true,
+    style:"border: 6px solid; border-radius: 8px; padding: 8px;" },
+  { id:"border_thick",    name:"Thick",        emoji:"🔲", label:true,
+    style:"border: 12px solid; border-radius: 4px; padding: 4px;" },
+  { id:"border_double",   name:"Double",       emoji:"🔳", label:true,
+    style:"border: 3px double; outline: 3px double; outline-offset: 4px; border-radius: 4px; padding: 10px;" },
+  { id:"border_round",    name:"Rounded",      emoji:"▢", label:true,
+    style:"border: 6px solid; border-radius: 24px; padding: 12px;" },
+  { id:"border_pill",     name:"Pill",         emoji:"〇", label:true,
+    style:"border: 6px solid; border-radius: 999px; padding: 16px;" },
+  { id:"border_corners",  name:"Corners",      emoji:"⌐", label:true,
+    style:"border: 0; outline: 6px solid transparent; padding: 10px; box-shadow: 16px 16px 0 0 currentColor, -16px 16px 0 0 currentColor, 16px -16px 0 0 currentColor, -16px -16px 0 0 currentColor;" },
+  { id:"border_shadow",   name:"Shadow",       emoji:"🌑", label:true,
+    style:"border: 3px solid; border-radius: 8px; padding: 10px; box-shadow: 6px 6px 0 0;" },
+  { id:"border_dashed",   name:"Dashed",       emoji:"⬡", label:true,
+    style:"border: 4px dashed; border-radius: 8px; padding: 10px;" },
+  { id:"border_dotted",   name:"Dotted",       emoji:"···", label:true,
+    style:"border: 4px dotted; border-radius: 8px; padding: 10px;" },
+  // ── Filled background frames ─────────────────────────────
+  { id:"fill_solid",      name:"Dark Card",    emoji:"⬜", label:true,
+    style:"border: none; border-radius: 12px; padding: 16px; background: currentColor;" },
+  { id:"fill_banner_b",   name:"Banner Bot",   emoji:"🏷", label:true,
+    style:"border: 3px solid; border-radius: 8px; padding: 8px; padding-bottom: 40px;" },
+  { id:"fill_banner_t",   name:"Banner Top",   emoji:"🔖", label:true,
+    style:"border: 3px solid; border-radius: 8px; padding: 8px; padding-top: 40px;" },
+  { id:"fill_circle",     name:"Circle",       emoji:"⭕", label:true,
+    style:"border: 6px solid; border-radius: 50%; padding: 16px;" },
+  { id:"fill_hex",        name:"Hexagon",      emoji:"⬡", label:false,
+    style:"border: 6px solid; padding: 16px; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);" },
+  // ── Scan-Me style (bottom label bar) ─────────────────────
+  { id:"scanme_b",        name:"Scan Me",      emoji:"📲", label:true,
+    style:"border: 4px solid; border-radius: 12px; padding: 8px 8px 0 8px; overflow: hidden;" },
+  { id:"scanme_t",        name:"Scan Top",     emoji:"🔼", label:true,
+    style:"border: 4px solid; border-radius: 12px; padding: 0 8px 8px 8px; overflow: hidden;" },
+  // ── Minimal / elegant ────────────────────────────────────
+  { id:"minimal_top",     name:"Top Line",     emoji:"—", label:true,
+    style:"border-top: 4px solid; padding: 12px;" },
+  { id:"minimal_bot",     name:"Bot Line",     emoji:"_", label:true,
+    style:"border-bottom: 4px solid; padding: 12px;" },
+  { id:"minimal_all",     name:"All Lines",    emoji:"□", label:true,
+    style:"border: 2px solid; padding: 10px;" },
+  // ── Shaped (clip-path) ───────────────────────────────────
+  { id:"shape_ticket",    name:"Ticket",       emoji:"🎫", label:true,
+    style:"border: 4px solid; border-radius: 4px; padding: 8px; position: relative;" },
 ];
+
+type FrameDef = typeof ALL_FRAMES[0];
 
 /* Main Create Page */
 function CreatePageInner() {
@@ -732,6 +862,7 @@ function CreatePageInner() {
   const [frameGradient, setFrameGradient] = useState(false);
   const [frameGradientColor2, setFrameGradientColor2] = useState("#00D4FF");
   const [frameGradientType, setFrameGradientType] = useState<"linear"|"radial">("linear");
+  const [showFrameLabel, setShowFrameLabel] = useState(true);
   const [isHolo, setIsHolo] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -740,18 +871,47 @@ function CreatePageInner() {
   const qrPreviewRef = useRef<HTMLDivElement>(null);
 
   function downloadFramed() {
-    if (!selectedFrame || selectedFrame === "none") return;
-    const frame = INLINE_FRAMES[selectedFrame];
+    const frame = ALL_FRAMES.find(f => f.id === selectedFrame);
     if (!frame || !qrPreviewRef.current) return;
     const qrSvg = qrPreviewRef.current.querySelector("svg");
     if (!qrSvg) return;
-    const qrContent = new XMLSerializer().serializeToString(qrSvg);
-    const { qrPos, textPos, viewBox, path } = frame;
-    const svgOut = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}"><path d="${path}" fill="white" stroke="${frameColor}" stroke-width="2.5" stroke-linejoin="round"/><g transform="translate(${qrPos.x},${qrPos.y}) scale(${qrPos.size/200})">${qrContent}</g><text x="${textPos.x}" y="${textPos.y}" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="800" letter-spacing="2" fill="${frameTextColor}">${frameCtaText.toUpperCase()}</text></svg>`;
-    const blob = new Blob([svgOut], { type: "image/svg+xml" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = "sqrly-framed.svg"; a.click();
-    URL.revokeObjectURL(url);
+    const size = 600;
+    const canvas = document.createElement("canvas");
+    canvas.width = size + 60; canvas.height = size + (showFrameLabel ? 100 : 40);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    // White background
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Border frame
+    ctx.strokeStyle = frameColor;
+    ctx.lineWidth = 12;
+    ctx.strokeRect(12, 12, size + 36, size + (showFrameLabel ? 76 : 16));
+    // Embed QR
+    const svgBlob = new Blob([new XMLSerializer().serializeToString(qrSvg)], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(svgBlob);
+    const img = new window.Image();
+    img.onload = () => {
+      ctx.drawImage(img, 30, 30, size, size);
+      URL.revokeObjectURL(url);
+      if (showFrameLabel && frameCtaText) {
+        ctx.fillStyle = frameColor;
+        ctx.fillRect(12, size + 42, size + 36, 48);
+        ctx.fillStyle = frameTextColor;
+        ctx.font = `bold 28px system-ui, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.letterSpacing = "6px";
+        ctx.fillText((frameCtaText || "SCAN ME").toUpperCase(), canvas.width / 2, size + 72);
+      }
+      canvas.toBlob(blob => {
+        if (!blob) return;
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "sqrly-framed.png";
+        a.click();
+      }, "image/png");
+    };
+    img.src = url;
   }
 
 
@@ -803,29 +963,73 @@ function CreatePageInner() {
     });
   }
 
+  // Convert any image/SVG to a canvas PNG blob URL for qr-code-styling compatibility
+  function toCanvasPng(src: string, cb: (url: string) => void) {
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 200; canvas.height = 200;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.clearRect(0, 0, 200, 200);
+      ctx.drawImage(img, 0, 0, 200, 200);
+      cb(canvas.toDataURL("image/png"));
+    };
+    img.onerror = () => cb(src); // fallback to original
+    img.src = src;
+  }
+
   function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => setLogo(ev.target?.result as string);
+    reader.onload = (ev) => {
+      const src = ev.target?.result as string;
+      toCanvasPng(src, (png) => setLogo(png));
+    };
     reader.readAsDataURL(file);
   }
 
   function downloadFramedSVG() {
+    // Hi-res canvas export — same as downloadFramed but larger
     const frame = ALL_FRAMES.find(f => f.id === selectedFrame);
-    if (!frame) return;
-    const qrEl = qrPreviewRef.current?.querySelector("svg");
-    if (!qrEl) return;
-    const qrSvg = new XMLSerializer().serializeToString(qrEl);
-    const gradDefs = frameGradient ? `<defs><linearGradient id="fg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${frameColor}"/><stop offset="100%" stop-color="${frameGradientColor2}"/></linearGradient></defs>` : "";
-    const strokeVal = frameGradient ? "url(#fg)" : frameColor;
-    const [vw, vh] = frame.viewBox.split(" ").slice(2).map(Number);
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${frame.viewBox}" width="${vw}" height="${vh}">${gradDefs}<path d="${frame.path}" fill="white" stroke="${strokeVal}" stroke-width="3" stroke-linejoin="round"/><g transform="translate(${frame.qrPos.x},${frame.qrPos.y}) scale(${frame.qrPos.size/200})">${qrSvg}</g><text x="${frame.textPos.x}" y="${frame.textPos.y}" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="800" letter-spacing="3" fill="${frameTextColor}">${frameCtaText}</text></svg>`;
-    const blob = new Blob([svg], { type: "image/svg+xml" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = `sqrly-framed-${frame.id}.svg`; a.click();
-    URL.revokeObjectURL(url);
+    if (!frame || !qrPreviewRef.current) return;
+    const qrSvg = qrPreviewRef.current.querySelector("svg");
+    if (!qrSvg) return;
+    const size = 1200;
+    const canvas = document.createElement("canvas");
+    canvas.width = size + 80; canvas.height = size + (showFrameLabel ? 160 : 60);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = frameColor;
+    ctx.lineWidth = 20;
+    ctx.strokeRect(20, 20, size + 40, size + (showFrameLabel ? 120 : 20));
+    const svgBlob = new Blob([new XMLSerializer().serializeToString(qrSvg)], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(svgBlob);
+    const img = new window.Image();
+    img.onload = () => {
+      ctx.drawImage(img, 40, 40, size, size);
+      URL.revokeObjectURL(url);
+      if (showFrameLabel && frameCtaText) {
+        ctx.fillStyle = frameColor;
+        ctx.fillRect(20, size + 60, size + 40, 80);
+        ctx.fillStyle = frameTextColor;
+        ctx.font = `bold 48px system-ui, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.fillText((frameCtaText || "SCAN ME").toUpperCase(), canvas.width / 2, size + 110);
+      }
+      canvas.toBlob(blob => {
+        if (!blob) return;
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "sqrly-framed-hires.png";
+        a.click();
+      }, "image/png");
+    };
+    img.src = url;
   }
 
   async function handleSave() {
@@ -1364,55 +1568,75 @@ function CreatePageInner() {
                       </FormField>
                     </>}
 
-                    {/* Brand logos — FIRST, with actual colors */}
+                    {/* Brand logos — 50+ brands in full color */}
                     <div>
                       <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">Brand Logos</p>
                       <div className="grid grid-cols-6 gap-1.5">
-                        {[
-                          {label:"None",   bg:"#F1F5F9", fg:"#64748B", path:null},
-                          {label:"WA",     bg:"#25D366", fg:"#fff", path:"M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a6.3 6.3 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"},
-                          {label:"IG",     bg:"#E1306C", fg:"#fff", path:"M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0 5.838a6 6 0 100 12 6 6 0 000-12zm0 9.675a3.675 3.675 0 110-7.35 3.675 3.675 0 010 7.35zm6.406-10.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"},
-                          {label:"FB",     bg:"#1877F2", fg:"#fff", path:"M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"},
-                          {label:"YT",     bg:"#FF0000", fg:"#fff", path:"M22.54 6.42a2.78 2.78 0 00-1.95-1.97C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 00-1.95 1.96C1 8.12 1 12 1 12s0 3.88.46 5.58a2.78 2.78 0 001.95 1.97C5.12 20 12 20 12 20s6.88 0 8.59-.45a2.78 2.78 0 001.95-1.97C23 15.88 23 12 23 12s0-3.88-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"},
-                          {label:"TT",     bg:"#010101", fg:"#fff", path:"M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9a8.18 8.18 0 004.78 1.52V7.09a4.85 4.85 0 01-1.01-.4z"},
-                          {label:"LI",     bg:"#0077B5", fg:"#fff", path:"M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z M4 6a2 2 0 100-4 2 2 0 000 4z"},
-                          {label:"X",      bg:"#000000", fg:"#fff", path:"M4 4l11.733 16H20L8.267 4z M4 20l6.768-6.768 M13.232 10.768L20 4"},
-                          {label:"TG",     bg:"#2CA5E0", fg:"#fff", path:"m22 2-21 8 8 3 10-10-7 9 1 5 3-4 5 3z"},
-                          {label:"SP",     bg:"#1DB954", fg:"#fff", path:"M12 2a10 10 0 100 20A10 10 0 0012 2zm4.5 14.4c-.2.3-.6.4-.9.2-2.4-1.5-5.5-1.8-9.1-.9-.3.1-.7-.1-.8-.4-.1-.3.1-.7.4-.8 3.9-1 7.4-.6 10.1 1.1.3.1.4.5.3.8zm1.2-2.7c-.2.3-.7.5-1 .2-2.8-1.7-7-2.2-10.2-1.2-.4.1-.8-.1-.9-.5-.1-.4.1-.8.5-.9 3.7-1.1 8.3-.6 11.5 1.4.3.2.4.6.1 1zm.1-2.8c-3.3-2-8.8-2.1-12-1.2-.5.1-1-.2-1.1-.7-.1-.5.2-1 .7-1.1 3.6-1 9.7-.8 13.5 1.4.5.3.6.9.4 1.4-.3.4-.9.5-1.5.2z"},
-                          {label:"PP",     bg:"#003087", fg:"#fff", path:"M7 2h7c4 0 6 2 6 5s-2 5-6 5H9l-1 10H4L7 2zm5 7c2 0 3-1 3-2.5S14 4 12 4h-2l-1 5h3z"},
-                          {label:"SH",     bg:"#95BF47", fg:"#fff", path:"M15.337 5.54L14.5 2H9L7.5 5.5 4 21h16L15.337 5.54zM12 19a3 3 0 110-6 3 3 0 010 6z"},
-                          {label:"Pi",     bg:"#E60023", fg:"#fff", path:"M12 2a10 10 0 100 20A10 10 0 0012 2zm0 3c2 0 3.5 1 3.5 2.5 0 2-1.5 3.5-3.5 3.5-.5 0-1-.1-1.4-.3-.3 1.4-.9 2.7-1.8 3.3l-.3-1.2c.6-1 1-2 1-3.3-.5.2-1 .5-1.5.5C6.5 10 5.5 9 5.5 7.5S7 5 9 5z"},
-                          {label:"WO",     bg:"#00AFF0", fg:"#fff", path:"M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"},
-                          {label:"SC",     bg:"#FFFC00", fg:"#0F172A", path:"M12 2c2 0 4.5 1.5 4.5 4.5 0 1.5-.5 2.5-1.5 3.5 3 0 5 2 5 5 0 1-1 2-2 2-.5 0-1-.5-1.5-1 0 1-.5 2-1.5 2h-6c-1 0-1.5-1-1.5-2-.5.5-1 1-1.5 1-1 0-2-1-2-2 0-3 2-5 5-5-1-1-1.5-2-1.5-3.5C7.5 3.5 10 2 12 2z"},
-                          {label:"DC",     bg:"#5865F2", fg:"#fff", path:"M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"},
-                          {label:"RD",     bg:"#FF4500", fg:"#fff", path:"M12 2a10 10 0 100 20A10 10 0 0012 2zm5 11c0 1.1-.9 2-2 2h-.1c-.4 1.1-1.4 2-2.9 2s-2.5-.9-2.9-2H9c-1.1 0-2-.9-2-2 0-.6.3-1.1.7-1.4a3.4 3.4 0 01-.2-.9c0-1.9 2-3.5 4.5-3.5.3 0 .6 0 .9.1l.6-1.6a.5.5 0 01.9.3l-.7 1.9c1.2.4 2 1.2 2 2.1 0 .3-.1.6-.2.9.4.3.5.8.5 1.1z"},
-                          {label:"TW",     bg:"#1DA1F2", fg:"#fff", path:"M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"},
-                          {label:"GH",     bg:"#181717", fg:"#fff", path:"M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"},
-                          {label:"ET",     bg:"#F56400", fg:"#fff", path:"M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 12h-4v2h4v2H9V5h8v2h-6v3h5v2h-5v3h4v2z"},
-                          {label:"AZ",     bg:"#FF9900", fg:"#fff", path:"M12 18c-3 0-5.5-1-5.5-1s2 2 5.5 2 5.5-2 5.5-2-2.5 1-5.5 1zm8-5s-1.5 1-3 1a5 5 0 01-5-5V3L8 5.5V9a7 7 0 007 7c2 0 3.5-1 3.5-1L20 13z"},
-                          {label:"AB",     bg:"#FF5A5F", fg:"#fff", path:"M12 2C8 2 5 5 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-4-3-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"},
-                        ].map(b => {
-                          const svgData = b.path
-                            ? `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${encodeURIComponent(b.fg)}" stroke="${encodeURIComponent(b.fg)}" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"><path d="${b.path}"/></svg>`
+                        {([
+                          {id:"none",   label:"None",     bg:"#F1F5F9", fg:"#64748B", path:null},
+                          // Social
+                          {id:"wa1",    label:"WA",       bg:"#25D366", fg:"#fff",    path:"M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a6.3 6.3 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"},
+                          {id:"ig",     label:"IG",       bg:"#E1306C", fg:"#fff",    path:"M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0 5.838a6 6 0 100 12 6 6 0 000-12zm0 9.675a3.675 3.675 0 110-7.35 3.675 3.675 0 010 7.35zm6.406-10.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"},
+                          {id:"fb",     label:"FB",       bg:"#1877F2", fg:"#fff",    path:"M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"},
+                          {id:"yt",     label:"YT",       bg:"#FF0000", fg:"#fff",    path:"M22.54 6.42a2.78 2.78 0 00-1.95-1.97C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 00-1.95 1.96C1 8.12 1 12 1 12s0 3.88.46 5.58a2.78 2.78 0 001.95 1.97C5.12 20 12 20 12 20s6.88 0 8.59-.45a2.78 2.78 0 001.95-1.97C23 15.88 23 12 23 12s0-3.88-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"},
+                          {id:"tt",     label:"TikTok",   bg:"#010101", fg:"#fff",    path:"M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9a8.18 8.18 0 004.78 1.52V7.09a4.85 4.85 0 01-1.01-.4z"},
+                          {id:"li",     label:"LinkedIn",  bg:"#0077B5", fg:"#fff",    path:"M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z M4 6a2 2 0 100-4 2 2 0 000 4z"},
+                          {id:"x",      label:"X",        bg:"#000000", fg:"#fff",    path:"M4 4l11.733 16H20L8.267 4z M4 20l6.768-6.768 M13.232 10.768L20 4"},
+                          {id:"sc",     label:"Snapchat",  bg:"#FFFC00", fg:"#0F172A", path:"M12 2c2 0 4.5 1.5 4.5 4.5 0 1.5-.5 2.5-1.5 3.5 3 0 5 2 5 5 0 1-1 2-2 2-.5 0-1-.5-1.5-1 0 1-.5 2-1.5 2h-6c-1 0-1.5-1-1.5-2-.5.5-1 1-1.5 1-1 0-2-1-2-2 0-3 2-5 5-5-1-1-1.5-2-1.5-3.5C7.5 3.5 10 2 12 2z"},
+                          {id:"tw",     label:"Twitter",   bg:"#1DA1F2", fg:"#fff",    path:"M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"},
+                          {id:"tg",     label:"Telegram",  bg:"#2CA5E0", fg:"#fff",    path:"m22 2-21 8 8 3 10-10-7 9 1 5 3-4 5 3z"},
+                          {id:"dc",     label:"Discord",   bg:"#5865F2", fg:"#fff",    path:"M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"},
+                          {id:"rd",     label:"Reddit",    bg:"#FF4500", fg:"#fff",    path:"M12 2a10 10 0 100 20A10 10 0 0012 2zm5 11c0 1.1-.9 2-2 2h-.1c-.4 1.1-1.4 2-2.9 2s-2.5-.9-2.9-2H9c-1.1 0-2-.9-2-2 0-.6.3-1.1.7-1.4a3.4 3.4 0 01-.2-.9c0-1.9 2-3.5 4.5-3.5.3 0 .6 0 .9.1l.6-1.6a.5.5 0 01.9.3l-.7 1.9c1.2.4 2 1.2 2 2.1 0 .3-.1.6-.2.9.4.3.5.8.5 1.1z"},
+                          {id:"pi",     label:"Pinterest", bg:"#E60023", fg:"#fff",    path:"M12 2a10 10 0 100 20A10 10 0 0012 2zm0 3c2 0 3.5 1 3.5 2.5 0 2-1.5 3.5-3.5 3.5-.5 0-1-.1-1.4-.3-.3 1.4-.9 2.7-1.8 3.3l-.3-1.2c.6-1 1-2 1-3.3-.5.2-1 .5-1.5.5C6.5 10 5.5 9 5.5 7.5S7 5 9 5z"},
+                          {id:"sp",     label:"Spotify",   bg:"#1DB954", fg:"#fff",    path:"M12 2a10 10 0 100 20A10 10 0 0012 2zm4.5 14.4c-.2.3-.6.4-.9.2-2.4-1.5-5.5-1.8-9.1-.9-.3.1-.7-.1-.8-.4-.1-.3.1-.7.4-.8 3.9-1 7.4-.6 10.1 1.1.3.1.4.5.3.8zm1.2-2.7c-.2.3-.7.5-1 .2-2.8-1.7-7-2.2-10.2-1.2-.4.1-.8-.1-.9-.5-.1-.4.1-.8.5-.9 3.7-1.1 8.3-.6 11.5 1.4.3.2.4.6.1 1zm.1-2.8c-3.3-2-8.8-2.1-12-1.2-.5.1-1-.2-1.1-.7-.1-.5.2-1 .7-1.1 3.6-1 9.7-.8 13.5 1.4.5.3.6.9.4 1.4-.3.4-.9.5-1.5.2z"},
+                          {id:"tw2",    label:"Twitch",    bg:"#9146FF", fg:"#fff",    path:"M21 2H3v16h5v4l4-4h5l4-4V2zm-10 9V7m5 4V7"},
+                          {id:"gh",     label:"GitHub",    bg:"#181717", fg:"#fff",    path:"M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"},
+                          // Business & Payments
+                          {id:"pp",     label:"PayPal",    bg:"#003087", fg:"#fff",    path:"M7 2h7c4 0 6 2 6 5s-2 5-6 5H9l-1 10H4L7 2zm5 7c2 0 3-1 3-2.5S14 4 12 4h-2l-1 5h3z"},
+                          {id:"str",    label:"Stripe",    bg:"#635BFF", fg:"#fff",    path:"M14 6c-2 0-3 1-3 2s1 2 3 2 3 1 3 2-1 2-3 2-3-1-3-2M9 4v16M15 4v16"},
+                          {id:"sh",     label:"Shopify",   bg:"#95BF47", fg:"#fff",    path:"M15.337 5.54L14.5 2H9L7.5 5.5 4 21h16L15.337 5.54zM12 19a3 3 0 110-6 3 3 0 010 6z"},
+                          {id:"et",     label:"Etsy",      bg:"#F56400", fg:"#fff",    path:"M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 12h-4v2h4v2H9V5h8v2h-6v3h5v2h-5v3h4v2z"},
+                          {id:"az",     label:"Amazon",    bg:"#FF9900", fg:"#fff",    path:"M12 18c-3 0-5.5-1-5.5-1s2 2 5.5 2 5.5-2 5.5-2-2.5 1-5.5 1zm8-5s-1.5 1-3 1a5 5 0 01-5-5V3L8 5.5V9a7 7 0 007 7c2 0 3.5-1 3.5-1L20 13z"},
+                          {id:"gp",     label:"GPay",      bg:"#4285F4", fg:"#fff",    path:"M12 11h9v2c0 5-3.5 8-9 8a9 9 0 110-18c2.5 0 4.5 1 6 2.5l-2.5 2.5c-1-1-2.5-1.5-3.5-1.5-4 0-7 3-7 7s3 7 7 7c3 0 5-2 5.5-5H12v-3z"},
+                          {id:"bc",     label:"Bitcoin",   bg:"#F7931A", fg:"#fff",    path:"M11.5 9H13c1 0 1.5.5 1.5 1.5S14 12 13 12h-1.5V9zm0 6H13c1.2 0 1.8-.6 1.8-1.8S14.2 12 13 12h-1.5v3zM12 2a10 10 0 100 20A10 10 0 0012 2zm1.5 13.5H9V7.5h4c1.5 0 2.5.8 2.5 2s-.5 1.8-1.3 2c1 .3 1.8 1 1.8 2.3 0 1.5-1 2.7-3 2.7z"},
+                          // Tech
+                          {id:"gg",     label:"Google",    bg:"#4285F4", fg:"#fff",    path:"M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81z"},
+                          {id:"ap",     label:"Apple",     bg:"#000000", fg:"#fff",    path:"M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"},
+                          {id:"ms",     label:"Mastadon",  bg:"#6364FF", fg:"#fff",    path:"M21.327 8.566c0-4.339-2.843-5.61-2.843-5.61-1.433-.658-3.894-.935-6.451-.956h-.063c-2.557.021-5.016.298-6.449.956 0 0-2.843 1.272-2.843 5.61 0 .993-.019 2.181.012 3.441.103 4.243.778 8.425 4.701 9.463 1.809.479 3.362.579 4.612.51 2.268-.126 3.541-.809 3.541-.809l-.075-1.646s-1.621.511-3.441.449c-1.804-.062-3.707-.194-3.999-2.409a4.523 4.523 0 01-.04-.621s1.77.433 4.014.536c1.372.063 2.658-.08 3.965-.236 2.506-.299 4.688-1.843 4.962-3.254.434-2.223.398-5.424.398-5.424zm-3.353 5.59h-2.081V9.057c0-1.075-.452-1.62-1.357-1.62-1 0-1.501.647-1.501 1.927v2.791h-2.069V9.364c0-1.28-.501-1.927-1.501-1.927-.905 0-1.357.545-1.357 1.62v5.099H6.026V8.903c0-1.074.273-1.927.823-2.558.566-.631 1.307-.955 2.228-.955 1.065 0 1.872.409 2.405 1.228l.518.869.519-.869c.533-.819 1.34-1.228 2.405-1.228.92 0 1.662.324 2.228.955.549.631.822 1.484.822 2.558v5.253z"},
+                          {id:"db",     label:"Dropbox",   bg:"#0061FF", fg:"#fff",    path:"M12 2L6 6l6 4-6 4 6 4 6-4-6-4 6-4-6-4zm-6 4l-6 4 6 4 6-4-6-4z"},
+                          {id:"dr",     label:"Drive",     bg:"#4285F4", fg:"#fff",    path:"M3 17.5l3-5.5h12l3 5.5H3zM12 3L3 18h3L12 6l6 12h3L12 3z"},
+                          {id:"nt",     label:"Notion",    bg:"#000000", fg:"#fff",    path:"M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.14c-.093-.514.28-.887.747-.933zM1.936 1.035l13.31-.98c1.634-.14 2.055-.047 3.082.7l4.249 2.986c.7.513.934.653.934 1.213v16.378c0 1.026-.373 1.634-1.68 1.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54 1.447-1.632z"},
+                          {id:"ab",     label:"Airbnb",    bg:"#FF5A5F", fg:"#fff",    path:"M12 2C8 2 5 5 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-4-3-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"},
+                          {id:"sl",     label:"Slack",     bg:"#4A154B", fg:"#fff",    path:"M5.042 15.165a2.528 2.528 0 01-2.52 2.523A2.528 2.528 0 010 15.165a2.527 2.527 0 012.522-2.52h2.52v2.52zm1.271 0a2.527 2.527 0 012.521-2.52 2.527 2.527 0 012.521 2.52v6.313A2.528 2.528 0 018.834 24a2.528 2.528 0 01-2.521-2.522v-6.313zm2.521-10.123a2.528 2.528 0 01-2.521-2.52A2.528 2.528 0 018.834 0a2.528 2.528 0 012.521 2.522v2.52h-2.52zm0 1.271a2.528 2.528 0 012.521 2.521 2.528 2.528 0 01-2.521 2.521H2.522A2.528 2.528 0 010 8.834a2.528 2.528 0 012.522-2.521h6.312zm10.122 2.521a2.528 2.528 0 012.522-2.521A2.528 2.528 0 0124 8.834a2.528 2.528 0 01-2.522 2.521h-2.521V8.834zm-1.268 0a2.528 2.528 0 01-2.52 2.521 2.528 2.528 0 01-2.521-2.521V2.522A2.528 2.528 0 0115.165 0a2.528 2.528 0 012.52 2.522v6.312zm-2.52 10.122a2.528 2.528 0 012.52 2.522A2.528 2.528 0 0115.165 24a2.528 2.528 0 01-2.52-2.522v-2.521h2.52zm0-1.268a2.528 2.528 0 01-2.52-2.521 2.528 2.528 0 012.52-2.52h6.313A2.528 2.528 0 0124 15.165a2.528 2.528 0 01-2.522 2.521h-6.313z"},
+                          {id:"zm",     label:"Zoom",      bg:"#2D8CFF", fg:"#fff",    path:"M17 10.5V7a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h12a1 1 0 001-1v-3.5l4 4v-11l-4 4z"},
+                          {id:"wf",     label:"WiFi",      bg:"#34C759", fg:"#fff",    path:"M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"},
+                          {id:"qr",     label:"QR Code",   bg:"#0F172A", fg:"#fff",    path:"M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h3v3h-3z M19 14h2v2h-2z M14 19h2v2h-2z M18 18h3v3h-3z"},
+                        ] as const).map(b => {
+                          const logoSvg = b.path
+                            ? (() => {
+                                const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${b.fg}" stroke="${b.fg}" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"><rect width="24" height="24" fill="${b.bg}" rx="3"/><path d="${b.path}"/></svg>`;
+                                return `data:image/svg+xml;base64,${typeof btoa !== "undefined" ? btoa(svg) : ""}`;
+                              })()
                             : null;
-                          const isActive = svgData ? logo === svgData : !logo;
+                          const isActive = logoSvg ? logo === logoSvg : !logo;
                           return (
-                            <button key={b.label} onClick={() => setLogo(svgData)}
-                              className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg border text-[7px] font-bold transition-all ${
-                                isActive ? "border-[#00D4FF]/40 ring-1 ring-[#00D4FF]" : "border-slate-200 hover:border-[#00D4FF]/30"
+                            <button key={b.id} onClick={() => logoSvg ? toCanvasPng(logoSvg, setLogo) : setLogo(null)}
+                              title={b.label}
+                              className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl border text-[7px] font-bold transition-all ${
+                                isActive ? "ring-2 ring-[#00D4FF] border-[#00D4FF]/40" : "border-slate-200 hover:border-[#00D4FF]/30"
                               }`}
                               style={{ background: b.bg }}>
-                              {svgData
-                                ? <img src={svgData} alt={b.label} className="w-4 h-4 object-contain" />
-                                : <span className="w-4 h-4 flex items-center justify-center text-[#64748B] font-bold">✕</span>
-                              }
+                              {b.path ? (
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill={b.fg} stroke={b.fg} strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d={b.path} />
+                                </svg>
+                              ) : <span className="w-[18px] h-[18px] flex items-center justify-center" style={{ color: b.fg }}>✕</span>}
                               <span style={{ color: b.fg === "#fff" ? "#fff" : "#0F172A" }}>{b.label}</span>
                             </button>
                           );
                         })}
                       </div>
                     </div>
-
                     {/* Icon presets (monochrome SVG) */}
                     <div>
                       <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">Icon Presets</p>
@@ -1458,12 +1682,15 @@ function CreatePageInner() {
                         { label: "Building", val: "building", path: "M3 21h18M9 8h1M9 12h1M9 16h1M14 8h1M14 12h1M14 16h1M5 21V3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v18" },
                                             ].map(p => {
                         const svgUrl = p.path
-                          ? `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%230F172A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="11" fill="white" stroke="%23E2E8F0"/><path d="${p.path}"/></svg>`
+                          ? (() => {
+                              const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0F172A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="11" fill="white" stroke="#E2E8F0"/><path d="${p.path}"/></svg>`;
+                              return `data:image/svg+xml;base64,${btoa(svg)}`;
+                            })()
                           : null;
                         const isActive = !p.val ? !logo : logo === svgUrl;
                         return (
                           <button key={p.val || "none"}
-                            onClick={() => setLogo(svgUrl)}
+                            onClick={() => svgUrl ? toCanvasPng(svgUrl, setLogo) : setLogo(null)}
                             className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg border text-[8px] font-medium transition-all ${isActive ? "bg-[#00D4FF]/08 border-[#00D4FF]/30 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/30"}`}>
                             {p.path ? (
                               <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
@@ -1487,86 +1714,107 @@ function CreatePageInner() {
 
                   {customizeTab === "frame" && <div className="space-y-4">
 
-                    {/* Frame picker — SVG previews */}
+                    {/* With / Without label toggle */}
+                    <div className="flex bg-slate-100 rounded-xl p-1 gap-1">
+                      <button onClick={() => setShowFrameLabel(true)}
+                        className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${showFrameLabel ? "bg-white shadow text-[#0F172A]" : "text-[#94A3B8]"}`}>
+                        With Label
+                      </button>
+                      <button onClick={() => setShowFrameLabel(false)}
+                        className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${!showFrameLabel ? "bg-white shadow text-[#0F172A]" : "text-[#94A3B8]"}`}>
+                        Without Label
+                      </button>
+                    </div>
+
+                    {/* Frame picker */}
                     <div>
                       <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">Frame Style</p>
                       <div className="grid grid-cols-4 gap-1.5">
-                        {[{id:null,name:"None",emoji:"✕"}, ...ALL_FRAMES].map(f => (
-                          <button key={f.id || "none"} onClick={() => setSelectedFrame(f.id)}
+                        <button onClick={() => setSelectedFrame(null)}
+                          className={`flex flex-col items-center gap-1 p-2 rounded-xl border text-[8px] font-medium transition-all ${
+                            !selectedFrame ? "bg-[#00D4FF]/08 border-[#00D4FF]/30 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569]"
+                          }`}>
+                          <span className="text-lg">✕</span>
+                          None
+                        </button>
+                        {ALL_FRAMES.map(f => (
+                          <button key={f.id} onClick={() => setSelectedFrame(f.id)}
                             className={`flex flex-col items-center gap-1 p-2 rounded-xl border text-[8px] font-medium transition-all ${
-                              selectedFrame === f.id
-                                ? "bg-[#00D4FF]/08 border-[#00D4FF]/30 text-[#0891B2]"
-                                : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/20"
+                              selectedFrame === f.id ? "bg-[#00D4FF]/08 border-[#00D4FF]/30 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/20"
                             }`}>
-                            {f.id ? (
-                              <svg viewBox={f.viewBox} width="36" height="36" className="overflow-visible">
-                                <path d={f.path} fill="white" stroke={frameColor} strokeWidth="6" strokeLinejoin="round"/>
-                                <text x={f.textPos.x} y={f.textPos.y} textAnchor="middle"
-                                  fontFamily="system-ui" fontSize="18" fontWeight="800" fill={frameTextColor}>
-                                  {frameCtaText.slice(0,8)}
-                                </text>
-                              </svg>
-                            ) : <span className="text-xl">✕</span>}
+                            {/* Mini frame preview thumbnail */}
+                            <div style={{
+                              width: 32, height: 32,
+                              borderColor: frameColor,
+                              color: frameColor,
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              fontSize: 8,
+                              ...Object.fromEntries(
+                                f.style.split(";").filter(s => s.trim()).map(s => {
+                                  const [k, ...v] = s.split(":");
+                                  const key = k.trim().replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+                                  return [key, v.join(":").trim().replace("currentColor", frameColor)];
+                                })
+                              )
+                            }}>
+                              <div style={{ width: 16, height: 16, background: "#0F172A", borderRadius: 1 }} />
+                            </div>
                             {f.name}
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    {selectedFrame && selectedFrame !== "none" && (
-                      <div className="space-y-3">
-                        {/* CTA Text */}
-                        <div>
-                          <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-1.5 block">Frame Text</label>
-                          <input value={frameCtaText} onChange={e => setFrameCtaText(e.target.value)}
-                            placeholder="SCAN ME" maxLength={20}
-                            className="w-full bg-slate-50 border border-slate-200 focus:border-[#00D4FF] rounded-xl px-3 py-2 text-sm font-bold text-center text-[#0F172A] outline-none transition-all tracking-widest uppercase" />
-                        </div>
+                    {/* Frame options */}
+                    {selectedFrame && (
+                      <div className="space-y-3 bg-slate-50 rounded-2xl p-3 border border-slate-200">
+                        {/* CTA text */}
+                        {showFrameLabel && (
+                          <div>
+                            <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-1.5 block">Frame Text</label>
+                            <input value={frameCtaText} onChange={e => setFrameCtaText(e.target.value)}
+                              placeholder="SCAN ME" maxLength={24}
+                              className="w-full bg-white border border-slate-200 focus:border-[#00D4FF] rounded-xl px-3 py-2 text-sm font-bold text-center text-[#0F172A] outline-none transition-all tracking-widest uppercase" />
+                            <div className="flex gap-1.5 flex-wrap mt-1.5">
+                              {["SCAN ME","SCAN & ORDER","FOLLOW US","GET DISCOUNT","FREE WIFI","BOOK NOW","LEARN MORE","WATCH VIDEO"].map(t => (
+                                <button key={t} onClick={() => setFrameCtaText(t)}
+                                  className="px-2 py-0.5 rounded-full bg-white border border-slate-200 text-[8px] font-semibold text-[#475569] hover:border-[#00D4FF] transition-all">
+                                  {t}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
 
                         {/* Frame color */}
                         <div>
                           <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-1.5 block">Frame Color</label>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <input type="color" value={frameColor}
-                              onChange={e => setFrameColor(e.target.value)}
+                          <div className="flex gap-1.5 flex-wrap items-center">
+                            <input type="color" value={frameColor} onChange={e => setFrameColor(e.target.value)}
                               className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer flex-shrink-0" />
-                            {["#0F172A","#00D4FF","#00FF88","#8B5CF6","#F472B6","#FB923C","#EF4444","#FFFFFF"].map(c => (
-                              <button key={c} onClick={() => setFrameColor(c)}
-                                style={{ background: c }}
-                                className={`w-6 h-6 rounded-full border-2 transition-all flex-shrink-0 ${frameColor === c ? "border-[#00D4FF] scale-125" : "border-slate-200"}`} />
+                            {["#0F172A","#FFFFFF","#00D4FF","#00FF88","#8B5CF6","#F472B6","#EF4444","#FB923C"].map(c => (
+                              <button key={c} onClick={() => setFrameColor(c)} style={{ background: c }}
+                                className={`w-6 h-6 rounded-full border-2 flex-shrink-0 transition-all ${frameColor === c ? "border-[#00D4FF] scale-125" : "border-slate-200"}`} />
                             ))}
                           </div>
                         </div>
 
-                        {/* Frame background */}
-                        <div>
-                          <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-1.5 block">Frame Background</label>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <input type="color" value={frameTextColor}
-                              onChange={e => setFrameTextColor(e.target.value)}
-                              className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer flex-shrink-0" />
-                            {["#FFFFFF","#0F172A","#F8FAFC","#F0FFF4","#EFF6FF","#FFF0F6","#FFFBEB","#F5F0FF"].map(c => (
-                              <button key={c} onClick={() => setFrameTextColor(c)}
-                                style={{ background: c }}
-                                className={`w-6 h-6 rounded-full border-2 transition-all flex-shrink-0 ${frameTextColor === c ? "border-[#00D4FF] scale-125" : "border-slate-200"}`} />
-                            ))}
+                        {/* Text color */}
+                        {showFrameLabel && (
+                          <div>
+                            <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-1.5 block">Label Color</label>
+                            <div className="flex gap-1.5 flex-wrap items-center">
+                              <input type="color" value={frameTextColor} onChange={e => setFrameTextColor(e.target.value)}
+                                className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer flex-shrink-0" />
+                              {["#FFFFFF","#0F172A","#00D4FF","#00FF88","#8B5CF6","#F472B6","#EF4444"].map(c => (
+                                <button key={c} onClick={() => setFrameTextColor(c)} style={{ background: c }}
+                                  className={`w-6 h-6 rounded-full border-2 flex-shrink-0 transition-all ${frameTextColor === c ? "border-[#00D4FF] scale-125" : "border-slate-200"}`} />
+                              ))}
+                            </div>
                           </div>
-                        </div>
-
-                        {/* Download framed */}
-                        <div className="grid grid-cols-2 gap-2">
-                          <button onClick={downloadFramed}
-                            className="flex items-center justify-center gap-1.5 py-2.5 bg-[#00FF88] text-[#0F172A] font-bold rounded-xl text-xs hover:bg-[#00CC6E] transition-all">
-                            <Download size={13} strokeWidth={2} /> SVG
-                          </button>
-                          <button onClick={downloadFramedSVG}
-                            className="flex items-center justify-center gap-1.5 py-2.5 bg-[#0F172A] text-white font-bold rounded-xl text-xs hover:bg-[#1E293B] transition-all">
-                            <Download size={13} strokeWidth={2} /> High-Res
-                          </button>
-                        </div>
+                        )}
                       </div>
                     )}
-
                   </div>} {/* END FRAME TAB */}
 
                 </div> {/* end tabs content */}
@@ -1616,61 +1864,21 @@ function CreatePageInner() {
                 />
               </div>
 
-              {/* Live frame preview */}
+              {/* Live frame preview — composites actual QR into frame */}
               {selectedFrame && (() => {
                 const frame = ALL_FRAMES.find(f => f.id === selectedFrame);
                 if (!frame) return null;
-                const qrEl = qrPreviewRef.current?.querySelector("svg");
                 return (
-                  <div className="mt-4 bg-white border border-slate-200 rounded-2xl p-4">
-                    <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-3 text-center">
-                      Frame Preview — {frame.name}
-                    </p>
-                    <div className="flex justify-center">
-                      <svg viewBox={frame.viewBox} className="w-full max-w-[200px]"
-                        xmlns="http://www.w3.org/2000/svg">
-                        {frameGradient && (
-                          <defs>
-                            <linearGradient id="fpGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                              <stop offset="0%" stopColor={frameColor} />
-                              <stop offset="100%" stopColor={frameGradientColor2} />
-                            </linearGradient>
-                          </defs>
-                        )}
-                        <path d={frame.path}
-                          fill="white"
-                          stroke={frameGradient ? "url(#fpGrad)" : frameColor}
-                          strokeWidth="6" strokeLinejoin="round" />
-                        {/* QR placeholder */}
-                        <rect x={frame.qrPos.x} y={frame.qrPos.y}
-                          width={frame.qrPos.size} height={frame.qrPos.size}
-                          fill={bgColor} rx="4" />
-                        <text x={frame.qrPos.x + frame.qrPos.size/2}
-                          y={frame.qrPos.y + frame.qrPos.size/2}
-                          textAnchor="middle" dominantBaseline="middle"
-                          fontSize="12" fill={qrColor} fontFamily="monospace">
-                          QR
-                        </text>
-                        <text x={frame.textPos.x} y={frame.textPos.y}
-                          textAnchor="middle" dominantBaseline="middle"
-                          fontFamily="system-ui,sans-serif" fontSize="14"
-                          fontWeight="800" letterSpacing="3"
-                          fill={frameGradient ? "url(#fpGrad)" : frameTextColor}>
-                          {frameCtaText || "SCAN ME"}
-                        </text>
-                      </svg>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 mt-3">
-                      <button onClick={downloadFramed}
-                        className="flex items-center justify-center gap-1.5 py-2 bg-[#00FF88] text-[#0F172A] font-bold rounded-xl text-xs hover:bg-[#00CC6E] transition-all">
-                        <Download size={12} /> SVG
-                      </button>
-                      <button onClick={downloadFramedSVG}
-                        className="flex items-center justify-center gap-1.5 py-2 bg-[#0F172A] text-white font-bold rounded-xl text-xs hover:bg-[#1E293B] transition-all">
-                        <Download size={12} /> Hi-Res
-                      </button>
-                    </div>
-                  </div>
+                  <FramePreview
+                    frame={frame}
+                    qrRef={qrPreviewRef}
+                    frameColor={frameColor}
+                    frameTextColor={frameTextColor}
+                    frameCtaText={frameCtaText}
+                    showLabel={showFrameLabel}
+                    onDownloadSVG={downloadFramed}
+                    onDownloadHiRes={downloadFramedSVG}
+                  />
                 );
               })()}
             </div>
