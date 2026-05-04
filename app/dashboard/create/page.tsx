@@ -452,16 +452,19 @@ function buildQRValue(type: string, data: Record<string, string>): string {
 /* Holographic QR Preview */
 /* Holographic QR Preview */
 function QRPreview({
-  value, color, bgColor, dotStyle, ecLevel, logo, isHolo, onOpenFrame,
+  value, color, bgColor, dotStyle, ecLevel, logo, isHolo,
   logoPlacement = "center", cornerSquareStyle = "extra-rounded",
   cornerDotStyle = "dot", cornerColor = "#0F172A", logoScale = 0.3,
-  showPhoneMockup = false, onTogglePhoneMockup,
+  logoMargin = 4, useDotGradient = false, dotGradientColor2 = "#8B5CF6",
+  dotGradientType = "linear", dotGradientRotation = 0,
 }: {
   value: string; color: string; bgColor: string;
   dotStyle: string; ecLevel: string; logo: string | null; isHolo: boolean;
-  onOpenFrame?: () => void; logoPlacement?: "center" | "behind" | "background";
+  logoPlacement?: "center" | "behind" | "background";
   cornerSquareStyle?: string; cornerDotStyle?: string; cornerColor?: string;
-  logoScale?: number; showPhoneMockup?: boolean; onTogglePhoneMockup?: () => void;
+  logoScale?: number; logoMargin?: number;
+  useDotGradient?: boolean; dotGradientColor2?: string;
+  dotGradientType?: "linear" | "radial"; dotGradientRotation?: number;
 }): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   const qrRef = useRef<unknown>(null);
@@ -475,13 +478,23 @@ function QRPreview({
         type: "svg",
         data: value || "https://sqrly.net",
         image: logo || undefined,
-        dotsOptions: { color, type: dotStyle as "rounded" },
-        cornersSquareOptions: { color, type: "extra-rounded" },
-        cornersDotOptions: { color },
+        dotsOptions: useDotGradient ? {
+          type: dotStyle as "rounded",
+          gradient: {
+            type: dotGradientType,
+            rotation: dotGradientRotation * Math.PI / 180,
+            colorStops: [
+              { offset: 0, color: color },
+              { offset: 1, color: dotGradientColor2 },
+            ],
+          },
+        } : { color, type: dotStyle as "rounded" },
+        cornersSquareOptions: { color: cornerColor, type: cornerSquareStyle as any },
+        cornersDotOptions: { color: cornerColor, type: cornerDotStyle as any },
         backgroundOptions: { color: bgColor },
         imageOptions: {
           crossOrigin: "anonymous",
-          margin: logoPlacement === "behind" ? 0 : 4,
+          margin: logoMargin,
           imageSize: logoPlacement === "behind" ? 0.6 : logoScale,
           hideBackgroundDots: logoPlacement !== "behind",
         },
@@ -500,15 +513,31 @@ function QRPreview({
       (qrRef.current as any)?.update({
         data: value || "https://sqrly.net",
         image: logo || undefined,
-        dotsOptions: { color, type: dotStyle as "rounded" },
-        cornersSquareOptions: { color, type: "extra-rounded" },
-        cornersDotOptions: { color },
+        dotsOptions: useDotGradient ? {
+          type: dotStyle as "rounded",
+          gradient: {
+            type: dotGradientType,
+            rotation: dotGradientRotation * Math.PI / 180,
+            colorStops: [
+              { offset: 0, color: color },
+              { offset: 1, color: dotGradientColor2 },
+            ],
+          },
+        } : { color, type: dotStyle as "rounded" },
+        cornersSquareOptions: { color: cornerColor, type: cornerSquareStyle as any },
+        cornersDotOptions: { color: cornerColor, type: cornerDotStyle as any },
         backgroundOptions: { color: bgColor },
+        imageOptions: {
+          crossOrigin: "anonymous",
+          margin: logoMargin,
+          imageSize: logoPlacement === "behind" ? 0.6 : logoScale,
+          hideBackgroundDots: logoPlacement !== "behind",
+        },
         qrOptions: { errorCorrectionLevel: ecLevel as "H" },
       });
     }, 300);
     return () => clearTimeout(t);
-  }, [value, color, bgColor, dotStyle, ecLevel, logo]);
+  }, [value, color, bgColor, dotStyle, ecLevel, logo, cornerColor, cornerSquareStyle, cornerDotStyle, logoScale, logoMargin, useDotGradient, dotGradientColor2, dotGradientType, dotGradientRotation]);
 
   function download(ext: "svg" | "png" | "jpeg") {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -682,6 +711,21 @@ function CreatePageInner() {
   const [logoScale, setLogoScale] = useState(0.3);
   const [showPhoneMockup, setShowPhoneMockup] = useState(false);
   const [selectedFrame, setSelectedFrame] = useState<string | null>(null);
+  // Dot gradient
+  const [useDotGradient, setUseDotGradient] = useState(false);
+  const [dotGradientColor2, setDotGradientColor2] = useState("#8B5CF6");
+  const [dotGradientType, setDotGradientType] = useState<"linear"|"radial">("linear");
+  const [dotGradientRotation, setDotGradientRotation] = useState(0);
+  // Logo options
+  const [logoBgShape, setLogoBgShape] = useState<"none"|"square"|"rounded"|"circle">("circle");
+  const [logoBgColor, setLogoBgColor] = useState("#FFFFFF");
+  const [logoMargin, setLogoMargin] = useState(4);
+  // Export
+  const [exportSize, setExportSize] = useState(1024);
+  // Scannability
+  const [scanWarning, setScanWarning] = useState<string|null>(null);
+  // Active customize tab
+  const [customizeTab, setCustomizeTab] = useState<"style"|"colors"|"logo"|"frame">("style");
   const [frameCtaText, setFrameCtaText] = useState("SCAN ME");
   const [frameColor, setFrameColor] = useState("#0F172A");
   const [frameTextColor, setFrameTextColor] = useState("#FFFFFF");
@@ -724,6 +768,40 @@ function CreatePageInner() {
     const t = searchParams.get("type");
     if (t) { setSelectedType(t); setStep(2); }
   }, [searchParams]);
+
+  // Scannability warning
+  useEffect(() => {
+    if (logo && logoScale > 0.35) {
+      setScanWarning("Logo is large — may affect scannability. Try reducing logo size or use EC Level H.");
+    } else if (useDotGradient && ecLevel === "L") {
+      setScanWarning("Low error correction with gradient may reduce scannability. Consider EC Level M or H.");
+    } else {
+      setScanWarning(null);
+    }
+  }, [logo, logoScale, useDotGradient, ecLevel]);
+
+  // Export at custom size
+  async function downloadAtSize(ext: "png" | "svg" | "jpeg", size: number) {
+    import("qr-code-styling").then(({ default: QRCodeStyling }) => {
+      const qr = new QRCodeStyling({
+        width: size, height: size,
+        type: ext === "svg" ? "svg" : "canvas",
+        data: qrValue || "https://sqrly.net",
+        image: logo || undefined,
+        dotsOptions: useDotGradient ? {
+          type: dotStyle as "rounded",
+          gradient: { type: dotGradientType, rotation: dotGradientRotation * Math.PI / 180,
+            colorStops: [{ offset: 0, color: qrColor }, { offset: 1, color: dotGradientColor2 }] },
+        } : { color: qrColor, type: dotStyle as "rounded" },
+        cornersSquareOptions: { color: cornerColor, type: cornerSquareStyle as any },
+        cornersDotOptions: { color: cornerColor, type: cornerDotStyle as any },
+        backgroundOptions: { color: bgColor },
+        imageOptions: { crossOrigin: "anonymous", margin: logoMargin, imageSize: logoScale, hideBackgroundDots: true },
+        qrOptions: { errorCorrectionLevel: ecLevel as "H" },
+      });
+      qr.download({ name: `sqrly-${size}px`, extension: ext });
+    });
+  }
 
   function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -984,9 +1062,39 @@ function CreatePageInner() {
               </div>
 
               {/* Step 3: Customize */}
-              <div className="bg-[#FFFFFF] border border-[rgba(226,232,240,1)] rounded-xl p-5">
-                <h3 className="text-sm font-semibold text-[#0F172A] mb-4">Customize</h3>
-                <div className="space-y-5">
+              <div className="bg-[#FFFFFF] border border-[rgba(226,232,240,1)] rounded-xl overflow-hidden">
+                {/* Customize tabs */}
+                <div className="flex border-b border-slate-100">
+                  {([
+                    { id: "style", label: "Style" },
+                    { id: "colors", label: "Colors" },
+                    { id: "logo", label: "Logo" },
+                    { id: "frame", label: "Frame" },
+                  ] as const).map(tab => (
+                    <button key={tab.id} onClick={() => setCustomizeTab(tab.id)}
+                      className={`flex-1 py-3 text-xs font-bold transition-all border-b-2 ${
+                        customizeTab === tab.id
+                          ? "border-[#00D4FF] text-[#0891B2] bg-[#00D4FF]/04"
+                          : "border-transparent text-[#94A3B8] hover:text-[#475569]"
+                      }`}>
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="p-5 space-y-5">
+
+                  {/* Scannability warning */}
+                  {scanWarning && (
+                    <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
+                      <Info size={13} className="flex-shrink-0 mt-0.5" />
+                      {scanWarning}
+                    </div>
+                  )}
+
+                  {/* STYLE TAB */}
+                  {customizeTab === "style" && (<div className="space-y-5">
+
                   {/* Holographic toggle */}
                   <div className="flex items-center justify-between">
                     <div>
@@ -999,47 +1107,9 @@ function CreatePageInner() {
                     </button>
                   </div>
 
-                  {/* Logo Scale */}
-                  {logo && (
-                    <FormField label={`Logo Scale: ${Math.round(logoScale * 100)}%`}>
-                      <input type="range" min="15" max="50" value={Math.round(logoScale * 100)}
-                        onChange={e => setLogoScale(Number(e.target.value) / 100)}
-                        className="w-full accent-[#00D4FF]" />
-                      <div className="flex justify-between text-[9px] text-[#94A3B8] mt-0.5">
-                        <span>Small</span><span>Large</span>
-                      </div>
-                    </FormField>
-                  )}
+                  {/* Logo scale moved to Logo tab */}
 
-                  {/* Colors */}
-                  <FormField label="QR Color">
-                    <div className="flex gap-2 flex-wrap">
-                      {QR_COLORS.map(c => (
-                        <button key={c} onClick={() => setQrColor(c)}
-                          className="w-7 h-7 rounded-full transition-all hover:scale-110 flex-shrink-0"
-                          style={{
-                            background: c,
-                            border: qrColor === c ? "2px solid white" : "2px solid transparent",
-                            transform: qrColor === c ? "scale(1.2)" : "scale(1)",
-                            boxShadow: qrColor === c ? `0 0 8px ${c}80` : "none",
-                          }} />
-                      ))}
-                    </div>
-                  </FormField>
-
-                  <FormField label="Background Color">
-                    <div className="flex gap-2 flex-wrap">
-                      {BG_COLORS.map(c => (
-                        <button key={c} onClick={() => setBgColor(c)}
-                          className="w-7 h-7 rounded-full transition-all hover:scale-110 flex-shrink-0"
-                          style={{
-                            background: c,
-                            border: bgColor === c ? `2px solid #00D4FF` : "2px solid rgba(255,255,255,0.15)",
-                            transform: bgColor === c ? "scale(1.2)" : "scale(1)",
-                          }} />
-                      ))}
-                    </div>
-                  </FormField>
+                  {/* Colors moved to Colors tab */}
 
                   {/* Dot style */}
                   <FormField label="Dot Style">
@@ -1242,8 +1312,10 @@ function CreatePageInner() {
                     </div>
                   )}
 
-                </div>
+                  </div>)} {/* END LOGO TAB */}
 
+                  {/* FRAME TAB */}
+                  {customizeTab === "frame" && (<div className="space-y-4">
                   {/* ── Frame Designer (inline) ─────────────── */}
                   <div className="border-t border-slate-100 pt-4 mt-2">
                     <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-3">Frame</p>
@@ -1312,7 +1384,10 @@ function CreatePageInner() {
                     )}
                   </div>
 
-              </div>
+                  </div>)} {/* END FRAME TAB */}
+
+                </div> {/* end tabs content */}
+              </div> {/* end customize card */}
 
               {/* Save button */}
               <button
@@ -1346,6 +1421,15 @@ function CreatePageInner() {
                   logo={logo}
                   isHolo={isHolo}
                   logoPlacement={logoPlacement}
+                  cornerSquareStyle={cornerSquareStyle}
+                  cornerDotStyle={cornerDotStyle}
+                  cornerColor={cornerColor}
+                  logoScale={logoScale}
+                  logoMargin={logoMargin}
+                  useDotGradient={useDotGradient}
+                  dotGradientColor2={dotGradientColor2}
+                  dotGradientType={dotGradientType}
+                  dotGradientRotation={dotGradientRotation}
                 />
               </div>
             </div>
@@ -1353,10 +1437,9 @@ function CreatePageInner() {
         </motion.div>
       )}
     </div>
-
       {upgradeReason && (
         <UpgradeModal
-          reason={upgradeReason}
+          reason={upgradeReason as "dynamic_limit" | "static_limit" | "asset_limit" | "bulk_limit"}
           currentPlan={plan}
           onClose={() => setUpgradeReason(null)}
         />

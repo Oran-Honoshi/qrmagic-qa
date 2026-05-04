@@ -164,6 +164,56 @@ export default function DashboardPage() {
           </div>
         </motion.div>
 
+        {/* Trial countdown banner */}
+        {(() => {
+          if (!session) return null;
+          const isTrialing = (userData as any)?.subscription_status === "trialing";
+          if (!isTrialing) return null;
+          // Get trial end from created_at + 7 days
+          const createdAt = (userData as any)?.created_at;
+          if (!createdAt) return null;
+          const trialEnd = new Date(createdAt).getTime() + 7 * 24 * 60 * 60 * 1000;
+          const now = Date.now();
+          const daysLeft = Math.max(0, Math.ceil((trialEnd - now) / (24 * 60 * 60 * 1000)));
+          const hoursLeft = Math.max(0, Math.ceil((trialEnd - now) / (60 * 60 * 1000)));
+          if (daysLeft <= 0) return null;
+          const isUrgent = daysLeft <= 1;
+          return (
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+              className={`p-4 rounded-2xl border flex items-center gap-4 ${
+                isUrgent
+                  ? "bg-red-50 border-red-200"
+                  : "bg-[#00FF88]/08 border-[#00FF88]/25"
+              }`}>
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                isUrgent ? "bg-red-100" : "bg-[#00FF88]/15"
+              }`}>
+                <span className="text-xl">{isUrgent ? "⚠️" : "🎉"}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm font-bold ${isUrgent ? "text-red-700" : "text-[#0F172A]"}`}>
+                  {isUrgent
+                    ? `Your trial ends in ${hoursLeft} hour${hoursLeft !== 1 ? "s" : ""}!`
+                    : `${daysLeft} day${daysLeft !== 1 ? "s" : ""} left in your free trial`}
+                </p>
+                <p className={`text-xs mt-0.5 ${isUrgent ? "text-red-500" : "text-[#475569]"}`}>
+                  {isUrgent
+                    ? "Add a payment method now to keep your QR codes active."
+                    : "You're on the 7-day free trial. Upgrade anytime to keep access."}
+                </p>
+              </div>
+              <button onClick={() => window.location.href = "/pricing"}
+                className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                  isUrgent
+                    ? "bg-red-500 text-white hover:bg-red-600"
+                    : "bg-[#00FF88] text-[#0F172A] hover:bg-[#00CC6E]"
+                }`}>
+                {isUrgent ? "Upgrade Now" : "View Plans"}
+              </button>
+            </motion.div>
+          );
+        })()}
+
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <StatCard icon={QrCode}     value={codes.length} label="Total Codes"   color="#00D4FF" bg="rgba(0,212,255,0.08)" />
