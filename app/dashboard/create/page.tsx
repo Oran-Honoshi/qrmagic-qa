@@ -929,6 +929,14 @@ function CreatePageInner() {
     if (t) { setSelectedType(t); setStep(2); }
   }, [searchParams]);
 
+  // Re-apply logo background shape when shape/color changes
+  useEffect(() => {
+    if (!logo) return;
+    // Re-render current logo with new background shape
+    toCanvasPng(logo, setLogo, logoBgShape, logoBgColor);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [logoBgShape, logoBgColor]);
+
   // Scannability warning
   useEffect(() => {
     if (logo && logoScale > 0.35) {
@@ -963,20 +971,49 @@ function CreatePageInner() {
     });
   }
 
-  // Convert any image/SVG to a canvas PNG blob URL for qr-code-styling compatibility
-  function toCanvasPng(src: string, cb: (url: string) => void) {
+  // Convert any image/SVG to a canvas PNG with optional background shape
+  function toCanvasPng(src: string, cb: (url: string) => void, shape?: string, bgCol?: string) {
     const img = new window.Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
+      const S = 200;
       const canvas = document.createElement("canvas");
-      canvas.width = 200; canvas.height = 200;
+      canvas.width = S; canvas.height = S;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-      ctx.clearRect(0, 0, 200, 200);
-      ctx.drawImage(img, 0, 0, 200, 200);
+      ctx.clearRect(0, 0, S, S);
+      const bg = bgCol || "#FFFFFF";
+      const pad = 16;
+      if (shape === "circle") {
+        ctx.beginPath();
+        ctx.arc(S/2, S/2, S/2, 0, Math.PI * 2);
+        ctx.fillStyle = bg;
+        ctx.fill();
+        ctx.save();
+        ctx.clip();
+        ctx.drawImage(img, pad, pad, S - pad*2, S - pad*2);
+        ctx.restore();
+      } else if (shape === "rounded") {
+        const r = 32;
+        ctx.beginPath();
+        ctx.roundRect(0, 0, S, S, r);
+        ctx.fillStyle = bg;
+        ctx.fill();
+        ctx.save();
+        ctx.clip();
+        ctx.drawImage(img, pad, pad, S - pad*2, S - pad*2);
+        ctx.restore();
+      } else if (shape === "square") {
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, S, S);
+        ctx.drawImage(img, pad, pad, S - pad*2, S - pad*2);
+      } else {
+        // None — just draw image directly
+        ctx.drawImage(img, 0, 0, S, S);
+      }
       cb(canvas.toDataURL("image/png"));
     };
-    img.onerror = () => cb(src); // fallback to original
+    img.onerror = () => cb(src);
     img.src = src;
   }
 
@@ -1090,8 +1127,8 @@ function CreatePageInner() {
         name: formData.name || `${selectedType?.toUpperCase()} Code`,
         type: selectedType,
         status: isDynamic ? "dynamic" : "static",
-        value: savedValue,          // redirect URL for dynamic, real value for static
-        redirect_url: isDynamic ? qrValue : null,  // real destination for dynamic
+        value: savedValue,
+        redirect_url: isDynamic ? qrValue : null,
         short_id: shortId,
         color: qrColor,
         bg_color: bgColor,
@@ -1101,6 +1138,23 @@ function CreatePageInner() {
         utm_term: formData.utmTerm || null,
         utm_content: formData.utmContent || null,
         scans: 0, clicks: 0,
+        // Style config
+        dot_style: dotStyle,
+        corner_style: cornerSquareStyle,
+        corner_dot_style: cornerDotStyle,
+        corner_color: cornerColor,
+        logo: logo || null,
+        logo_placement: logoPlacement,
+        logo_scale: logoScale,
+        logo_bg_shape: logoBgShape,
+        frame_id: selectedFrame || null,
+        frame_color: frameColor,
+        frame_text_color: frameTextColor,
+        frame_cta_text: frameCtaText,
+        is_holo: isHolo,
+        use_dot_gradient: useDotGradient,
+        dot_gradient_color2: dotGradientColor2,
+        dot_gradient_type: dotGradientType,
       }).select().single();
 
       // Check if first QR ever
@@ -1620,7 +1674,7 @@ function CreatePageInner() {
                             : null;
                           const isActive = logoSvg ? logo === logoSvg : !logo;
                           return (
-                            <button key={b.id} onClick={() => logoSvg ? toCanvasPng(logoSvg, setLogo) : setLogo(null)}
+                            <button key={b.id} onClick={() => logoSvg ? toCanvasPng(logoSvg, setLogo, logoBgShape, logoBgColor) : setLogo(null)}
                               title={b.label}
                               className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl border text-[7px] font-bold transition-all ${
                                 isActive ? "ring-2 ring-[#00D4FF] border-[#00D4FF]/40" : "border-slate-200 hover:border-[#00D4FF]/30"
@@ -1690,7 +1744,7 @@ function CreatePageInner() {
                         const isActive = !p.val ? !logo : logo === svgUrl;
                         return (
                           <button key={p.val || "none"}
-                            onClick={() => svgUrl ? toCanvasPng(svgUrl, setLogo) : setLogo(null)}
+                            onClick={() => svgUrl ? toCanvasPng(svgUrl, setLogo, logoBgShape, logoBgColor) : setLogo(null)}
                             className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg border text-[8px] font-medium transition-all ${isActive ? "bg-[#00D4FF]/08 border-[#00D4FF]/30 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/30"}`}>
                             {p.path ? (
                               <svg width="18" height="18" viewBox="0 0 24 24" fill="none"

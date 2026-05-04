@@ -41,8 +41,14 @@ type QRCode = {
   id: string; name: string; type: string; status: string;
   value: string; color: string; bg_color: string;
   scans: number; clicks: number; created_at: string;
-  redirect_url?: string; short_id?: string;
-  folder?: string;
+  redirect_url?: string; short_id?: string; folder?: string;
+  // Style fields
+  dot_style?: string; corner_style?: string; corner_dot_style?: string;
+  corner_color?: string; logo?: string; logo_placement?: string;
+  logo_scale?: number; logo_bg_shape?: string; frame_id?: string;
+  frame_color?: string; frame_text_color?: string; frame_cta_text?: string;
+  is_holo?: boolean; use_dot_gradient?: boolean;
+  dot_gradient_color2?: string; dot_gradient_type?: string;
 };
 
 /* Mini QR renderer for preview */
@@ -54,11 +60,37 @@ function MiniQR({ code, size = 180 }: { code: QRCode; size?: number }) {
     import("qr-code-styling").then(({ default: QRCodeStyling }) => {
       const qr = new QRCodeStyling({
         width: size, height: size, type: "svg",
-        data: code.value || "https://qrmagic.io",
-        dotsOptions: { color: code.color || "#00D4FF", type: "rounded" },
-        cornersSquareOptions: { color: code.color || "#00D4FF", type: "extra-rounded" },
-        cornersDotOptions: { color: code.color || "#00D4FF" },
+        data: code.value || "https://sqrly.net",
+        image: code.logo || undefined,
+        dotsOptions: {
+          color: code.color || "#00D4FF",
+          type: (code.dot_style || "rounded") as any,
+          ...(code.use_dot_gradient ? {
+            gradient: {
+              type: (code.dot_gradient_type || "linear") as "linear" | "radial",
+              rotation: 0,
+              colorStops: [
+                { offset: 0, color: code.color || "#00D4FF" },
+                { offset: 1, color: code.dot_gradient_color2 || "#8B5CF6" },
+              ],
+            },
+          } : {}),
+        },
+        cornersSquareOptions: {
+          color: code.corner_color || code.color || "#00D4FF",
+          type: (code.corner_style || "extra-rounded") as any,
+        },
+        cornersDotOptions: {
+          color: code.corner_color || code.color || "#00D4FF",
+          type: (code.corner_dot_style || "dot") as any,
+        },
         backgroundOptions: { color: code.bg_color || "#ffffff" },
+        imageOptions: {
+          crossOrigin: "anonymous",
+          margin: 4,
+          imageSize: code.logo_scale || 0.3,
+          hideBackgroundDots: true,
+        },
         qrOptions: { errorCorrectionLevel: "H" },
       });
       ref.current!.innerHTML = "";
