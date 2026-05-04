@@ -1062,105 +1062,360 @@ function CreatePageInner() {
               </div>
 
               {/* Step 3: Customize */}
-              <div className="bg-[#FFFFFF] border border-[rgba(226,232,240,1)] rounded-xl overflow-hidden">
-                {/* Customize tabs */}
-                <div className="flex border-b border-slate-100">
-                  {([
-                    { id: "style", label: "Style" },
-                    { id: "colors", label: "Colors" },
-                    { id: "logo", label: "Logo" },
-                    { id: "frame", label: "Frame" },
-                  ] as const).map(tab => (
-                    <button key={tab.id} onClick={() => setCustomizeTab(tab.id)}
-                      className={`flex-1 py-3 text-xs font-bold transition-all border-b-2 ${
-                        customizeTab === tab.id
-                          ? "border-[#00D4FF] text-[#0891B2] bg-[#00D4FF]/04"
+              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+
+                {/* ── Tabs ─────────────────────────────────────── */}
+                <div className="flex border-b border-slate-100 bg-slate-50/50">
+                  {(["style","colors","logo","frame"] as const).map(tab => (
+                    <button key={tab} onClick={() => setCustomizeTab(tab)}
+                      className={`flex-1 py-3 text-[11px] font-bold capitalize transition-all border-b-2 ${
+                        customizeTab === tab
+                          ? "border-[#00D4FF] text-[#0891B2] bg-white"
                           : "border-transparent text-[#94A3B8] hover:text-[#475569]"
                       }`}>
-                      {tab.label}
+                      {tab === "style" ? "🎨 Style" : tab === "colors" ? "🖌 Colors" : tab === "logo" ? "🖼 Logo" : "🖼 Frame"}
                     </button>
                   ))}
                 </div>
 
-                <div className="p-5 space-y-5">
+                <div className="p-4 space-y-4">
 
                   {/* Scannability warning */}
                   {scanWarning && (
                     <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
-                      <Info size={13} className="flex-shrink-0 mt-0.5" />
-                      {scanWarning}
+                      <Info size={13} className="flex-shrink-0 mt-0.5" />{scanWarning}
                     </div>
                   )}
 
-                  {/* STYLE TAB */}
-                  {customizeTab === "style" && (<div className="space-y-5">
+                  {/* ════════════════════════════════════════════ */}
+                  {/* STYLE TAB                                    */}
+                  {/* ════════════════════════════════════════════ */}
+                  {customizeTab === "style" && <div className="space-y-4">
 
-                  {/* Holographic toggle */}
-                  <div className="flex items-center justify-between">
+                    {/* Presets */}
                     <div>
-                      <div className="text-xs font-semibold text-[#475569]">Holographic Effect</div>
-                      <div className="text-[10px] text-[#94A3B8]">Animated gradient border + scan line</div>
+                      <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">Quick Presets</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { name:"Classic",   color:"#0F172A", bg:"#FFFFFF", dot:"square",        corner:"#0F172A" },
+                          { name:"Neon",      color:"#00D4FF", bg:"#0F172A", dot:"rounded",       corner:"#00FF88" },
+                          { name:"Purple",    color:"#8B5CF6", bg:"#FFFFFF", dot:"extra-rounded", corner:"#8B5CF6" },
+                          { name:"Rose",      color:"#F472B6", bg:"#FFF0F6", dot:"dots",          corner:"#F472B6" },
+                          { name:"Forest",    color:"#00FF88", bg:"#0F172A", dot:"classy-rounded",corner:"#00D4FF" },
+                          { name:"Gold",      color:"#FCD34D", bg:"#0F172A", dot:"classy",        corner:"#FB923C" },
+                          { name:"Ocean",     color:"#1E40AF", bg:"#EFF6FF", dot:"extra-rounded", corner:"#0891B2" },
+                          { name:"Fire",      color:"#EF4444", bg:"#FFF7ED", dot:"rounded",       corner:"#FB923C" },
+                          { name:"Minimal",   color:"#475569", bg:"#F8FAFC", dot:"dots",          corner:"#94A3B8" },
+                        ].map(p => (
+                          <button key={p.name} onClick={() => { setQrColor(p.color); setBgColor(p.bg); setDotStyle(p.dot); setCornerColor(p.corner); setIsHolo(false); }}
+                            className="flex flex-col items-center gap-1.5 p-2 rounded-xl border border-slate-200 hover:border-[#00D4FF]/40 transition-all group bg-slate-50">
+                            <div className="w-9 h-9 rounded-lg flex items-center justify-center border-2"
+                              style={{ background: p.bg, borderColor: p.color }}>
+                              <div className="w-4 h-4 rounded-sm" style={{ background: p.color }} />
+                            </div>
+                            <span className="text-[9px] font-semibold text-[#475569] group-hover:text-[#0891B2]">{p.name}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <button onClick={() => setIsHolo(!isHolo)}
-                      className={`w-10 h-5 rounded-full transition-all relative ${isHolo ? "bg-[#00FF88]" : "bg-[#F1F5F9]"}`}>
-                      <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all shadow ${isHolo ? "left-5" : "left-0.5"}`} />
-                    </button>
-                  </div>
 
-                  {/* Logo scale moved to Logo tab */}
+                    {/* Dot style */}
+                    <FormField label="Dot Style">
+                      <div className="grid grid-cols-3 gap-2">
+                        {(["rounded","dots","classy","classy-rounded","square","extra-rounded"] as const).map(d => (
+                          <button key={d} onClick={() => setDotStyle(d)}
+                            className={`py-1.5 px-2 rounded-lg text-xs font-medium border transition-all capitalize ${
+                              dotStyle === d ? "bg-[#00D4FF]/08 border-[#00D4FF]/25 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#94A3B8] hover:border-[#00D4FF]/20"
+                            }`}>{d}</button>
+                        ))}
+                      </div>
+                    </FormField>
 
-                  {/* Colors moved to Colors tab */}
+                    {/* Corner square style */}
+                    <FormField label="Corner Shape">
+                      <div className="grid grid-cols-3 gap-2">
+                        {(["square","extra-rounded","dot","classy","classy-rounded","rounded"] as const).map(d => (
+                          <button key={d} onClick={() => setCornerSquareStyle(d)}
+                            className={`py-1.5 px-2 rounded-lg text-xs font-medium border transition-all capitalize ${
+                              cornerSquareStyle === d ? "bg-[#00D4FF]/08 border-[#00D4FF]/25 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#94A3B8] hover:border-[#00D4FF]/20"
+                            }`}>{d}</button>
+                        ))}
+                      </div>
+                    </FormField>
 
-                  {/* Dot style */}
-                  <FormField label="Dot Style">
-                    <div className="grid grid-cols-3 gap-2">
-                      {DOT_STYLES.map(d => (
-                        <button key={d.v} onClick={() => setDotStyle(d.v)}
-                          className={`py-1.5 px-2 rounded-lg text-xs font-medium border transition-all ${
-                            dotStyle === d.v
-                              ? "bg-[rgba(0,212,255,0.08)] border-[rgba(0,212,255,0.25)] text-[#0891B2]"
-                              : "bg-[#F8FAFC] border-[rgba(226,232,240,1)] text-[#94A3B8] hover:border-[rgba(0,212,255,0.15)] hover:text-[#475569]"
-                          }`}>
-                          {d.label}
+                    {/* Corner dot style */}
+                    <FormField label="Corner Dot">
+                      <div className="grid grid-cols-3 gap-2">
+                        {(["dot","square","extra-rounded","classy","classy-rounded","rounded"] as const).map(d => (
+                          <button key={d} onClick={() => setCornerDotStyle(d)}
+                            className={`py-1.5 px-2 rounded-lg text-xs font-medium border transition-all capitalize ${
+                              cornerDotStyle === d ? "bg-[#00D4FF]/08 border-[#00D4FF]/25 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#94A3B8] hover:border-[#00D4FF]/20"
+                            }`}>{d}</button>
+                        ))}
+                      </div>
+                    </FormField>
+
+                    {/* Error correction */}
+                    <FormField label="Error Correction" hint="Use H when adding a logo">
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {EC_LEVELS.map(l => (
+                          <button key={l.v} onClick={() => setEcLevel(l.v)} title={l.desc}
+                            className={`py-1.5 rounded-lg text-xs font-bold border transition-all ${
+                              ecLevel === l.v ? "bg-[#00D4FF]/08 border-[#00D4FF]/25 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#94A3B8] hover:border-[#00D4FF]/20"
+                            }`}>{l.label}</button>
+                        ))}
+                      </div>
+                    </FormField>
+
+                    {/* Holographic */}
+                    <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+                      <div>
+                        <div className="text-xs font-semibold text-[#475569]">Holographic Effect</div>
+                        <div className="text-[10px] text-[#94A3B8]">Animated gradient border</div>
+                      </div>
+                      <button onClick={() => setIsHolo(!isHolo)}
+                        className={`w-10 h-5 rounded-full transition-all relative ${isHolo ? "bg-[#00FF88]" : "bg-slate-200"}`}>
+                        <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${isHolo ? "left-5" : "left-0.5"}`} />
+                      </button>
+                    </div>
+
+                    {/* Export size */}
+                    <FormField label="Export Size">
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {[512,1024,2048,4096].map(s => (
+                          <button key={s} onClick={() => setExportSize(s)}
+                            className={`py-1.5 rounded-lg text-[10px] font-bold border transition-all ${
+                              exportSize === s ? "bg-[#00D4FF]/08 border-[#00D4FF]/25 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#94A3B8] hover:border-[#00D4FF]/20"
+                            }`}>{s >= 1000 ? `${s/1024 >= 1 ? s/1024+"K" : s}` : s}px</button>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 mt-2">
+                        {(["svg","png","jpeg"] as const).map(ext => (
+                          <button key={ext} onClick={() => downloadAtSize(ext, exportSize)}
+                            className="flex items-center justify-center gap-1 py-2 text-[11px] font-semibold bg-slate-50 border border-slate-200 rounded-xl text-[#475569] hover:border-[#00D4FF] hover:text-[#0891B2] transition-all">
+                            <Download size={11} /> {ext.toUpperCase()}
+                          </button>
+                        ))}
+                      </div>
+                    </FormField>
+
+                  </div>}
+
+                  {/* ════════════════════════════════════════════ */}
+                  {/* COLORS TAB                                   */}
+                  {/* ════════════════════════════════════════════ */}
+                  {customizeTab === "colors" && <div className="space-y-4">
+
+                    <FormField label="QR Dot Color">
+                      <div className="flex gap-2 flex-wrap items-center">
+                        <input type="color" value={qrColor} onChange={e => setQrColor(e.target.value)}
+                          className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer flex-shrink-0" />
+                        {["#0F172A","#00D4FF","#00FF88","#8B5CF6","#F472B6","#FB923C","#EF4444","#1E40AF"].map(c => (
+                          <button key={c} onClick={() => setQrColor(c)} style={{ background: c }}
+                            className={`w-7 h-7 rounded-full border-2 transition-all flex-shrink-0 ${qrColor === c ? "border-[#00D4FF] scale-125" : "border-white shadow-sm"}`} />
+                        ))}
+                      </div>
+                    </FormField>
+
+                    {/* Dot Gradient */}
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-semibold text-[#475569]">Dot Gradient</span>
+                        <button onClick={() => setUseDotGradient(g => !g)}
+                          className={`w-9 h-5 rounded-full transition-all relative flex-shrink-0 ${useDotGradient ? "bg-[#00D4FF]" : "bg-slate-300"}`}>
+                          <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${useDotGradient ? "left-4" : "left-0.5"}`} />
                         </button>
-                      ))}
+                      </div>
+                      {useDotGradient && <div className="space-y-2 mt-2">
+                        <div className="flex gap-3 items-center">
+                          <div>
+                            <p className="text-[9px] text-[#94A3B8] mb-1">Color 2</p>
+                            <input type="color" value={dotGradientColor2} onChange={e => setDotGradientColor2(e.target.value)}
+                              className="w-10 h-8 rounded-lg border border-slate-200 cursor-pointer" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-[9px] text-[#94A3B8] mb-1">Type</p>
+                            <div className="flex gap-1">
+                              {(["linear","radial"] as const).map(t => (
+                                <button key={t} onClick={() => setDotGradientType(t)}
+                                  className={`flex-1 py-1 rounded-lg text-[9px] font-semibold border capitalize ${dotGradientType === t ? "bg-[#00D4FF]/10 border-[#00D4FF]/30 text-[#0891B2]" : "bg-white border-slate-200"}`}>
+                                  {t}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        {dotGradientType === "linear" && (
+                          <div>
+                            <p className="text-[9px] text-[#94A3B8] mb-1">Rotation: {dotGradientRotation}°</p>
+                            <input type="range" min="0" max="360" value={dotGradientRotation}
+                              onChange={e => setDotGradientRotation(Number(e.target.value))}
+                              className="w-full accent-[#00D4FF]" />
+                          </div>
+                        )}
+                      </div>}
                     </div>
-                  </FormField>
 
-                  {/* Error correction */}
-                  <FormField label="Error Correction" hint="Higher = more resistant to damage. Use H when adding a logo.">
-                    <div className="grid grid-cols-4 gap-1.5">
-                      {EC_LEVELS.map(l => (
-                        <button key={l.v} onClick={() => setEcLevel(l.v)}
-                          title={l.desc}
-                          className={`py-1.5 rounded-lg text-xs font-bold border transition-all ${
-                            ecLevel === l.v
-                              ? "bg-[rgba(0,212,255,0.08)] border-[rgba(0,212,255,0.25)] text-[#0891B2]"
-                              : "bg-[#F8FAFC] border-[rgba(226,232,240,1)] text-[#94A3B8] hover:border-[rgba(0,212,255,0.15)]"
-                          }`}>
-                          {l.label}
-                        </button>
-                      ))}
-                    </div>
-                  </FormField>
+                    <FormField label="Corner Color">
+                      <div className="flex gap-2 flex-wrap items-center">
+                        <input type="color" value={cornerColor} onChange={e => setCornerColor(e.target.value)}
+                          className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer flex-shrink-0" />
+                        {["#0F172A","#00D4FF","#00FF88","#8B5CF6","#F472B6","#EF4444","#FB923C","#1E40AF"].map(c => (
+                          <button key={c} onClick={() => setCornerColor(c)} style={{ background: c }}
+                            className={`w-7 h-7 rounded-full border-2 transition-all flex-shrink-0 ${cornerColor === c ? "border-[#00D4FF] scale-125" : "border-white shadow-sm"}`} />
+                        ))}
+                      </div>
+                    </FormField>
 
-                  {/* Logo upload */}
-                  {/* Logo Presets — icons + brands */}
-                  <div className="mb-3">
-                    <div className="flex gap-2 mb-2">
-                      <button id="logo-tab-icons" onClick={() => {
-                        document.getElementById("logo-tab-icons")?.classList.add("text-[#0891B2]","border-[#00D4FF]");
-                        document.getElementById("logo-tab-brands")?.classList.remove("text-[#0891B2]","border-[#00D4FF]");
-                        document.getElementById("logo-icons-grid")?.classList.remove("hidden");
-                        document.getElementById("logo-brands-grid")?.classList.add("hidden");
-                      }} className="text-[10px] font-bold text-[#0891B2] border-b-2 border-[#00D4FF] pb-0.5 transition-all">Icons</button>
-                      <button id="logo-tab-brands" onClick={() => {
-                        document.getElementById("logo-tab-brands")?.classList.add("text-[#0891B2]","border-[#00D4FF]");
-                        document.getElementById("logo-tab-icons")?.classList.remove("text-[#0891B2]","border-[#00D4FF]");
-                        document.getElementById("logo-brands-grid")?.classList.remove("hidden");
-                        document.getElementById("logo-icons-grid")?.classList.add("hidden");
-                      }} className="text-[10px] font-bold text-[#94A3B8] border-b-2 border-transparent pb-0.5 transition-all">Brands</button>
+                    <FormField label="Background">
+                      <div className="flex gap-2 flex-wrap items-center">
+                        <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)}
+                          className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer flex-shrink-0" />
+                        {["#FFFFFF","#F8FAFC","#0F172A","#FFF7ED","#F0FDF4","#EFF6FF","#FDF2F8","#FFFBEB"].map(c => (
+                          <button key={c} onClick={() => setBgColor(c)}
+                            style={{ background: c, borderColor: bgColor === c ? "#00D4FF" : "#E2E8F0" }}
+                            className={`w-7 h-7 rounded-full border-2 transition-all flex-shrink-0 ${bgColor === c ? "scale-125" : ""}`} />
+                        ))}
+                      </div>
+                    </FormField>
+
+                  </div>}
+
+                  {/* ════════════════════════════════════════════ */}
+                  {/* LOGO TAB                                     */}
+                  {/* ════════════════════════════════════════════ */}
+                  {customizeTab === "logo" && <div className="space-y-4">
+
+                    {/* Upload */}
+                    <FormField label="Upload Logo">
+                      <label className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all ${
+                        logo ? "border-[#00D4FF]/40 bg-[#00D4FF]/04" : "border-slate-200 hover:border-[#00D4FF]/30"
+                      }`}>
+                        <input type="file" accept="image/*" onChange={handleLogoUpload} className="sr-only" />
+                        {logo ? (
+                          <div className="flex items-center gap-3 w-full">
+                            <img src={logo} alt="logo" className="w-10 h-10 object-contain rounded-lg border border-slate-200" />
+                            <div className="flex-1">
+                              <div className="text-xs font-semibold text-[#0891B2]">Logo uploaded</div>
+                              <div className="text-[10px] text-[#94A3B8]">Click to change</div>
+                            </div>
+                            <button onClick={e => { e.preventDefault(); setLogo(null); }} className="text-[#94A3B8] hover:text-[#EF4444]">
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ) : (
+                          <><Upload size={18} className="text-[#94A3B8]" />
+                          <div className="text-xs text-[#94A3B8]">Click to upload logo</div></>
+                        )}
+                      </label>
+                    </FormField>
+
+                    {/* Logo controls */}
+                    {logo && <>
+                      <FormField label={`Size: ${Math.round(logoScale * 100)}%`}>
+                        <input type="range" min="10" max="50" value={Math.round(logoScale * 100)}
+                          onChange={e => setLogoScale(Number(e.target.value) / 100)}
+                          className="w-full accent-[#00D4FF]" />
+                      </FormField>
+                      <FormField label={`Margin: ${logoMargin}px`}>
+                        <input type="range" min="0" max="20" value={logoMargin}
+                          onChange={e => setLogoMargin(Number(e.target.value))}
+                          className="w-full accent-[#00D4FF]" />
+                      </FormField>
+                      <FormField label="Background Shape">
+                        <div className="grid grid-cols-4 gap-2">
+                          {([
+                            {id:"none",label:"None",icon:"—"},
+                            {id:"square",label:"Square",icon:"⬛"},
+                            {id:"rounded",label:"Rounded",icon:"▢"},
+                            {id:"circle",label:"Circle",icon:"⭕"},
+                          ] as const).map(s => (
+                            <button key={s.id} onClick={() => setLogoBgShape(s.id)}
+                              className={`flex flex-col items-center gap-1 py-2 rounded-xl border text-[9px] font-medium transition-all ${
+                                logoBgShape === s.id ? "bg-[#00D4FF]/08 border-[#00D4FF]/30 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569]"
+                              }`}>
+                              <span className="text-base">{s.icon}</span>{s.label}
+                            </button>
+                          ))}
+                        </div>
+                        {logoBgShape !== "none" && (
+                          <div className="flex items-center gap-2 mt-2">
+                            <input type="color" value={logoBgColor} onChange={e => setLogoBgColor(e.target.value)}
+                              className="w-7 h-7 rounded-lg border border-slate-200 cursor-pointer" />
+                            <span className="text-[10px] text-[#94A3B8]">Background color</span>
+                          </div>
+                        )}
+                      </FormField>
+                      <FormField label="Placement">
+                        <div className="grid grid-cols-3 gap-2">
+                          {([
+                            {id:"center",label:"Center",emoji:"⬛"},
+                            {id:"behind",label:"Behind",emoji:"🔳"},
+                            {id:"background",label:"Watermark",emoji:"🖼"},
+                          ] as const).map(p => (
+                            <button key={p.id} onClick={() => setLogoPlacement(p.id)}
+                              className={`flex flex-col items-center gap-1 p-2 rounded-xl border text-[9px] font-medium transition-all ${
+                                logoPlacement === p.id ? "bg-[#00D4FF]/08 border-[#00D4FF]/30 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569]"
+                              }`}>
+                              <span className="text-base">{p.emoji}</span>{p.label}
+                            </button>
+                          ))}
+                        </div>
+                      </FormField>
+                    </>}
+
+                    {/* Brand logos — FIRST, with actual colors */}
+                    <div>
+                      <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">Brand Logos</p>
+                      <div className="grid grid-cols-6 gap-1.5">
+                        {[
+                          {label:"None",   bg:"#F1F5F9", fg:"#64748B", path:null},
+                          {label:"WA",     bg:"#25D366", fg:"#fff", path:"M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a6.3 6.3 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"},
+                          {label:"IG",     bg:"#E1306C", fg:"#fff", path:"M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0 5.838a6 6 0 100 12 6 6 0 000-12zm0 9.675a3.675 3.675 0 110-7.35 3.675 3.675 0 010 7.35zm6.406-10.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"},
+                          {label:"FB",     bg:"#1877F2", fg:"#fff", path:"M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"},
+                          {label:"YT",     bg:"#FF0000", fg:"#fff", path:"M22.54 6.42a2.78 2.78 0 00-1.95-1.97C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 00-1.95 1.96C1 8.12 1 12 1 12s0 3.88.46 5.58a2.78 2.78 0 001.95 1.97C5.12 20 12 20 12 20s6.88 0 8.59-.45a2.78 2.78 0 001.95-1.97C23 15.88 23 12 23 12s0-3.88-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"},
+                          {label:"TT",     bg:"#010101", fg:"#fff", path:"M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9a8.18 8.18 0 004.78 1.52V7.09a4.85 4.85 0 01-1.01-.4z"},
+                          {label:"LI",     bg:"#0077B5", fg:"#fff", path:"M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z M4 6a2 2 0 100-4 2 2 0 000 4z"},
+                          {label:"X",      bg:"#000000", fg:"#fff", path:"M4 4l11.733 16H20L8.267 4z M4 20l6.768-6.768 M13.232 10.768L20 4"},
+                          {label:"TG",     bg:"#2CA5E0", fg:"#fff", path:"m22 2-21 8 8 3 10-10-7 9 1 5 3-4 5 3z"},
+                          {label:"SP",     bg:"#1DB954", fg:"#fff", path:"M12 2a10 10 0 100 20A10 10 0 0012 2zm4.5 14.4c-.2.3-.6.4-.9.2-2.4-1.5-5.5-1.8-9.1-.9-.3.1-.7-.1-.8-.4-.1-.3.1-.7.4-.8 3.9-1 7.4-.6 10.1 1.1.3.1.4.5.3.8zm1.2-2.7c-.2.3-.7.5-1 .2-2.8-1.7-7-2.2-10.2-1.2-.4.1-.8-.1-.9-.5-.1-.4.1-.8.5-.9 3.7-1.1 8.3-.6 11.5 1.4.3.2.4.6.1 1zm.1-2.8c-3.3-2-8.8-2.1-12-1.2-.5.1-1-.2-1.1-.7-.1-.5.2-1 .7-1.1 3.6-1 9.7-.8 13.5 1.4.5.3.6.9.4 1.4-.3.4-.9.5-1.5.2z"},
+                          {label:"PP",     bg:"#003087", fg:"#fff", path:"M7 2h7c4 0 6 2 6 5s-2 5-6 5H9l-1 10H4L7 2zm5 7c2 0 3-1 3-2.5S14 4 12 4h-2l-1 5h3z"},
+                          {label:"SH",     bg:"#95BF47", fg:"#fff", path:"M15.337 5.54L14.5 2H9L7.5 5.5 4 21h16L15.337 5.54zM12 19a3 3 0 110-6 3 3 0 010 6z"},
+                          {label:"Pi",     bg:"#E60023", fg:"#fff", path:"M12 2a10 10 0 100 20A10 10 0 0012 2zm0 3c2 0 3.5 1 3.5 2.5 0 2-1.5 3.5-3.5 3.5-.5 0-1-.1-1.4-.3-.3 1.4-.9 2.7-1.8 3.3l-.3-1.2c.6-1 1-2 1-3.3-.5.2-1 .5-1.5.5C6.5 10 5.5 9 5.5 7.5S7 5 9 5z"},
+                          {label:"WO",     bg:"#00AFF0", fg:"#fff", path:"M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"},
+                          {label:"SC",     bg:"#FFFC00", fg:"#0F172A", path:"M12 2c2 0 4.5 1.5 4.5 4.5 0 1.5-.5 2.5-1.5 3.5 3 0 5 2 5 5 0 1-1 2-2 2-.5 0-1-.5-1.5-1 0 1-.5 2-1.5 2h-6c-1 0-1.5-1-1.5-2-.5.5-1 1-1.5 1-1 0-2-1-2-2 0-3 2-5 5-5-1-1-1.5-2-1.5-3.5C7.5 3.5 10 2 12 2z"},
+                          {label:"DC",     bg:"#5865F2", fg:"#fff", path:"M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"},
+                          {label:"RD",     bg:"#FF4500", fg:"#fff", path:"M12 2a10 10 0 100 20A10 10 0 0012 2zm5 11c0 1.1-.9 2-2 2h-.1c-.4 1.1-1.4 2-2.9 2s-2.5-.9-2.9-2H9c-1.1 0-2-.9-2-2 0-.6.3-1.1.7-1.4a3.4 3.4 0 01-.2-.9c0-1.9 2-3.5 4.5-3.5.3 0 .6 0 .9.1l.6-1.6a.5.5 0 01.9.3l-.7 1.9c1.2.4 2 1.2 2 2.1 0 .3-.1.6-.2.9.4.3.5.8.5 1.1z"},
+                          {label:"TW",     bg:"#1DA1F2", fg:"#fff", path:"M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"},
+                          {label:"GH",     bg:"#181717", fg:"#fff", path:"M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"},
+                          {label:"ET",     bg:"#F56400", fg:"#fff", path:"M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 12h-4v2h4v2H9V5h8v2h-6v3h5v2h-5v3h4v2z"},
+                          {label:"AZ",     bg:"#FF9900", fg:"#fff", path:"M12 18c-3 0-5.5-1-5.5-1s2 2 5.5 2 5.5-2 5.5-2-2.5 1-5.5 1zm8-5s-1.5 1-3 1a5 5 0 01-5-5V3L8 5.5V9a7 7 0 007 7c2 0 3.5-1 3.5-1L20 13z"},
+                          {label:"AB",     bg:"#FF5A5F", fg:"#fff", path:"M12 2C8 2 5 5 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-4-3-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"},
+                        ].map(b => {
+                          const svgData = b.path
+                            ? `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${encodeURIComponent(b.fg)}" stroke="${encodeURIComponent(b.fg)}" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"><path d="${b.path}"/></svg>`
+                            : null;
+                          const isActive = svgData ? logo === svgData : !logo;
+                          return (
+                            <button key={b.label} onClick={() => setLogo(svgData)}
+                              className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg border text-[7px] font-bold transition-all ${
+                                isActive ? "border-[#00D4FF]/40 ring-1 ring-[#00D4FF]" : "border-slate-200 hover:border-[#00D4FF]/30"
+                              }`}
+                              style={{ background: b.bg }}>
+                              {svgData
+                                ? <img src={svgData} alt={b.label} className="w-4 h-4 object-contain" />
+                                : <span className="w-4 h-4 flex items-center justify-center text-[#64748B] font-bold">✕</span>
+                              }
+                              <span style={{ color: b.fg === "#fff" ? "#fff" : "#0F172A" }}>{b.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
+
+                    {/* Icon presets (monochrome SVG) */}
+                    <div>
+                      <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">Icon Presets</p>
                     <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">Quick Logo Presets</p>
                     <div className="grid grid-cols-6 gap-1.5">
                       {[
@@ -1223,116 +1478,39 @@ function CreatePageInner() {
                       })}
                     </div>
 
-                    {/* Brand logos */}
-                    <div id="logo-brands-grid" className="hidden grid grid-cols-6 gap-1.5 mt-1">
-                      {[
-                        { label: "None", url: null, bg: "#f1f5f9", text: "✕" },
-                        { label: "WhatsApp", url: "https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg", bg: "#25D366" },
-                        { label: "Instagram", url: "https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg", bg: "#E1306C" },
-                        { label: "Facebook", url: "https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg", bg: "#1877F2" },
-                        { label: "YouTube", url: "https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg", bg: "#FF0000" },
-                        { label: "TikTok", url: "https://upload.wikimedia.org/wikipedia/en/a/a9/TikTok_logo.svg", bg: "#010101" },
-                        { label: "LinkedIn", url: "https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png", bg: "#0077B5" },
-                        { label: "X/Twitter", url: "https://upload.wikimedia.org/wikipedia/commons/5/53/X_logo_2023_original.svg", bg: "#000000" },
-                        { label: "Spotify", url: "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg", bg: "#1DB954" },
-                        { label: "PayPal", url: "https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg", bg: "#003087" },
-                        { label: "Stripe", url: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg", bg: "#635BFF" },
-                        { label: "Airbnb", url: "https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_B%C3%A9lo.svg", bg: "#FF5A5F" },
-                      ].map(b => (
-                        <button key={b.label} onClick={() => setLogo(b.url)}
-                          className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg border text-[8px] font-medium transition-all ${
-                            logo === b.url ? "border-[#00D4FF]/30 bg-[#00D4FF]/08" : "border-slate-200 bg-slate-50 hover:border-[#00D4FF]/30"
-                          }`}>
-                          {b.url ? (
-                            <div className="w-[18px] h-[18px] rounded-full flex items-center justify-center overflow-hidden"
-                              style={{ background: b.bg }}>
-                              <img src={b.url} alt={b.label} className="w-3 h-3 object-contain" />
-                            </div>
-                          ) : <span className="w-[18px] h-[18px] flex items-center justify-center font-bold">✕</span>}
-                          {b.label}
-                        </button>
-                      ))}
-                    </div>
+
                   </div>
 
-                  <FormField label="Logo Overlay" hint="Recommended: use EC Level H with logos">
-                    <label className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all ${
-                      logo
-                        ? "border-[rgba(6,182,212,0.4)] bg-[rgba(6,182,212,0.05)]"
-                        : "border-[rgba(255,255,255,0.1)] hover:border-[rgba(0,212,255,0.25)] hover:bg-[rgba(6,182,212,0.03)]"
-                    }`}>
-                      <input type="file" accept="image/*" onChange={handleLogoUpload} className="sr-only" />
-                      {logo ? (
-                        <div className="flex items-center gap-3">
-                          <img src={logo} alt="logo" className="w-10 h-10 object-contain rounded-lg border border-[rgba(255,255,255,0.1)]" />
-                          <div className="text-left">
-                            <div className="text-xs font-semibold text-[#0891B2]">Logo uploaded</div>
-                            <div className="text-[10px] text-[#94A3B8]">Click to change</div>
-                          </div>
-                          <button onClick={(e) => { e.preventDefault(); setLogo(null); }} className="ml-auto text-[#94A3B8] hover:text-[#F87171] transition-colors">
-                            <X size={14} />
-                          </button>
-                        </div>
-                      ) : (
-                        <>
-                          <Upload size={18} className="text-[#94A3B8]" />
-                          <div className="text-center">
-                            <div className="text-xs font-medium text-[#94A3B8]">Click to upload logo</div>
-                            <div className="text-[9px] text-[#94A3B8] mt-0.5">PNG, JPG, SVG</div>
-                          </div>
-                        </>
-                      )}
-                    </label>
-                  </FormField>
 
-                  {/* Logo Placement */}
-                  {logo && (
-                    <div className="mb-4">
-                      <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">
-                        Logo Placement
-                      </label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {([
-                          { id: "center" as const, label: "Center", desc: "In the middle", emoji: "⬛" },
-                          { id: "behind" as const, label: "Behind Dots", desc: "Logo behind dots", emoji: "🔳" },
-                          { id: "background" as const, label: "Background", desc: "Full background", emoji: "🖼" },
-                        ]).map(p => (
-                          <button key={p.id} onClick={() => setLogoPlacement(p.id)}
-                            className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border transition-all ${
-                              logoPlacement === p.id
-                                ? "bg-[#00D4FF]/08 border-[#00D4FF]/30"
-                                : "bg-slate-50 border-slate-200 hover:border-[#00D4FF]/20"
+
+                  </div>}
+
+                  {customizeTab === "frame" && <div className="space-y-4">
+
+                    {/* Frame picker — SVG previews */}
+                    <div>
+                      <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">Frame Style</p>
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {[{id:null,name:"None",emoji:"✕"}, ...ALL_FRAMES].map(f => (
+                          <button key={f.id || "none"} onClick={() => setSelectedFrame(f.id)}
+                            className={`flex flex-col items-center gap-1 p-2 rounded-xl border text-[8px] font-medium transition-all ${
+                              selectedFrame === f.id
+                                ? "bg-[#00D4FF]/08 border-[#00D4FF]/30 text-[#0891B2]"
+                                : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/20"
                             }`}>
-                            <span className="text-lg">{p.emoji}</span>
-                            <span className={`text-[9px] font-bold ${logoPlacement === p.id ? "text-[#0891B2]" : "text-[#475569]"}`}>{p.label}</span>
-                            <span className="text-[8px] text-[#94A3B8] leading-tight text-center">{p.desc}</span>
+                            {f.id ? (
+                              <svg viewBox={f.viewBox} width="36" height="36" className="overflow-visible">
+                                <path d={f.path} fill="white" stroke={frameColor} strokeWidth="6" strokeLinejoin="round"/>
+                                <text x={f.textPos.x} y={f.textPos.y} textAnchor="middle"
+                                  fontFamily="system-ui" fontSize="18" fontWeight="800" fill={frameTextColor}>
+                                  {frameCtaText.slice(0,8)}
+                                </text>
+                              </svg>
+                            ) : <span className="text-xl">✕</span>}
+                            {f.name}
                           </button>
                         ))}
                       </div>
-                    </div>
-                  )}
-
-                  </div>)} {/* END LOGO TAB */}
-
-                  {/* FRAME TAB */}
-                  {customizeTab === "frame" && (<div className="space-y-4">
-                  {/* ── Frame Designer (inline) ─────────────── */}
-                  <div className="border-t border-slate-100 pt-4 mt-2">
-                    <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-3">Frame</p>
-
-                    {/* Frame presets grid */}
-                    <div className="grid grid-cols-4 gap-1.5 mb-3">
-                      {Object.values(INLINE_FRAMES).map(f => (
-                        <button key={f.id} onClick={() => setSelectedFrame(f.id)}
-                          className={`flex flex-col items-center gap-1 p-2 rounded-xl border text-[9px] font-medium transition-all ${
-                            selectedFrame === f.id
-                              ? "bg-[#00D4FF]/08 border-[#00D4FF]/30 text-[#0891B2]"
-                              : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/20"
-                          }`}>
-                          <span className="text-base">{f.emoji}</span>
-                          {f.name}
-                        </button>
-                      ))}
                     </div>
 
                     {selectedFrame && selectedFrame !== "none" && (
@@ -1376,15 +1554,20 @@ function CreatePageInner() {
                         </div>
 
                         {/* Download framed */}
-                        <button onClick={downloadFramed}
-                          className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#00FF88] text-[#0F172A] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all">
-                          <Download size={14} strokeWidth={2} /> Download Framed SVG
-                        </button>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button onClick={downloadFramed}
+                            className="flex items-center justify-center gap-1.5 py-2.5 bg-[#00FF88] text-[#0F172A] font-bold rounded-xl text-xs hover:bg-[#00CC6E] transition-all">
+                            <Download size={13} strokeWidth={2} /> SVG
+                          </button>
+                          <button onClick={downloadFramedSVG}
+                            className="flex items-center justify-center gap-1.5 py-2.5 bg-[#0F172A] text-white font-bold rounded-xl text-xs hover:bg-[#1E293B] transition-all">
+                            <Download size={13} strokeWidth={2} /> High-Res
+                          </button>
+                        </div>
                       </div>
                     )}
-                  </div>
 
-                  </div>)} {/* END FRAME TAB */}
+                  </div>} {/* END FRAME TAB */}
 
                 </div> {/* end tabs content */}
               </div> {/* end customize card */}
@@ -1410,7 +1593,7 @@ function CreatePageInner() {
             </div>
 
             {/* Right panel — sticky preview */}
-            <div>
+            <div className="lg:sticky lg:top-6">
               <div ref={qrPreviewRef}>
                 <QRPreview
                   value={qrValue}
@@ -1432,11 +1615,68 @@ function CreatePageInner() {
                   dotGradientRotation={dotGradientRotation}
                 />
               </div>
+
+              {/* Live frame preview */}
+              {selectedFrame && (() => {
+                const frame = ALL_FRAMES.find(f => f.id === selectedFrame);
+                if (!frame) return null;
+                const qrEl = qrPreviewRef.current?.querySelector("svg");
+                return (
+                  <div className="mt-4 bg-white border border-slate-200 rounded-2xl p-4">
+                    <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-3 text-center">
+                      Frame Preview — {frame.name}
+                    </p>
+                    <div className="flex justify-center">
+                      <svg viewBox={frame.viewBox} className="w-full max-w-[200px]"
+                        xmlns="http://www.w3.org/2000/svg">
+                        {frameGradient && (
+                          <defs>
+                            <linearGradient id="fpGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stopColor={frameColor} />
+                              <stop offset="100%" stopColor={frameGradientColor2} />
+                            </linearGradient>
+                          </defs>
+                        )}
+                        <path d={frame.path}
+                          fill="white"
+                          stroke={frameGradient ? "url(#fpGrad)" : frameColor}
+                          strokeWidth="6" strokeLinejoin="round" />
+                        {/* QR placeholder */}
+                        <rect x={frame.qrPos.x} y={frame.qrPos.y}
+                          width={frame.qrPos.size} height={frame.qrPos.size}
+                          fill={bgColor} rx="4" />
+                        <text x={frame.qrPos.x + frame.qrPos.size/2}
+                          y={frame.qrPos.y + frame.qrPos.size/2}
+                          textAnchor="middle" dominantBaseline="middle"
+                          fontSize="12" fill={qrColor} fontFamily="monospace">
+                          QR
+                        </text>
+                        <text x={frame.textPos.x} y={frame.textPos.y}
+                          textAnchor="middle" dominantBaseline="middle"
+                          fontFamily="system-ui,sans-serif" fontSize="14"
+                          fontWeight="800" letterSpacing="3"
+                          fill={frameGradient ? "url(#fpGrad)" : frameTextColor}>
+                          {frameCtaText || "SCAN ME"}
+                        </text>
+                      </svg>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 mt-3">
+                      <button onClick={downloadFramed}
+                        className="flex items-center justify-center gap-1.5 py-2 bg-[#00FF88] text-[#0F172A] font-bold rounded-xl text-xs hover:bg-[#00CC6E] transition-all">
+                        <Download size={12} /> SVG
+                      </button>
+                      <button onClick={downloadFramedSVG}
+                        className="flex items-center justify-center gap-1.5 py-2 bg-[#0F172A] text-white font-bold rounded-xl text-xs hover:bg-[#1E293B] transition-all">
+                        <Download size={12} /> Hi-Res
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </motion.div>
       )}
-    </div>
       {upgradeReason && (
         <UpgradeModal
           reason={upgradeReason as "dynamic_limit" | "static_limit" | "asset_limit" | "bulk_limit"}
@@ -1444,6 +1684,7 @@ function CreatePageInner() {
           onClose={() => setUpgradeReason(null)}
         />
       )}
+    </div>
     </>
   );
 }
