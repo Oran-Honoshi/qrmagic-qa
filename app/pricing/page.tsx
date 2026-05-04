@@ -7,7 +7,10 @@ import { CheckCircle, Zap, ArrowRight, ArrowLeft, Info, X } from "lucide-react";
 
 function getSession() {
   if (typeof window === "undefined") return null;
-  try { return JSON.parse(sessionStorage.getItem("qrmagic_session") || "null"); }
+  try {
+    return JSON.parse(sessionStorage.getItem("qrmagic_session") || "null")
+      || JSON.parse(localStorage.getItem("qrmagic_session") || "null");
+  }
   catch { return null; }
 }
 

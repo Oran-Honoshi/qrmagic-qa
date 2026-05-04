@@ -12,7 +12,15 @@ const SESSION_KEY = "qrmagic_session";
 
 function getSession() {
   if (typeof window === "undefined") return null;
-  try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || "null"); }
+  try {
+    const s = JSON.parse(sessionStorage.getItem(SESSION_KEY) || "null")
+      || JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
+    // Restore to sessionStorage if found in localStorage
+    if (!sessionStorage.getItem(SESSION_KEY) && s) {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(s));
+    }
+    return s;
+  }
   catch { return null; }
 }
 

@@ -16,7 +16,7 @@ function saveSession(u: Record<string, unknown>) {
 }
 function getSession() {
   if (typeof window === "undefined") return null;
-  try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || "null"); } catch { return null; }
+  try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || "null") || JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); } catch { return null; }
 }
 async function handleGoogleLogin() {
   const { error } = await supabase.auth.signInWithOAuth({
