@@ -590,7 +590,7 @@ function QRPreview({
         width: 220, height: 220,
         type: "svg",
         data: value || "https://sqrly.net",
-        image: logo || undefined,
+        image: (logo && logoPlacement !== "background") ? logo : undefined,
         dotsOptions: useDotGradient ? {
           type: dotStyle as "rounded",
           gradient: {
@@ -625,7 +625,7 @@ function QRPreview({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (qrRef.current as any)?.update({
         data: value || "https://sqrly.net",
-        image: logo || undefined,
+        image: (logo && logoPlacement !== "background") ? logo : undefined,
         dotsOptions: useDotGradient ? {
           type: dotStyle as "rounded",
           gradient: {
@@ -715,7 +715,23 @@ function QRPreview({
               }}
             />
           )}
-          <div ref={ref} />
+          <div style={{ position: "relative", lineHeight: 0 }}>
+            <div ref={ref} />
+            {/* Watermark overlay for background placement */}
+            {logo && logoPlacement === "background" && (
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                backgroundImage: `url(${logo})`,
+                backgroundSize: "60%",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                opacity: 0.15,
+                mixBlendMode: "multiply",
+                pointerEvents: "none",
+              }} />
+            )}
+          </div>
           {isHolo && ["top-2 left-2 border-t border-l","top-2 right-2 border-t border-r","bottom-2 left-2 border-b border-l","bottom-2 right-2 border-b border-r"].map((pos, i) => (
             <div key={i} className={`absolute w-3 h-3 ${pos} opacity-50 rounded-[2px]`} style={{ borderColor: color }} />
           ))}
@@ -955,7 +971,7 @@ function CreatePageInner() {
         width: size, height: size,
         type: ext === "svg" ? "svg" : "canvas",
         data: qrValue || "https://sqrly.net",
-        image: logo || undefined,
+        image: (logo && logoPlacement !== "background") ? logo : undefined,
         dotsOptions: useDotGradient ? {
           type: dotStyle as "rounded",
           gradient: { type: dotGradientType, rotation: dotGradientRotation * Math.PI / 180,
@@ -1122,6 +1138,26 @@ function CreatePageInner() {
         shortId = mlId;
       }
 
+      // Compress logo for DB storage (max 50KB)
+      let logoForDb: string | null = null;
+      if (logo) {
+        try {
+          const img = new window.Image();
+          await new Promise<void>((res) => {
+            img.onload = () => res();
+            img.onerror = () => res();
+            img.src = logo;
+          });
+          const c = document.createElement("canvas");
+          c.width = 80; c.height = 80;
+          const ctx = c.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, 80, 80);
+            logoForDb = c.toDataURL("image/png", 0.7);
+          }
+        } catch { logoForDb = null; }
+      }
+
       const { data } = await supabase.from("qr_codes").insert({
         user_id: session.id,
         name: formData.name || `${selectedType?.toUpperCase()} Code`,
@@ -1143,7 +1179,7 @@ function CreatePageInner() {
         corner_style: cornerSquareStyle,
         corner_dot_style: cornerDotStyle,
         corner_color: cornerColor,
-        logo: logo || null,
+        logo: logoForDb,
         logo_placement: logoPlacement,
         logo_scale: logoScale,
         logo_bg_shape: logoBgShape,

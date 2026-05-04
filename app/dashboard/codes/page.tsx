@@ -96,7 +96,8 @@ function MiniQR({ code, size = 180 }: { code: QRCode; size?: number }) {
       ref.current!.innerHTML = "";
       qr.append(ref.current!);
     });
-  }, [code, size]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code.id, code.color, code.bg_color, code.dot_style, code.logo, size]);
 
   return <div ref={ref} />;
 }
