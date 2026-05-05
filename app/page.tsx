@@ -556,7 +556,11 @@ function HeroGenerator() {
                     const isActive = !p.val ? !logoSymbol : logoSymbol === p.val;
                     return (
                       <button key={p.val || "none"}
-                        onClick={() => setLogoSymbol(p.val)}
+                        onClick={() => {
+                          if (!p.path) { setLogoSymbol(null); return; }
+                          const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0F172A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="24" height="24" fill="white" rx="4"/><path d="${p.path}"/></svg>`;
+                          setLogoSymbol(`data:image/svg+xml;base64,${btoa(svg)}`);
+                        }}
                         className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg border text-[8px] font-medium transition-all cursor-pointer ${
                           isActive ? "bg-[#00D4FF]/08 border-[#00D4FF]/30 text-[#0891B2]"
                                    : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/30"
