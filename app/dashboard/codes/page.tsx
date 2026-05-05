@@ -329,7 +329,8 @@ function DeleteModal({ code, onClose, onConfirm }: {
         className="bg-[#FFFFFF] border border-[rgba(248,113,113,0.2)] rounded-2xl p-6 max-w-sm w-full shadow-[0_24px_80px_rgba(0,0,0,0.6)]"
         style={{ borderTop: "2px solid rgba(248,113,113,0.4)" }}
       >
-        <div className="flex items-center justify-between mb-4">
+
+      <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-bold text-[#0F172A]">Delete QR Code?</h3>
           <button onClick={onClose} className="text-[#94A3B8] hover:text-[#475569]"><X size={18} /></button>
         </div>
@@ -374,6 +375,9 @@ export default function CodesPage() {
     return () => clearTimeout(t);
   }, []);
   const session = sessionState;
+  const plan = session?.plan || "free";
+  const dynLimit = plan === "plus" ? 100 : plan === "basic" ? 10 : 1;
+  const dynamicUsed = codes.filter(c => c.status === "dynamic").length;
 
   useEffect(() => {
     if (!session) return;
@@ -443,6 +447,33 @@ export default function CodesPage() {
         >
           <PlusCircle size={14} /> Create New
         </button>
+      </div>
+
+      {/* Dynamic code usage bar */}
+      <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 mb-4">
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col">
+            <span className="text-xs font-bold text-[#0F172A]">Dynamic QR Codes</span>
+            <span className="text-[10px] text-[#94A3B8]">{dynamicUsed} of {dynLimit} used</span>
+          </div>
+          <div className="w-32 h-2 bg-slate-200 rounded-full overflow-hidden">
+            <div className="h-full rounded-full transition-all"
+              style={{
+                width: `${Math.min((dynamicUsed / dynLimit) * 100, 100)}%`,
+                background: dynamicUsed >= dynLimit ? "#EF4444" : dynamicUsed >= dynLimit * 0.8 ? "#F59E0B" : "#00FF88",
+              }} />
+          </div>
+        </div>
+        {dynamicUsed >= dynLimit && plan !== "plus" && (
+          <a href="/pricing" className="text-[10px] font-bold px-3 py-1.5 bg-[#00FF88] text-[#0F172A] rounded-full hover:bg-[#00CC6E] transition-all">
+            Upgrade for more
+          </a>
+        )}
+        {dynamicUsed === dynLimit - 1 && plan !== "plus" && (
+          <a href="/pricing" className="text-[10px] font-bold text-[#F59E0B]">
+            1 slot left — upgrade soon
+          </a>
+        )}
       </div>
 
       {/* Filters */}

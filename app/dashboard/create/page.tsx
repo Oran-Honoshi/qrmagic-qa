@@ -1344,9 +1344,34 @@ function CreatePageInner() {
                       const dynLimit = plan === "plus" ? 100 : plan === "basic" ? 10 : 1;
                       const nearLimit = dynamicUsed >= dynLimit;
                       const approachingLimit = plan !== "plus" && dynamicUsed >= dynLimit * 0.8 && !nearLimit;
+                      const pct = Math.min((dynamicUsed / dynLimit) * 100, 100);
+                      const barColor = nearLimit ? "#EF4444" : approachingLimit ? "#F59E0B" : "#00FF88";
+                      // Always show counter when Dynamic tab is selected
+                      if (isDynamic) return (
+                        <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5">
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-[10px] font-bold text-[#0F172A]">Dynamic codes used</span>
+                              <span className="text-[10px] font-bold" style={{ color: barColor }}>{dynamicUsed}/{dynLimit}</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                              <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: barColor }} />
+                            </div>
+                          </div>
+                          {nearLimit && plan !== "plus" && (
+                            <button onClick={() => setUpgradeReason("dynamic_limit")}
+                              className="flex-shrink-0 text-[9px] font-bold px-2.5 py-1.5 bg-[#00FF88] text-[#0F172A] rounded-full hover:bg-[#00CC6E] transition-all">
+                              Upgrade
+                            </button>
+                          )}
+                          {approachingLimit && (
+                            <span className="flex-shrink-0 text-[9px] font-bold text-[#F59E0B]">Almost full!</span>
+                          )}
+                        </div>
+                      );
                       if (nearLimit) return (
                         <div className="flex items-center gap-2 text-xs text-[#FCD34D] bg-[rgba(245,158,11,0.08)] border border-[rgba(245,158,11,0.2)] rounded-lg px-3 py-2">
-                          <Info size={12} /> {plan === "free" ? "Free" : plan === "basic" ? "Basic" : "Plus"} plan limit reached ({dynamicUsed}/{dynLimit} dynamic).{" "}
+                          <Info size={12} /> Limit reached ({dynamicUsed}/{dynLimit}).{" "}
                           {plan !== "plus" && <button onClick={() => setUpgradeReason("dynamic_limit")} className="underline font-bold">Upgrade for more.</button>}
                         </div>
                       );

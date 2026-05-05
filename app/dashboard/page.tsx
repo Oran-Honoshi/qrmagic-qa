@@ -134,6 +134,9 @@ export default function DashboardPage() {
 
   const totalScans = codes.reduce((s, c) => s + ((c.scans as number) || 0), 0);
   const dynamic = codes.filter(c => c.status === "dynamic").length;
+  const plan = session?.plan || "free";
+  const dynLimit = plan === "plus" ? 100 : plan === "basic" ? 10 : 1;
+  const dynLimitLabel = dynLimit === Infinity ? "∞" : String(dynLimit);
   const firstName = (session?.name || "there").split(" ")[0];
 
   return (
@@ -202,7 +205,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <StatCard icon={QrCode}     value={codes.length} label="Total Codes"   color="#00D4FF" bg="rgba(0,212,255,0.08)" />
           <StatCard icon={Smartphone} value={totalScans}   label="Total Scans"   color="#F472B6" bg="rgba(244,114,182,0.08)" />
-          <StatCard icon={Zap}        value={dynamic}      label="Dynamic Codes" color="#00FF88" bg="rgba(0,255,136,0.08)" />
+          <StatCard icon={Zap}        value={`${dynamic}/${dynLimitLabel}`} label="Dynamic Codes" color="#00FF88" bg="rgba(0,255,136,0.08)" />
           <StatCard icon={Lock}       value={codes.filter(c => c.status === "static").length} label="Static Codes" color="#8B5CF6" bg="rgba(139,92,246,0.08)" />
         </div>
 

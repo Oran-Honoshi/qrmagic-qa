@@ -8,6 +8,7 @@ interface UpgradeModalProps {
   onClose: () => void;
   reason: "dynamic_limit" | "static_limit" | "asset_limit" | "bulk_limit";
   currentPlan: string;
+  createdAt?: string;
 }
 
 const UPGRADE_CONTENT = {
@@ -45,7 +46,10 @@ const UPGRADE_CONTENT = {
   },
 };
 
-export function UpgradeModal({ onClose, reason, currentPlan }: UpgradeModalProps) {
+export function UpgradeModal({ onClose, reason, currentPlan, createdAt }: UpgradeModalProps) {
+  const isIn48h = createdAt
+    ? (Date.now() - new Date(createdAt).getTime()) < 48 * 60 * 60 * 1000
+    : false;
   const router = useRouter();
   const content = UPGRADE_CONTENT[reason];
   const showBasic = currentPlan === "free";
@@ -104,6 +108,19 @@ export function UpgradeModal({ onClose, reason, currentPlan }: UpgradeModalProps
                 </div>
               </div>
             </div>
+
+            {/* 48h discount badge */}
+            {isIn48h && (
+              <div className="mb-3 flex items-center gap-2 bg-[#00FF88]/10 border border-[#00FF88]/25 rounded-xl px-3 py-2.5">
+                <span className="text-lg">🎉</span>
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-[#0F172A]">Welcome offer — 25% off your first payment</p>
+                  <p className="text-[10px] text-[#475569] mt-0.5">
+                    Use code <span className="font-mono font-bold text-[#0891B2] bg-[#00D4FF]/10 px-1.5 py-0.5 rounded">LAUNCH48</span> at checkout · expires 48h after signup
+                  </p>
+                </div>
+              </div>
+            )}
 
             <motion.button whileTap={{ scale: 0.95 }}
               onClick={() => { router.push("/pricing?from=limit"); onClose(); }}

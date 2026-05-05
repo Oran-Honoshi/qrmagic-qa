@@ -50,7 +50,7 @@ function Toast({ msg, type }: { msg: string; type: "success" | "error" }) {
   return (
     <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20 }}
       className={`fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold shadow-lg z-50 ${
-        type === "success" ? "bg-[#00FF88] text-[#0F172A]" : "bg-red-500 text-white"
+        type === "success" ? "bg-[#00FF88] text-[#0F172A]" : "bg-red-500 text-[#0F172A]"
       }`}>
       {type === "success" ? <Check size={14} /> : <X size={14} />} {msg}
     </motion.div>
@@ -256,10 +256,26 @@ export default function SettingsPage() {
           </div>
         </div>
         {plan === "free" && (
-          <button onClick={() => router.push("/pricing")}
-            className="px-4 py-2 text-xs font-bold rounded-full bg-[#00FF88] text-[#0F172A] hover:bg-[#00CC6E] transition-all shadow-[0_4px_12px_rgba(0,255,136,0.3)]">
-            Upgrade
-          </button>
+          <div className="flex flex-col items-end gap-2">
+            {(() => {
+              const s = getSession();
+              const isIn48h = s?.createdAt
+                ? (Date.now() - new Date(s.createdAt).getTime()) < 48 * 60 * 60 * 1000
+                : false;
+              return isIn48h ? (
+                <div className="text-right">
+                  <p className="text-[10px] font-bold text-[#00994F]">🎉 Welcome offer active</p>
+                  <p className="text-[9px] text-[#475569]">
+                    Use <span className="font-mono font-bold text-[#0891B2]">LAUNCH48</span> at checkout for 25% off
+                  </p>
+                </div>
+              ) : null;
+            })()}
+            <button onClick={() => router.push("/pricing")}
+              className="px-4 py-2 text-xs font-bold rounded-full bg-[#00FF88] text-[#0F172A] hover:bg-[#00CC6E] transition-all shadow-[0_4px_12px_rgba(0,255,136,0.3)]">
+              Upgrade Now
+            </button>
+          </div>
         )}
       </div>
 
