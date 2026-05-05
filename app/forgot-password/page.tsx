@@ -39,8 +39,7 @@ export default function ForgotPasswordPage() {
       if (!res.ok) throw new Error("Email failed");
       setLoading(false); setStep("verify");
     } catch {
-      // Even if email fails, still proceed (show code in dev)
-      console.log(`Reset code for ${email}: ${resetCode}`);
+      // Email failed but still show verify step - code is in sessionStorage
       setLoading(false); setStep("verify");
     }
   }
@@ -130,9 +129,7 @@ export default function ForgotPasswordPage() {
 
             {step === "verify" && (
               <div className="space-y-4">
-                <div className="bg-[#00D4FF]/06 border border-[#00D4FF]/20 rounded-xl p-3 text-xs text-[#0891B2] leading-relaxed">
-                  <span className="font-semibold">Dev mode:</span> Check your browser console for the reset code.
-                </div>
+
                 <div>
                   <label className="text-xs font-semibold text-[#475569] uppercase tracking-wider mb-1.5 block">6-Digit Code</label>
                   <input type="text" value={code} onChange={e => setCode(e.target.value.slice(0,6))}
