@@ -176,17 +176,23 @@ function PricingContent() {
       const Paddle = (window as any).Paddle;
       if (!Paddle) { setError("Payment system not loaded. Please refresh."); setLoading(null); return; }
 
-      Paddle.Checkout.open({
-        items: [{ priceId: data.priceId, quantity: 1 }],
-        customer: { email: data.email },
-        customData: { userId: data.userId },
-        ...(data.discountId ? { discountId: data.discountId } : {}),
-        settings: {
-          successUrl: data.successUrl,
-          displayMode: "overlay",
-          theme: "light",
-        },
-      });
+      // Use transactionId from server — avoids 401 Unauthorized
+      if (data.transactionId) {
+        Paddle.Checkout.open({
+          transactionId: data.transactionId,
+          settings: {
+            displayMode: "overlay",
+            theme: "light",
+          },
+        });
+      } else if (data.checkoutUrl) {
+        // Fallback: redirect to hosted checkout
+        window.location.href = data.checkoutUrl;
+      } else {
+        setError(data.error || "Could not open checkout. Please try again.");
+        setLoading(null);
+        return;
+      }
       setLoading(null);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Unknown error";
