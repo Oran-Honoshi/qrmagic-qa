@@ -6,7 +6,7 @@ import { QRFrameDesigner } from "@/components/QRFrameDesigner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Zap, ArrowRight, Shield, Lock, CheckCircle,
-  Download, Link, Wifi, User, FileText, Mail,
+  Download, Upload, Link, Wifi, User, FileText, Mail,
   MessageSquare, Phone, MapPin, Calendar, Share2,
   Video, File, CreditCard, Bitcoin, Image as ImageIcon,
   ChevronDown, Menu, X, BarChart2, Layers, Sparkles,
@@ -270,6 +270,7 @@ function HeroGenerator() {
   const [qrSvgContent, setQrSvgContent] = useState("");
   const ref = useRef<HTMLDivElement>(null);
   const qrRef = useRef<unknown>(null);
+  const [customizeTab, setCustomizeTab] = useState<"style"|"colors"|"logo">("style");
 
   const colors = ["#0F172A","#00D4FF","#00FF88","#8B5CF6","#F472B6","#FB923C","#EF4444","#0891B2"];
   const bgColors = [
@@ -350,8 +351,26 @@ function HeroGenerator() {
   }, [value, color, bgColor, logoSymbol, dotStyle, cornerStyle, cornerDotStyle, cornerColor, logoScale, logoMargin, useDotGradient, dotGradientColor2, dotGradientType]);
 
   function download(ext: "svg" | "png") {
-    (qrRef.current as any)?.download({ name: qrName || "sqrly-qr", extension: ext });
-    setShowModal(true);
+    import("qr-code-styling").then(({ default: QRCodeStyling }) => {
+      const qr = new QRCodeStyling({
+        width: exportSize, height: exportSize,
+        type: ext === "svg" ? "svg" : "canvas",
+        data: value || "https://sqrly.net",
+        image: logoSymbol || undefined,
+        dotsOptions: useDotGradient ? {
+          type: dotStyle as any,
+          gradient: { type: dotGradientType, rotation: 0,
+            colorStops: [{ offset: 0, color }, { offset: 1, color: dotGradientColor2 }] },
+        } : { color, type: dotStyle as any },
+        cornersSquareOptions: { color: cornerColor, type: cornerStyle as any },
+        cornersDotOptions: { color: cornerColor, type: cornerDotStyle as any },
+        backgroundOptions: { color: bgColor },
+        imageOptions: { crossOrigin: "anonymous", margin: logoMargin, imageSize: logoScale, hideBackgroundDots: true },
+        qrOptions: { errorCorrectionLevel: "H" },
+      });
+      qr.download({ name: qrName || "sqrly-qr", extension: ext });
+      setShowModal(true);
+    });
   }
 
   function openFrameDesigner() {
@@ -421,7 +440,7 @@ function HeroGenerator() {
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
           className="bg-white border border-slate-200 rounded-3xl shadow-xl overflow-hidden" dir={dir}>
-          <div className="grid lg:grid-cols-[1fr_300px]">
+          <div className="grid lg:grid-cols-[1fr_420px]">
 
             {/* Left */}
             <div className="p-5 md:p-6 border-b lg:border-b-0 lg:border-r border-slate-100">
@@ -568,189 +587,334 @@ function HeroGenerator() {
               </div>
             </div>
 
-            {/* Dot Style */}
-            <div className="mt-4">
-              <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Dot Style</label>
-              <div className="flex gap-1.5 flex-wrap">
-                {[
-                  { v: "rounded", label: "Round" },
-                  { v: "dots", label: "Dots" },
-                  { v: "classy", label: "Classy" },
-                  { v: "classy-rounded", label: "Soft" },
-                  { v: "square", label: "Square" },
-                  { v: "extra-rounded", label: "Blob" },
-                ].map(d => (
-                  <button key={d.v} onClick={() => setDotStyle(d.v)}
-                    className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all ${
-                      dotStyle === d.v ? "bg-[#00D4FF]/10 border-[#00D4FF]/40 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/20"
-                    }`}>{d.label}</button>
-                ))}
-              </div>
-            </div>
+            {/* Right — Customize + Preview */}
+            <div className="flex flex-col border-t lg:border-t-0 lg:border-l border-slate-100">
 
-            {/* Corner Style */}
-            <div className="mt-3">
-              <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Corner Style</label>
-              <div className="flex gap-1.5 flex-wrap">
-                {[
-                  { v: "square", label: "⬛ Square" },
-                  { v: "extra-rounded", label: "🔵 Round" },
-                  { v: "dot", label: "⚫ Dot" },
-                  { v: "classy", label: "💠 Classy" },
-                  { v: "classy-rounded", label: "🔷 Soft" },
-                ].map(c => (
-                  <button key={c.v} onClick={() => setCornerStyle(c.v)}
-                    className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all ${
-                      cornerStyle === c.v ? "bg-[#00D4FF]/10 border-[#00D4FF]/40 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/20"
-                    }`}>{c.label}</button>
-                ))}
-              </div>
-            </div>
-
-            {/* Corner Color */}
-            <div className="mt-3">
-              <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Corner Color</label>
-              <div className="flex gap-1.5 flex-wrap items-center">
-                <input type="color" value={cornerColor}
-                  onChange={e => setCornerColor(e.target.value)}
-                  className="w-7 h-7 rounded-lg border border-slate-200 cursor-pointer" />
-                {["#0F172A","#00D4FF","#00FF88","#8B5CF6","#F472B6","#FB923C","#EF4444"].map(c => (
-                  <button key={c} onClick={() => setCornerColor(c)}
-                    style={{ background: c }}
-                    className={`w-6 h-6 rounded-full border-2 transition-all ${cornerColor === c ? "border-[#00D4FF] scale-125" : "border-white"}`} />
-                ))}
-              </div>
-            </div>
-
-            {/* Logo Scale */}
-            {logoSymbol && (
-              <div className="mt-3 space-y-3">
-                <div>
-                  <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">
-                    Logo Scale: {Math.round(logoScale * 100)}%
-                  </label>
-                  <input type="range" min="10" max="50" value={Math.round(logoScale * 100)}
-                    onChange={e => setLogoScale(Number(e.target.value) / 100)}
-                    className="w-full accent-[#00D4FF]" />
+              {/* Customize Tabs */}
+              <div className="border-b border-slate-100">
+                <div className="flex">
+                  {(["style","colors","logo"] as const).map(tab => (
+                    <button key={tab} onClick={() => setCustomizeTab(tab)}
+                      className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-wider capitalize transition-all border-b-2 ${
+                        customizeTab === tab
+                          ? "border-[#00D4FF] text-[#0891B2] bg-[#00D4FF]/04"
+                          : "border-transparent text-[#94A3B8] hover:text-[#475569]"
+                      }`}>
+                      {tab === "style" ? "🎨 Style" : tab === "colors" ? "🖌 Colors" : "🖼 Logo"}
+                    </button>
+                  ))}
                 </div>
-                <div>
-                  <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">
-                    Logo Margin: {logoMargin}px
-                  </label>
-                  <input type="range" min="0" max="20" value={logoMargin}
-                    onChange={e => setLogoMargin(Number(e.target.value))}
-                    className="w-full accent-[#00D4FF]" />
-                </div>
-                <div>
-                  <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Logo Background</label>
-                  <div className="flex gap-1.5">
-                    {(["none","square","rounded","circle"] as const).map(s => (
-                      <button key={s} onClick={() => setLogoBgShape(s)}
-                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-semibold border capitalize transition-all ${
-                          logoBgShape === s ? "bg-[#00D4FF]/10 border-[#00D4FF]/30 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569]"
-                        }`}>{s}</button>
-                    ))}
+              </div>
+
+              {/* Tab Content */}
+              <div className="p-4 overflow-y-auto" style={{ maxHeight: "360px" }}>
+
+                {/* ── STYLE TAB ── */}
+                {customizeTab === "style" && (
+                  <div className="space-y-4">
+                    {/* Style Presets */}
+                    <div>
+                      <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Style Presets</label>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {[
+                          { name:"Classic",  dot:"square",         corner:"square",        cd:"square",  cc:"#0F172A", qc:"#0F172A" },
+                          { name:"Rounded",  dot:"rounded",        corner:"extra-rounded", cd:"dot",     cc:"#0F172A", qc:"#0F172A" },
+                          { name:"Dots",     dot:"dots",           corner:"extra-rounded", cd:"dot",     cc:"#00D4FF", qc:"#00D4FF" },
+                          { name:"Classy",   dot:"classy-rounded", corner:"classy",        cd:"classy",  cc:"#8B5CF6", qc:"#8B5CF6" },
+                          { name:"Blob",     dot:"extra-rounded",  corner:"extra-rounded", cd:"dot",     cc:"#00FF88", qc:"#00FF88" },
+                          { name:"Sharp",    dot:"classy",         corner:"square",        cd:"square",  cc:"#EF4444", qc:"#EF4444" },
+                        ].map(p => (
+                          <button key={p.name} onClick={() => {
+                            setDotStyle(p.dot); setCornerStyle(p.corner); setCornerDotStyle(p.cd);
+                            setCornerColor(p.cc); setColor(p.qc);
+                          }}
+                            className={`py-2 rounded-xl text-[10px] font-bold border transition-all ${
+                              dotStyle === p.dot && cornerStyle === p.corner
+                                ? "bg-[#00D4FF]/10 border-[#00D4FF]/40 text-[#0891B2]"
+                                : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/20"
+                            }`}>
+                            {p.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Dot Style */}
+                    <div>
+                      <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Dot Style</label>
+                      <div className="flex gap-1.5 flex-wrap">
+                        {[
+                          { v:"rounded", label:"Round" }, { v:"dots", label:"Dots" },
+                          { v:"classy", label:"Classy" }, { v:"classy-rounded", label:"Soft" },
+                          { v:"square", label:"Square" }, { v:"extra-rounded", label:"Blob" },
+                        ].map(d => (
+                          <button key={d.v} onClick={() => setDotStyle(d.v)}
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all ${
+                              dotStyle === d.v ? "bg-[#00D4FF]/10 border-[#00D4FF]/40 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/20"
+                            }`}>{d.label}</button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Corner Style */}
+                    <div>
+                      <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Corner Style</label>
+                      <div className="flex gap-1.5 flex-wrap">
+                        {[
+                          { v:"square", label:"Square" }, { v:"extra-rounded", label:"Round" },
+                          { v:"dot", label:"Dot" }, { v:"classy", label:"Classy" }, { v:"classy-rounded", label:"Soft" },
+                        ].map(c => (
+                          <button key={c.v} onClick={() => setCornerStyle(c.v)}
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all ${
+                              cornerStyle === c.v ? "bg-[#00D4FF]/10 border-[#00D4FF]/40 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/20"
+                            }`}>{c.label}</button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* EC Level */}
+                    <div>
+                      <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Error Correction</label>
+                      <div className="flex gap-1.5">
+                        {["L","M","Q","H"].map(ec => (
+                          <button key={ec} onClick={() => {}}
+                            className="flex-1 py-1.5 rounded-lg text-[10px] font-bold border bg-slate-50 border-slate-200 text-[#475569]">
+                            {ec}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Export Size */}
+                    <div>
+                      <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Export Size</label>
+                      <div className="flex gap-1.5">
+                        {[512,1024,2048,4096].map(s => (
+                          <button key={s} onClick={() => setExportSize(s)}
+                            className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${
+                              exportSize === s ? "bg-[#00D4FF]/10 border-[#00D4FF]/40 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569]"
+                            }`}>{s >= 1024 ? `${s/1024}K` : s}</button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            )}
+                )}
 
-            {/* Dot Gradient */}
-            <div className="mt-3">
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider">Dot Gradient</label>
-                <button onClick={() => setUseDotGradient(g => !g)}
-                  className={`w-8 h-4 rounded-full transition-all relative ${useDotGradient ? "bg-[#00D4FF]" : "bg-slate-200"}`}>
-                  <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-all ${useDotGradient ? "left-4" : "left-0.5"}`} />
-                </button>
-              </div>
-              {useDotGradient && (
-                <div className="space-y-2">
-                  <div className="flex gap-2 items-center">
-                    <input type="color" value={dotGradientColor2}
-                      onChange={e => setDotGradientColor2(e.target.value)}
-                      className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer" />
-                    <span className="text-[10px] text-[#94A3B8]">Second color</span>
-                    {(["linear","radial"] as const).map(t => (
-                      <button key={t} onClick={() => setDotGradientType(t)}
-                        className={`px-2 py-1 rounded-lg text-[9px] font-semibold border capitalize ${dotGradientType === t ? "bg-[#00D4FF]/10 border-[#00D4FF]/30 text-[#0891B2]" : "bg-slate-50 border-slate-200"}`}>
-                        {t}
-                      </button>
-                    ))}
+                {/* ── COLORS TAB ── */}
+                {customizeTab === "colors" && (
+                  <div className="space-y-4">
+                    {/* QR Color */}
+                    <div>
+                      <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">QR Color</label>
+                      <div className="flex gap-1.5 flex-wrap items-center">
+                        <input type="color" value={color} onChange={e => setColor(e.target.value)}
+                          className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer flex-shrink-0" />
+                        {["#0F172A","#00D4FF","#00FF88","#8B5CF6","#F472B6","#FB923C","#EF4444","#0891B2"].map(c => (
+                          <button key={c} onClick={() => setColor(c)} style={{ background: c }}
+                            className={`w-6 h-6 rounded-full border-2 flex-shrink-0 transition-all ${color === c ? "border-[#00D4FF] scale-125" : "border-white shadow"}`} />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Dot Gradient */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider">Dot Gradient</label>
+                        <button onClick={() => setUseDotGradient(g => !g)}
+                          className={`w-9 h-5 rounded-full transition-all relative flex-shrink-0 ${useDotGradient ? "bg-[#00D4FF]" : "bg-slate-200"}`}>
+                          <div className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow transition-all ${useDotGradient ? "left-5" : "left-1"}`} />
+                        </button>
+                      </div>
+                      {useDotGradient && (
+                        <div className="space-y-2">
+                          <div className="flex gap-2 items-center flex-wrap">
+                            <input type="color" value={dotGradientColor2} onChange={e => setDotGradientColor2(e.target.value)}
+                              className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer" />
+                            <span className="text-[10px] text-[#94A3B8]">Second color</span>
+                            {["#8B5CF6","#F472B6","#FB923C","#00FF88","#00D4FF"].map(c => (
+                              <button key={c} onClick={() => setDotGradientColor2(c)} style={{ background: c }}
+                                className={`w-5 h-5 rounded-full border-2 ${dotGradientColor2 === c ? "border-[#00D4FF] scale-125" : "border-white shadow"}`} />
+                            ))}
+                          </div>
+                          <div className="flex gap-1.5">
+                            {(["linear","radial"] as const).map(t => (
+                              <button key={t} onClick={() => setDotGradientType(t)}
+                                className={`flex-1 py-1.5 rounded-lg text-[10px] font-semibold border capitalize transition-all ${dotGradientType === t ? "bg-[#00D4FF]/10 border-[#00D4FF]/30 text-[#0891B2]" : "bg-slate-50 border-slate-200"}`}>
+                                {t}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Corner Color */}
+                    <div>
+                      <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Corner Color</label>
+                      <div className="flex gap-1.5 flex-wrap items-center">
+                        <input type="color" value={cornerColor} onChange={e => setCornerColor(e.target.value)}
+                          className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer flex-shrink-0" />
+                        {["#0F172A","#00D4FF","#00FF88","#8B5CF6","#F472B6","#FB923C","#EF4444"].map(c => (
+                          <button key={c} onClick={() => setCornerColor(c)} style={{ background: c }}
+                            className={`w-6 h-6 rounded-full border-2 flex-shrink-0 transition-all ${cornerColor === c ? "border-[#00D4FF] scale-125" : "border-white shadow"}`} />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Background Color */}
+                    <div>
+                      <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Background</label>
+                      <div className="flex gap-1.5 flex-wrap">
+                        {["#FFFFFF","#F8FAFC","#0F172A","#1E293B","#FFF9F0","#F0FFF4","#EFF6FF","#F5F0FF","#FFF0F6","#FFFBEB","#00FF88","#00D4FF"].map(c => (
+                          <button key={c} onClick={() => setBgColor(c)}
+                            style={{ background: c, border: bgColor === c ? "2px solid #00D4FF" : "2px solid #E2E8F0" }}
+                            className="w-7 h-7 rounded-lg transition-all hover:scale-110" />
+                        ))}
+                        <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)}
+                          className="w-7 h-7 rounded-lg border-2 border-slate-200 cursor-pointer" />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
 
-            {/* Export Size */}
-            <div className="mt-3">
-              <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Export Size</label>
-              <div className="flex gap-1.5">
-                {[512,1024,2048,4096].map(s => (
-                  <button key={s} onClick={() => setExportSize(s)}
-                    className={`flex-1 py-1.5 rounded-lg text-[9px] font-bold border transition-all ${
-                      exportSize === s ? "bg-[#00D4FF]/10 border-[#00D4FF]/30 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569]"
-                    }`}>{s >= 1000 ? `${s/1024}K` : s}</button>
-                ))}
+                {/* ── LOGO TAB ── */}
+                {customizeTab === "logo" && (
+                  <div className="space-y-4">
+                    {/* Brand logos */}
+                    <div>
+                      <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Brand Logos</label>
+                      <div className="grid grid-cols-8 gap-1">
+                        {([
+                          {id:"none",  bg:"#F1F5F9", fg:"#64748B", path:null,    label:"None"},
+                          {id:"wa",    bg:"#25D366", fg:"#fff",    label:"WA",   path:"M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a6.3 6.3 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"},
+                          {id:"ig",    bg:"#E1306C", fg:"#fff",    label:"IG",   path:"M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0 5.838a6 6 0 100 12 6 6 0 000-12zm0 9.675a3.675 3.675 0 110-7.35 3.675 3.675 0 010 7.35zm6.406-10.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"},
+                          {id:"fb",    bg:"#1877F2", fg:"#fff",    label:"FB",   path:"M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"},
+                          {id:"yt",    bg:"#FF0000", fg:"#fff",    label:"YT",   path:"M22.54 6.42a2.78 2.78 0 00-1.95-1.97C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 00-1.95 1.96C1 8.12 1 12 1 12s0 3.88.46 5.58a2.78 2.78 0 001.95 1.97C5.12 20 12 20 12 20s6.88 0 8.59-.45a2.78 2.78 0 001.95-1.97C23 15.88 23 12 23 12s0-3.88-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"},
+                          {id:"tt",    bg:"#010101", fg:"#fff",    label:"TT",   path:"M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9a8.18 8.18 0 004.78 1.52V7.09a4.85 4.85 0 01-1.01-.4z"},
+                          {id:"li",    bg:"#0077B5", fg:"#fff",    label:"LI",   path:"M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z M4 6a2 2 0 100-4 2 2 0 000 4z"},
+                          {id:"tw",    bg:"#000000", fg:"#fff",    label:"X",    path:"M4 4l11.733 16H20L8.267 4z M4 20l6.768-6.768 M13.232 10.768L20 4"},
+                          {id:"sc",    bg:"#FFFC00", fg:"#0F172A", label:"SC",   path:"M12 2c2 0 4.5 1.5 4.5 4.5 0 1.5-.5 2.5-1.5 3.5 3 0 5 2 5 5 0 1-1 2-2 2-.5 0-1-.5-1.5-1 0 1-.5 2-1.5 2h-6c-1 0-1.5-1-1.5-2-.5.5-1 1-1.5 1-1 0-2-1-2-2 0-3 2-5 5-5-1-1-1.5-2-1.5-3.5C7.5 3.5 10 2 12 2z"},
+                          {id:"tg",    bg:"#2CA5E0", fg:"#fff",    label:"TG",   path:"m22 2-21 8 8 3 10-10-7 9 1 5 3-4 5 3z"},
+                          {id:"gh",    bg:"#181717", fg:"#fff",    label:"GH",   path:"M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"},
+                          {id:"rd",    bg:"#FF4500", fg:"#fff",    label:"RD",   path:"M12 2a10 10 0 100 20A10 10 0 0012 2zm5 11c0 1.1-.9 2-2 2h-.1c-.4 1.1-1.4 2-2.9 2s-2.5-.9-2.9-2H9c-1.1 0-2-.9-2-2 0-.6.3-1.1.7-1.4a3.4 3.4 0 01-.2-.9c0-1.9 2-3.5 4.5-3.5.3 0 .6 0 .9.1l.6-1.6a.5.5 0 01.9.3l-.7 1.9c1.2.4 2 1.2 2 2.1 0 .3-.1.6-.2.9.4.3.5.8.5 1.1z"},
+                          {id:"sp",    bg:"#1DB954", fg:"#fff",    label:"SP",   path:"M12 2a10 10 0 100 20A10 10 0 0012 2zm4.5 14.4c-.2.3-.6.4-.9.2-2.4-1.5-5.5-1.8-9.1-.9-.3.1-.7-.1-.8-.4-.1-.3.1-.7.4-.8 3.9-1 7.4-.6 10.1 1.1.3.1.4.5.3.8zm1.2-2.7c-.2.3-.7.5-1 .2-2.8-1.7-7-2.2-10.2-1.2-.4.1-.8-.1-.9-.5-.1-.4.1-.8.5-.9 3.7-1.1 8.3-.6 11.5 1.4.3.2.4.6.1 1zm.1-2.8c-3.3-2-8.8-2.1-12-1.2-.5.1-1-.2-1.1-.7-.1-.5.2-1 .7-1.1 3.6-1 9.7-.8 13.5 1.4.5.3.6.9.4 1.4-.3.4-.9.5-1.5.2z"},
+                          {id:"sl",    bg:"#4A154B", fg:"#fff",    label:"SL",   path:"M5.042 15.165a2.528 2.528 0 01-2.52 2.523A2.528 2.528 0 010 15.165a2.527 2.527 0 012.522-2.52h2.52v2.52zm1.271 0a2.527 2.527 0 012.521-2.52 2.527 2.527 0 012.521 2.52v6.313A2.528 2.528 0 018.834 24a2.528 2.528 0 01-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 01-2.521-2.52A2.528 2.528 0 018.834 0a2.528 2.528 0 012.521 2.522v2.52H8.834zm0 1.271a2.528 2.528 0 012.521 2.521 2.528 2.528 0 01-2.521 2.521H2.522A2.528 2.528 0 010 8.834a2.528 2.528 0 012.522-2.521h6.312zm10.122 2.521a2.528 2.528 0 012.522-2.521A2.528 2.528 0 0124 8.834a2.528 2.528 0 01-2.522 2.521h-2.521V8.834zm-1.268 0a2.528 2.528 0 01-2.52 2.521 2.528 2.528 0 01-2.521-2.521V2.522A2.528 2.528 0 0115.165 0a2.528 2.528 0 012.52 2.522v6.312z"},
+                          {id:"dr",    bg:"#4285F4", fg:"#fff",    label:"GD",   path:"M3 17.5l3-5.5h12l3 5.5H3zM12 3L3 18h3L12 6l6 12h3L12 3z"},
+                          {id:"db",    bg:"#0061FF", fg:"#fff",    label:"DB",   path:"M12 2L6 6l6 4-6 4 6 4 6-4-6-4 6-4-6-4zm-6 4l-6 4 6 4 6-4-6-4z"},
+                        ] as const).map(b => {
+                          const logoSvg = b.path
+                            ? (() => {
+                                const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${b.fg}" stroke="${b.fg}" stroke-width="0.5"><rect width="24" height="24" fill="${b.bg}" rx="3"/><path d="${b.path}"/></svg>`;
+                                return `data:image/svg+xml;base64,${btoa(svg)}`;
+                              })()
+                            : null;
+                          const isActive = logoSvg ? logoSymbol === logoSvg : !logoSymbol;
+                          return (
+                            <button key={b.id} onClick={() => setLogoSymbol(logoSvg)}
+                              title={b.label}
+                              style={{ background: b.bg }}
+                              className={`aspect-square rounded-lg flex items-center justify-center transition-all ${isActive ? "ring-2 ring-[#00D4FF]" : "hover:scale-110"}`}>
+                              {b.path ? (
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill={b.fg} stroke={b.fg} strokeWidth="0.5">
+                                  <path d={b.path} />
+                                </svg>
+                              ) : <span style={{ color: b.fg }} className="text-xs font-bold">✕</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Logo upload */}
+                    <div>
+                      <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Upload Your Logo</label>
+                      <label className="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-[#00D4FF]/40 transition-all">
+                        <Upload size={14} className="text-[#94A3B8]" />
+                        <span className="text-xs text-[#94A3B8]">Click to upload PNG/SVG</span>
+                        <input type="file" accept="image/*" className="hidden" onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const reader = new FileReader();
+                          reader.onload = ev => setLogoSymbol(ev.target?.result as string);
+                          reader.readAsDataURL(file);
+                        }} />
+                      </label>
+                    </div>
+
+                    {/* Logo options - only show when logo selected */}
+                    {logoSymbol && (
+                      <div className="space-y-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
+                        <div>
+                          <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-1.5 block">
+                            Size: {Math.round(logoScale * 100)}%
+                          </label>
+                          <input type="range" min="10" max="50" value={Math.round(logoScale * 100)}
+                            onChange={e => setLogoScale(Number(e.target.value) / 100)}
+                            className="w-full accent-[#00D4FF]" />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-1.5 block">Background Shape</label>
+                          <div className="flex gap-1.5">
+                            {(["none","square","rounded","circle"] as const).map(s => (
+                              <button key={s} onClick={() => setLogoBgShape(s)}
+                                className={`flex-1 py-1.5 rounded-lg text-[9px] font-semibold border capitalize transition-all ${
+                                  logoBgShape === s ? "bg-[#00D4FF]/10 border-[#00D4FF]/30 text-[#0891B2]" : "bg-white border-slate-200 text-[#475569]"
+                                }`}>{s}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <button onClick={() => setLogoSymbol(null)}
+                          className="w-full py-1.5 text-[10px] font-semibold text-[#EF4444] border border-red-100 rounded-lg hover:bg-red-50 transition-all">
+                          Remove Logo
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
 
-            {/* Right — Preview */}
-            <div className="p-5 md:p-6 flex flex-col items-center justify-between gap-5">
-              <div className="w-full">
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-xs font-bold text-[#475569] uppercase tracking-wider">Live Preview</p>
+              {/* Divider */}
+              <div className="border-t border-slate-100" />
+
+              {/* QR Preview */}
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider">Live Preview</p>
                   <div className="flex items-center gap-1.5">
                     <div className="w-2 h-2 rounded-full bg-[#00FF88] shadow-[0_0_6px_rgba(0,255,136,0.6)]" />
                     <span className="text-[10px] font-medium text-[#94A3B8]">Real-time</span>
                   </div>
                 </div>
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 bg-grid opacity-30" />
-                  <div className="relative z-10">
+
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center justify-center relative overflow-hidden mb-4">
+                  <div className="absolute inset-0 bg-grid opacity-20" />
+                  <div className="relative z-10" style={{ background: bgColor, borderRadius: "8px", padding: "8px", lineHeight: 0 }}>
                     <div ref={ref} />
-                    <div className="absolute left-0 right-0 h-[1.5px] pointer-events-none"
-                      style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)`, animation: "scan-line 2.5s ease-in-out infinite" }} />
                   </div>
                 </div>
-                {currentType && (
-                  <div className="flex justify-center mt-3">
-                    <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full border border-[#00D4FF]/25 bg-[#00D4FF]/08 text-[#0891B2]">
-                      {currentType.label} · EC Level H
-                    </span>
+
+                {/* Download buttons */}
+                <div className="space-y-2">
+                  <motion.button whileTap={{ scale: 0.95 }} onClick={() => download("svg")}
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-[#00FF88] text-[#0F172A] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all shadow-[0_4px_16px_rgba(0,255,136,0.30)]">
+                    <Download size={14} strokeWidth={2} /> Download SVG
+                  </motion.button>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button onClick={() => download("png")}
+                      className="flex items-center justify-center gap-1.5 py-2 border border-slate-200 text-[#475569] font-semibold rounded-full text-xs hover:border-[#00D4FF] hover:text-[#00D4FF] transition-all">
+                      <Download size={10} strokeWidth={1.5} /> PNG
+                    </button>
+                    <button onClick={() => downloadPDF()}
+                      className="flex items-center justify-center gap-1.5 py-2 border border-slate-200 text-[#475569] font-semibold rounded-full text-xs hover:border-[#00D4FF] hover:text-[#00D4FF] transition-all">
+                      <Download size={10} strokeWidth={1.5} /> PDF
+                    </button>
+                    <a href="/auth?mode=signup"
+                      className="flex items-center justify-center gap-1.5 py-2 bg-[#0F172A] text-white font-bold rounded-full text-xs hover:bg-[#1E293B] transition-all">
+                      <Zap size={10} strokeWidth={2} /> Save
+                    </a>
                   </div>
-                )}
-              </div>
-
-              <div className="w-full space-y-2">
-                <motion.button whileTap={{ scale: 0.95 }} onClick={() => download("svg")}
-                  className="w-full flex items-center justify-center gap-2 py-3 bg-[#00FF88] text-[#0F172A] font-bold rounded-full text-sm hover:bg-[#00CC6E] transition-all shadow-[0_4px_16px_rgba(0,255,136,0.30)]">
-                  <Download size={14} strokeWidth={2} /> {t("hero_download_svg")}
-                </motion.button>
-                <div className="grid grid-cols-2 gap-2">
-                  <motion.button whileTap={{ scale: 0.95 }} onClick={() => download("png")}
-                    className="flex items-center justify-center gap-1.5 py-2 border border-slate-200 text-[#475569] font-semibold rounded-full text-xs hover:border-[#00D4FF] hover:text-[#00D4FF] transition-all">
-                    <Download size={11} strokeWidth={1.5} /> PNG
-                  </motion.button>
-                  <motion.button whileTap={{ scale: 0.95 }} onClick={() => downloadPDF()}
-                    className="flex items-center justify-center gap-1.5 py-2 border border-slate-200 text-[#475569] font-semibold rounded-full text-xs hover:border-[#00D4FF] hover:text-[#00D4FF] transition-all">
-                    <Download size={11} strokeWidth={1.5} /> PDF
-                  </motion.button>
+                  <p className="text-center text-[10px] text-[#94A3B8]">Free · No watermark · No signup for downloads</p>
                 </div>
-                <p className="text-center text-[9.5px] text-[#CBD5E1]">SVG is print-ready · EU DPP compliant · No watermark</p>
-                <button onClick={openFrameDesigner}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 text-[11px] font-semibold bg-slate-50 border border-slate-200 rounded-full text-[#475569] hover:border-[#00D4FF]/30 hover:text-[#0891B2] transition-all">
-                  🖼 Add Frame &amp; Sticker
-                </button>
-              </div>
-
-              <div className="w-full bg-gradient-to-br from-[#0F172A] to-[#1E293B] rounded-2xl p-4 text-center">
-                <p className="text-[11px] font-bold text-white mb-1">Want to track scans?</p>
-                <p className="text-[10px] text-white/50 mb-3 leading-relaxed">Sign up free for dynamic QR codes with real-time analytics.</p>
-                <a href={`/auth?mode=signup${qrName ? `&qrname=${encodeURIComponent(qrName)}` : ""}&qrtype=${selectedType || "url"}`}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#00FF88] text-[#0F172A] font-bold rounded-full text-xs hover:bg-[#00CC6E] transition-all">
-                  <Zap size={11} strokeWidth={2} /> Sign Up Free
-                </a>
               </div>
             </div>
           </div>
