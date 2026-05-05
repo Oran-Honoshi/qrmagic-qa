@@ -168,7 +168,37 @@ export default function DashboardPage() {
         </motion.div>
 
 
-                {/* Stats */}
+                {/* Free plan upgrade nudge */}
+        {session?.plan === "free" && (() => {
+          const isIn48h = session?.createdAt &&
+            (Date.now() - new Date(session.createdAt).getTime()) < 48 * 60 * 60 * 1000;
+          return (
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+              className={`p-4 rounded-2xl border flex items-center gap-4 ${
+                isIn48h ? "bg-[#00FF88]/08 border-[#00FF88]/25" : "bg-slate-50 border-slate-200"
+              }`}>
+              <div className="flex-1 min-w-0">
+                {isIn48h ? (
+                  <>
+                    <p className="text-sm font-bold text-[#0F172A]">🎉 Welcome offer — 25% off your first payment</p>
+                    <p className="text-xs text-[#475569] mt-0.5">Discount auto-applies at checkout. Offer expires 48 hours after signup.</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-bold text-[#0F172A]">You&apos;re on the Free plan</p>
+                    <p className="text-xs text-[#475569] mt-0.5">Upgrade for unlimited static codes, dynamic QR, analytics & more.</p>
+                  </>
+                )}
+              </div>
+              <button onClick={() => window.location.href = "/pricing"}
+                className="flex-shrink-0 px-4 py-2 bg-[#00FF88] text-[#0F172A] font-bold rounded-full text-xs hover:bg-[#00CC6E] transition-all">
+                {isIn48h ? "Upgrade Now — 25% Off" : "See Plans"}
+              </button>
+            </motion.div>
+          );
+        })()}
+
+        {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <StatCard icon={QrCode}     value={codes.length} label="Total Codes"   color="#00D4FF" bg="rgba(0,212,255,0.08)" />
           <StatCard icon={Smartphone} value={totalScans}   label="Total Scans"   color="#F472B6" bg="rgba(244,114,182,0.08)" />

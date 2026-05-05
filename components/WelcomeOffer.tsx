@@ -10,8 +10,8 @@ const supabase = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnYmJmanVzaGptaWFmb2h2Z2R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTgxNDQsImV4cCI6MjA5MjYzNDE0NH0.xIvQiHWm4IVlkGSwgRK0Owyhhna5qz8HCGCtPL2JexI"
 );
 
-function makeCoupon(userId: string) {
-  return `SQRLY25-${userId.replace(/-/g, "").substring(0, 6).toUpperCase()}`;
+function makeCoupon(_userId: string) {
+  return "Auto-applied at checkout";
 }
 
 function useCountdown(expiry: number) {
@@ -112,17 +112,14 @@ export function WelcomeOffer({ userId, createdAt }: { userId: string; createdAt:
             {/* Body — white */}
             <div className="bg-white px-6 py-5">
               <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">
-                Your personal discount code
+                🎉 Welcome discount — 25% off
               </p>
-              <div className="flex items-center justify-between bg-slate-50 border-2 border-dashed border-[#00D4FF]/30 rounded-xl px-4 py-3 mb-4">
-                <span className="text-lg font-black text-[#0F172A] tracking-widest">{coupon}</span>
-                <button onClick={copy}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#00D4FF]/10 border border-[#00D4FF]/25 text-[#0891B2] hover:bg-[#00D4FF]/20 transition-all">
-                  {copied ? <><Check size={12} strokeWidth={2} />Copied!</> : <><Copy size={12} strokeWidth={1.5} />Copy</>}
-                </button>
+              <div className="flex items-center justify-center bg-[#00FF88]/10 border-2 border-dashed border-[#00FF88]/40 rounded-xl px-4 py-3 mb-4">
+                <span className="text-sm font-bold text-[#00994F]">✓ Discount auto-applied at checkout — no code needed</span>
+
               </div>
               <p className="text-[10.5px] text-[#94A3B8] leading-relaxed mb-4">
-                Unique to your account. Expires 48 hours after signup. One use per account.
+                25% off your first payment. Applied automatically when you upgrade within 48 hours of signing up.
               </p>
               <motion.button whileTap={{ scale: 0.97 }}
                 onClick={() => { close(); window.location.href = "/pricing?from=offer"; }}
