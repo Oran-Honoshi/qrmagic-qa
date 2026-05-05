@@ -226,7 +226,7 @@ function PricingContent() {
           ) : (
             <a href="/auth?mode=signup"
               className="px-4 py-2 text-sm font-bold bg-[#00FF88] text-[#0F172A] rounded-full hover:bg-[#00CC6E] transition-all shadow-[0_4px_12px_rgba(0,255,136,0.3)]">
-              Get Started Free
+              Sign Up Free
             </a>
           )}
         </div>

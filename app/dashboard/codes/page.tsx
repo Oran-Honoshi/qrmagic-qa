@@ -102,7 +102,33 @@ function MiniQR({ code, size = 180 }: { code: QRCode; size?: number }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code.id, code.color, code.bg_color, code.dot_style, code.logo, size]);
 
-  return <div ref={ref} />;
+  return (
+    <div style={code.frame_id ? {
+      border: `4px solid ${code.frame_color || "#0F172A"}`,
+      borderRadius: "8px",
+      padding: "4px",
+      display: "inline-flex",
+      flexDirection: "column",
+      alignItems: "center",
+    } : {}}>
+      <div ref={ref} />
+      {code.frame_id && code.frame_cta_text && (
+        <div style={{
+          background: code.frame_color || "#0F172A",
+          color: code.frame_text_color || "#FFFFFF",
+          padding: "2px 6px",
+          fontSize: "7px",
+          fontWeight: 800,
+          letterSpacing: "1px",
+          textTransform: "uppercase",
+          width: "100%",
+          textAlign: "center",
+        }}>
+          {code.frame_cta_text}
+        </div>
+      )}
+    </div>
+  );
 }
 
 /* Preview Modal */
@@ -181,7 +207,34 @@ function PreviewModal({ code, onClose }: { code: QRCode; onClose: () => void }) 
             style={{ background: `linear-gradient(135deg, ${code.color || "#00D4FF"}, ${code.color || "#00D4FF"}60)` }}
           >
             <div className="bg-[#FFFFFF] rounded-[11px] p-3">
-              <div ref={containerRef} />
+              <div style={code.frame_id ? (() => {
+                  const styleStr = "border: 6px solid; border-radius: 8px; padding: 8px;";
+                  const styles = Object.fromEntries(
+                    styleStr.split(";").filter(s => s.trim()).map(s => {
+                      const [k, ...v] = s.split(":");
+                      return [k.trim().replace(/-([a-z])/g, (_, c) => c.toUpperCase()), v.join(":").trim()];
+                    })
+                  );
+                  return { ...styles, borderColor: code.frame_color || "#0F172A", display: "inline-flex", flexDirection: "column" as const, alignItems: "center" };
+                })() : {}}>
+                <div ref={containerRef} />
+                {code.frame_id && code.frame_cta_text && (
+                  <div style={{
+                    background: code.frame_color || "#0F172A",
+                    color: code.frame_text_color || "#FFFFFF",
+                    padding: "4px 12px",
+                    fontSize: "9px",
+                    fontWeight: 800,
+                    letterSpacing: "2px",
+                    textTransform: "uppercase" as const,
+                    width: "100%",
+                    textAlign: "center" as const,
+                    marginTop: "4px",
+                  }}>
+                    {code.frame_cta_text}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -214,25 +267,35 @@ function PreviewModal({ code, onClose }: { code: QRCode; onClose: () => void }) 
             <Download size={11} /> JPG
           </button>
           <button onClick={() => {
-            const svgEl = containerRef.current?.querySelector("svg");
-            if (!svgEl) return;
-            const svgData = new XMLSerializer().serializeToString(svgEl);
-            const img = new window.Image();
-            const blob = new Blob([svgData], { type: "image/svg+xml" });
-            const url = URL.createObjectURL(blob);
-            img.onload = () => {
-              const cv = document.createElement("canvas");
-              cv.width = 600; cv.height = 600;
-              const ctx = cv.getContext("2d");
-              if (!ctx) return;
-              ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, 600, 600);
-              ctx.drawImage(img, 0, 0, 600, 600);
-              URL.revokeObjectURL(url);
-              const win = window.open("", "_blank");
-              if (!win) return;
-              win.document.write(`<html><head><style>body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;}img{max-width:80%;}@media print{@page{size:A4;margin:20mm;}}</style></head><body><img src="${cv.toDataURL()}" onload="window.print();setTimeout(()=>window.close(),500)"/></body></html>`);
-            };
-            img.src = url;
+            import("qr-code-styling").then(({ default: QR }) => {
+              const q = new QR({
+                width: 800, height: 800, type: "canvas",
+                data: code.value || "https://sqrly.net",
+                image: code.logo || undefined,
+                dotsOptions: { color: code.color || "#0F172A", type: (code.dot_style || "rounded") as any },
+                cornersSquareOptions: { color: code.corner_color || code.color || "#0F172A", type: (code.corner_style || "extra-rounded") as any },
+                cornersDotOptions: { color: code.corner_color || code.color || "#0F172A", type: (code.corner_dot_style || "dot") as any },
+                backgroundOptions: { color: code.bg_color || "#ffffff" },
+                imageOptions: { crossOrigin: "anonymous", margin: 4, imageSize: code.logo_scale || 0.3, hideBackgroundDots: true },
+                qrOptions: { errorCorrectionLevel: "H" },
+              });
+              const tmp = document.createElement("div");
+              document.body.appendChild(tmp);
+              q.append(tmp);
+              setTimeout(() => {
+                const canvas = tmp.querySelector("canvas") as HTMLCanvasElement;
+                if (!canvas) { document.body.removeChild(tmp); return; }
+                const img = new window.Image();
+                img.onload = () => {
+                  const win = window.open("", "_blank");
+                  if (!win) { alert("Please allow popups to print QR codes"); return; }
+                  win.document.write(`<!DOCTYPE html><html><head><title>Print QR - ${code.name}</title><style>*{margin:0;padding:0;box-sizing:border-box;}body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:system-ui,sans-serif;background:#fff;padding:20mm;}img{width:150mm;height:150mm;}h2{margin-top:8mm;font-size:14pt;color:#0F172A;}@media print{@page{size:A4;margin:15mm;}}</style></head><body><img src="${canvas.toDataURL("image/png")}"/><h2>${code.name}</h2><script>window.onload=()=>{window.print();setTimeout(()=>window.close(),1000)}<\/script></body></html>`);
+                  win.document.close();
+                  document.body.removeChild(tmp);
+                };
+                img.src = canvas.toDataURL("image/png");
+              }, 500);
+            });
           }} className="col-span-2 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl text-[#475569] hover:border-[#00D4FF]/30 hover:text-[#0891B2] transition-all">
             <Download size={11} /> PDF (Print)
           </button>
@@ -661,6 +724,33 @@ export default function CodesPage() {
                           <Download size={10} /> {ext.toUpperCase()}
                         </button>
                       ))}
+                      <button onClick={() => {
+                        import("qr-code-styling").then(({ default: QR }) => {
+                          const q = new QR({ width: 800, height: 800, type: "canvas",
+                            data: code.value || "https://sqrly.net",
+                            image: code.logo || undefined,
+                            dotsOptions: { color: code.color || "#0F172A", type: (code.dot_style || "rounded") as any },
+                            cornersSquareOptions: { color: code.corner_color || code.color || "#0F172A", type: (code.corner_style || "extra-rounded") as any },
+                            cornersDotOptions: { color: code.corner_color || code.color || "#0F172A", type: (code.corner_dot_style || "dot") as any },
+                            backgroundOptions: { color: code.bg_color || "#ffffff" },
+                            imageOptions: { crossOrigin: "anonymous", margin: 4, imageSize: code.logo_scale || 0.3, hideBackgroundDots: true },
+                          });
+                          const tmp = document.createElement("div");
+                          document.body.appendChild(tmp);
+                          q.append(tmp);
+                          setTimeout(() => {
+                            const canvas = tmp.querySelector("canvas") as HTMLCanvasElement;
+                            if (!canvas) { document.body.removeChild(tmp); return; }
+                            const win = window.open("", "_blank");
+                            if (!win) { alert("Please allow popups to print"); return; }
+                            win.document.write(`<!DOCTYPE html><html><head><title>Print QR</title><style>body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:system-ui;background:#fff;padding:20mm;}img{width:150mm;height:150mm;}h2{margin-top:8mm;font-size:14pt;}</style></head><body><img src="${canvas.toDataURL("image/png")}"/><h2>${code.name}</h2><script>window.onload=()=>{window.print();setTimeout(()=>window.close(),1000)}<\/script></body></html>`);
+                            win.document.close();
+                            document.body.removeChild(tmp);
+                          }, 500);
+                        });
+                      }} className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-[#475569] hover:bg-slate-50 rounded-lg transition-all">
+                        <Download size={10} /> PDF
+                      </button>
                     </div>
                     )}
                   </div>
