@@ -265,12 +265,51 @@ function HeroGenerator() {
   const [dotGradientColor2, setDotGradientColor2] = useState("#8B5CF6");
   const [dotGradientType, setDotGradientType] = useState<"linear"|"radial">("linear");
   const [exportSize, setExportSize] = useState(1024);
+  const [ecLevel, setEcLevel] = useState<"L"|"M"|"Q"|"H">("H");
+  const [selectedFrame, setSelectedFrame] = useState<string | null>(null);
+  const [frameColor, setFrameColor] = useState("#0F172A");
+  const [frameTextColor, setFrameTextColor] = useState("#FFFFFF");
+  const [frameCtaText, setFrameCtaText] = useState("SCAN ME");
+  const [showFrameLabel, setShowFrameLabel] = useState(true);
   const [showPhone, setShowPhone] = useState(false);
   const [showFrameDesigner, setShowFrameDesigner] = useState(false);
   const [qrSvgContent, setQrSvgContent] = useState("");
   const ref = useRef<HTMLDivElement>(null);
   const qrRef = useRef<unknown>(null);
-  const [customizeTab, setCustomizeTab] = useState<"style"|"colors"|"logo">("style");
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  const FRAME_STYLES: Record<string, string> = {
+    solid:   "border:6px solid;border-radius:4px;padding:8px;",
+    rounded: "border:6px solid;border-radius:24px;padding:12px;",
+    double:  "border:3px double;outline:3px double;outline-offset:4px;border-radius:4px;padding:10px;",
+    dashed:  "border:4px dashed;border-radius:8px;padding:8px;",
+    dotted:  "border:4px dotted;border-radius:8px;padding:8px;",
+    shadow:  "border:3px solid;border-radius:8px;padding:8px;box-shadow:6px 6px 0 0 currentColor;",
+    corners: "border:0;padding:10px;box-shadow:14px 14px 0 0 currentColor,-14px 14px 0 0 currentColor,14px -14px 0 0 currentColor,-14px -14px 0 0 currentColor;",
+    circle:  "border:6px solid;border-radius:50%;padding:14px;",
+    scanme:  "border:4px solid;border-radius:12px;padding:6px 6px 0 6px;",
+    thick:   "border:12px solid;border-radius:4px;padding:2px;",
+    minimal: "border-bottom:4px solid;padding:8px;",
+  };
+
+  // Convert any logo to PNG for qr-code-styling compatibility
+  useEffect(() => {
+    if (!logoSymbol) { setLogoUrl(null); return; }
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 200; canvas.height = 200;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.clearRect(0, 0, 200, 200);
+      ctx.drawImage(img, 0, 0, 200, 200);
+      setLogoUrl(canvas.toDataURL("image/png"));
+    };
+    img.onerror = () => setLogoUrl(logoSymbol);
+    img.src = logoSymbol;
+  }, [logoSymbol]);
+  const [customizeTab, setCustomizeTab] = useState<"style"|"colors"|"logo"|"frame">("style");
 
   const colors = ["#0F172A","#00D4FF","#00FF88","#8B5CF6","#F472B6","#FB923C","#EF4444","#0891B2"];
   const bgColors = [
@@ -302,53 +341,29 @@ function HeroGenerator() {
 
   useEffect(() => {
     if (!ref.current) return;
-    import("qr-code-styling").then(({ default: QR }) => {
-      const qr = new QR({
-        width: 220, height: 220, type: "svg",
-        data: value || "https://sqrly.io",
-        dotsOptions: { color, type: "rounded" },
-        cornersSquareOptions: { color, type: "extra-rounded" },
-        cornersDotOptions: { color },
-        backgroundOptions: { color: bgColor },
-        qrOptions: { errorCorrectionLevel: "H" },
-      });
-      if (ref.current) { ref.current.innerHTML = ""; qr.append(ref.current); }
-      qrRef.current = qr;
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!qrRef.current) return;
     const t = setTimeout(() => {
-      (qrRef.current as any)?.update({
-        data: value || "https://sqrly.net",
-        dotsOptions: { color, type: dotStyle as any },
-        cornersSquareOptions: { color: cornerColor, type: cornerStyle as any },
-        cornersDotOptions: { color: cornerColor, type: cornerDotStyle as any },
-        backgroundOptions: { color: bgColor },
-        image: logoSymbol ? (() => {
-          const p = ([
-            { val: "wifi", path: "M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" },
-            { val: "link", path: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" },
-            { val: "store", path: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10" },
-            { val: "mail", path: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6" },
-            { val: "phone", path: "M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" },
-            { val: "map", path: "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z M12 7m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" },
-            { val: "video", path: "M23 7l-7 5 7 5V7z M1 5h15a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H1a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" },
-            { val: "star", path: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" },
-            { val: "heart", path: "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" },
-            { val: "globe", path: "M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zM2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" },
-            { val: "gift", path: "M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" },
-          ]).find(x => x.val === logoSymbol);
-          if (!p) return undefined;
-          const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%230F172A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="11" fill="white" stroke="%23E2E8F0"/><path d="${p.path}"/></svg>`;
-          return `data:image/svg+xml,${svg}`;
-        })() : undefined,
-        imageOptions: { crossOrigin: "anonymous", margin: 2, imageSize: logoScale, hideBackgroundDots: true },
+      import("qr-code-styling").then(({ default: QR }) => {
+        const qr = new QR({
+          width: 220, height: 220, type: "svg",
+          data: value || "https://sqrly.net",
+          image: logoUrl || undefined,
+          dotsOptions: useDotGradient ? {
+            type: dotStyle as any,
+            gradient: { type: dotGradientType, rotation: 0,
+              colorStops: [{ offset: 0, color }, { offset: 1, color: dotGradientColor2 }] },
+          } : { color, type: dotStyle as any },
+          cornersSquareOptions: { color: cornerColor, type: cornerStyle as any },
+          cornersDotOptions: { color: cornerColor, type: cornerDotStyle as any },
+          backgroundOptions: { color: bgColor },
+          imageOptions: { crossOrigin: "anonymous", margin: logoMargin, imageSize: logoScale, hideBackgroundDots: true },
+          qrOptions: { errorCorrectionLevel: ecLevel },
+        });
+        if (ref.current) { ref.current.innerHTML = ""; qr.append(ref.current); }
+        qrRef.current = qr;
       });
-    }, 300);
+    }, 200);
     return () => clearTimeout(t);
-  }, [value, color, bgColor, logoSymbol, dotStyle, cornerStyle, cornerDotStyle, cornerColor, logoScale, logoMargin, useDotGradient, dotGradientColor2, dotGradientType]);
+  }, [value, color, bgColor, logoUrl, dotStyle, cornerStyle, cornerDotStyle, cornerColor, logoScale, logoMargin, useDotGradient, dotGradientColor2, dotGradientType, ecLevel]);
 
   function download(ext: "svg" | "png") {
     import("qr-code-styling").then(({ default: QRCodeStyling }) => {
@@ -593,14 +608,15 @@ function HeroGenerator() {
               {/* Customize Tabs */}
               <div className="border-b border-slate-100">
                 <div className="flex">
-                  {(["style","colors","logo"] as const).map(tab => (
-                    <button key={tab} onClick={() => setCustomizeTab(tab)}
-                      className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-wider capitalize transition-all border-b-2 ${
+                  {(["style","colors","logo","frame"] as const).map(tab => (
+                    <button key={tab} onClick={() => setCustomizeTab(tab as any)}
+                      className={`flex-1 py-2.5 text-[10px] font-bold uppercase tracking-wider capitalize transition-all border-b-2 ${
                         customizeTab === tab
                           ? "border-[#00D4FF] text-[#0891B2] bg-[#00D4FF]/04"
                           : "border-transparent text-[#94A3B8] hover:text-[#475569]"
                       }`}>
-                      {tab === "style" ? "🎨 Style" : tab === "colors" ? "🖌 Colors" : "🖼 Logo"}
+                      {tab === "style" ? "🎨" : tab === "colors" ? "🖌" : tab === "logo" ? "🖼" : "🔲"}{" "}
+                      {tab}
                     </button>
                   ))}
                 </div>
@@ -674,11 +690,16 @@ function HeroGenerator() {
 
                     {/* EC Level */}
                     <div>
-                      <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Error Correction</label>
+                      <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">
+                        Error Correction
+                        <span className="ml-1.5 text-[9px] font-normal text-[#94A3B8] normal-case">H = most reliable · use L for simpler QR</span>
+                      </label>
                       <div className="flex gap-1.5">
-                        {["L","M","Q","H"].map(ec => (
-                          <button key={ec} onClick={() => {}}
-                            className="flex-1 py-1.5 rounded-lg text-[10px] font-bold border bg-slate-50 border-slate-200 text-[#475569]">
+                        {(["L","M","Q","H"] as const).map(ec => (
+                          <button key={ec} onClick={() => setEcLevel(ec)}
+                            className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${
+                              ecLevel === ec ? "bg-[#00D4FF]/10 border-[#00D4FF]/40 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/20"
+                            }`}>
                             {ec}
                           </button>
                         ))}
@@ -810,7 +831,7 @@ function HeroGenerator() {
                             : null;
                           const isActive = logoSvg ? logoSymbol === logoSvg : !logoSymbol;
                           return (
-                            <button key={b.id} onClick={() => setLogoSymbol(logoSvg)}
+                            <button key={b.id} onClick={() => setLogoSymbol(logoSvg ?? null)}
                               title={b.label}
                               style={{ background: b.bg }}
                               className={`aspect-square rounded-lg flex items-center justify-center transition-all ${isActive ? "ring-2 ring-[#00D4FF]" : "hover:scale-110"}`}>
@@ -873,6 +894,112 @@ function HeroGenerator() {
                 )}
               </div>
 
+                {/* ── FRAME TAB ── */}
+                {(customizeTab as string) === "frame" && (
+                  <div className="space-y-4">
+
+                    {/* With/Without Label */}
+                    <div className="flex bg-slate-100 rounded-xl p-1 gap-1">
+                      <button onClick={() => setShowFrameLabel(true)}
+                        className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${showFrameLabel ? "bg-white shadow text-[#0F172A]" : "text-[#94A3B8]"}`}>
+                        With Label
+                      </button>
+                      <button onClick={() => setShowFrameLabel(false)}
+                        className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${!showFrameLabel ? "bg-white shadow text-[#0F172A]" : "text-[#94A3B8]"}`}>
+                        Without Label
+                      </button>
+                    </div>
+
+                    {/* Frame picker */}
+                    <div>
+                      <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Frame Style</label>
+                      <div className="grid grid-cols-4 gap-1.5">
+                        <button onClick={() => setSelectedFrame(null)}
+                          className={`flex flex-col items-center gap-1 p-2 rounded-xl border text-[8px] font-medium transition-all ${
+                            !selectedFrame ? "bg-[#00D4FF]/08 border-[#00D4FF]/30 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569]"
+                          }`}>
+                          <span className="text-lg">✕</span>None
+                        </button>
+                        {[
+                          { id:"solid",    name:"Solid",    style:"border:6px solid;border-radius:4px;padding:6px;" },
+                          { id:"rounded",  name:"Rounded",  style:"border:6px solid;border-radius:24px;padding:10px;" },
+                          { id:"double",   name:"Double",   style:"border:3px double;outline:3px double;outline-offset:4px;border-radius:4px;padding:8px;" },
+                          { id:"dashed",   name:"Dashed",   style:"border:4px dashed;border-radius:8px;padding:8px;" },
+                          { id:"dotted",   name:"Dotted",   style:"border:4px dotted;border-radius:8px;padding:8px;" },
+                          { id:"shadow",   name:"Shadow",   style:"border:3px solid;border-radius:8px;padding:8px;box-shadow:6px 6px 0 0 currentColor;" },
+                          { id:"corners",  name:"Corners",  style:"border:0;padding:10px;box-shadow:14px 14px 0 0 currentColor,-14px 14px 0 0 currentColor,14px -14px 0 0 currentColor,-14px -14px 0 0 currentColor;" },
+                          { id:"circle",   name:"Circle",   style:"border:6px solid;border-radius:50%;padding:14px;" },
+                          { id:"scanme",   name:"Scan Me",  style:"border:4px solid;border-radius:12px;padding:6px 6px 0 6px;" },
+                          { id:"thick",    name:"Thick",    style:"border:12px solid;border-radius:4px;padding:2px;" },
+                          { id:"minimal",  name:"Minimal",  style:"border-bottom:4px solid;padding:8px;" },
+                        ].map(f => (
+                          <button key={f.id} onClick={() => setSelectedFrame(f.id)}
+                            className={`flex flex-col items-center gap-1 p-2 rounded-xl border text-[8px] font-medium transition-all ${
+                              selectedFrame === f.id ? "bg-[#00D4FF]/08 border-[#00D4FF]/30 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569] hover:border-[#00D4FF]/20"
+                            }`}>
+                            <div style={{
+                              width:28, height:28, borderColor: frameColor, color: frameColor,
+                              display:"flex", alignItems:"center", justifyContent:"center",
+                              ...Object.fromEntries(f.style.split(";").filter(s=>s.trim()).map(s => {
+                                const [k,...v] = s.split(":"); return [k.trim().replace(/-([a-z])/g,(_,c)=>c.toUpperCase()), v.join(":").trim().replace("currentColor", frameColor)];
+                              }))
+                            }}>
+                              <div style={{width:14,height:14,background:"#0F172A",borderRadius:1}} />
+                            </div>
+                            {f.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Frame Options */}
+                    {selectedFrame && (
+                      <div className="space-y-3 bg-slate-50 rounded-2xl p-3 border border-slate-200">
+                        {showFrameLabel && (
+                          <div>
+                            <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-1.5 block">Label Text</label>
+                            <input value={frameCtaText} onChange={e => setFrameCtaText(e.target.value)}
+                              placeholder="SCAN ME" maxLength={20}
+                              className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-center tracking-widest uppercase outline-none focus:border-[#00D4FF]" />
+                            <div className="flex gap-1.5 flex-wrap mt-1.5">
+                              {["SCAN ME","FOLLOW US","SCAN & ORDER","FREE WIFI","BOOK NOW"].map(t => (
+                                <button key={t} onClick={() => setFrameCtaText(t)}
+                                  className="px-2 py-0.5 rounded-full bg-white border border-slate-200 text-[8px] font-semibold text-[#475569] hover:border-[#00D4FF] transition-all">
+                                  {t}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        <div>
+                          <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-1.5 block">Frame Color</label>
+                          <div className="flex gap-1.5 flex-wrap items-center">
+                            <input type="color" value={frameColor} onChange={e => setFrameColor(e.target.value)}
+                              className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer" />
+                            {["#0F172A","#FFFFFF","#00D4FF","#00FF88","#8B5CF6","#F472B6","#EF4444","#FB923C"].map(c => (
+                              <button key={c} onClick={() => setFrameColor(c)} style={{ background: c }}
+                                className={`w-6 h-6 rounded-full border-2 transition-all ${frameColor === c ? "border-[#00D4FF] scale-125" : "border-white shadow"}`} />
+                            ))}
+                          </div>
+                        </div>
+                        {showFrameLabel && (
+                          <div>
+                            <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-1.5 block">Label Color</label>
+                            <div className="flex gap-1.5 flex-wrap items-center">
+                              <input type="color" value={frameTextColor} onChange={e => setFrameTextColor(e.target.value)}
+                                className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer" />
+                              {["#FFFFFF","#0F172A","#00D4FF","#00FF88","#8B5CF6","#F472B6","#EF4444"].map(c => (
+                                <button key={c} onClick={() => setFrameTextColor(c)} style={{ background: c }}
+                                  className={`w-6 h-6 rounded-full border-2 transition-all ${frameTextColor === c ? "border-[#00D4FF] scale-125" : "border-white shadow"}`} />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
               {/* Divider */}
               <div className="border-t border-slate-100" />
 
@@ -888,8 +1015,36 @@ function HeroGenerator() {
 
                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center justify-center relative overflow-hidden mb-4">
                   <div className="absolute inset-0 bg-grid opacity-20" />
-                  <div className="relative z-10" style={{ background: bgColor, borderRadius: "8px", padding: "8px", lineHeight: 0 }}>
-                    <div ref={ref} />
+                  <div className="relative z-10 flex flex-col items-center">
+                    {selectedFrame ? (
+                      <div style={{
+                        borderColor: frameColor,
+                        color: frameColor,
+                        background: bgColor,
+                        display: "inline-flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        ...Object.fromEntries((FRAME_STYLES[selectedFrame] || "").split(";").filter(s=>s.trim()).map(s => {
+                          const [k,...v] = s.split(":"); return [k.trim().replace(/-([a-z])/g,(_,c)=>c.toUpperCase()), v.join(":").trim().replace("currentColor", frameColor)];
+                        }))
+                      }}>
+                        <div ref={ref} />
+                        {showFrameLabel && frameCtaText && (
+                          <div style={{
+                            background: frameColor, color: frameTextColor,
+                            padding: "5px 12px", fontSize: "10px", fontWeight: 800,
+                            letterSpacing: "2px", textTransform: "uppercase",
+                            width: "100%", textAlign: "center", marginTop: "4px",
+                          }}>
+                            {frameCtaText}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div style={{ background: bgColor, borderRadius: "8px", padding: "8px", lineHeight: 0 }}>
+                        <div ref={ref} />
+                      </div>
+                    )}
                   </div>
                 </div>
 
