@@ -258,6 +258,13 @@ function HeroGenerator() {
   const [cornerDotStyle, setCornerDotStyle] = useState("dot");
   const [cornerColor, setCornerColor] = useState("#0F172A");
   const [logoScale, setLogoScale] = useState(0.3);
+  const [logoMargin, setLogoMargin] = useState(4);
+  const [logoBgShape, setLogoBgShape] = useState<"none"|"square"|"rounded"|"circle">("circle");
+  const [logoBgColor, setLogoBgColor] = useState("#FFFFFF");
+  const [useDotGradient, setUseDotGradient] = useState(false);
+  const [dotGradientColor2, setDotGradientColor2] = useState("#8B5CF6");
+  const [dotGradientType, setDotGradientType] = useState<"linear"|"radial">("linear");
+  const [exportSize, setExportSize] = useState(1024);
   const [showPhone, setShowPhone] = useState(false);
   const [showFrameDesigner, setShowFrameDesigner] = useState(false);
   const [qrSvgContent, setQrSvgContent] = useState("");
@@ -340,7 +347,7 @@ function HeroGenerator() {
       });
     }, 300);
     return () => clearTimeout(t);
-  }, [value, color, bgColor, logoSymbol, dotStyle, cornerStyle, cornerDotStyle, cornerColor, logoScale]);
+  }, [value, color, bgColor, logoSymbol, dotStyle, cornerStyle, cornerDotStyle, cornerColor, logoScale, logoMargin, useDotGradient, dotGradientColor2, dotGradientType]);
 
   function download(ext: "svg" | "png") {
     (qrRef.current as any)?.download({ name: qrName || "sqrly-qr", extension: ext });
@@ -617,15 +624,76 @@ function HeroGenerator() {
 
             {/* Logo Scale */}
             {logoSymbol && (
-              <div className="mt-3">
-                <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">
-                  Logo Scale: {Math.round(logoScale * 100)}%
-                </label>
-                <input type="range" min="15" max="50" value={Math.round(logoScale * 100)}
-                  onChange={e => setLogoScale(Number(e.target.value) / 100)}
-                  className="w-full accent-[#00D4FF]" />
+              <div className="mt-3 space-y-3">
+                <div>
+                  <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">
+                    Logo Scale: {Math.round(logoScale * 100)}%
+                  </label>
+                  <input type="range" min="10" max="50" value={Math.round(logoScale * 100)}
+                    onChange={e => setLogoScale(Number(e.target.value) / 100)}
+                    className="w-full accent-[#00D4FF]" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">
+                    Logo Margin: {logoMargin}px
+                  </label>
+                  <input type="range" min="0" max="20" value={logoMargin}
+                    onChange={e => setLogoMargin(Number(e.target.value))}
+                    className="w-full accent-[#00D4FF]" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Logo Background</label>
+                  <div className="flex gap-1.5">
+                    {(["none","square","rounded","circle"] as const).map(s => (
+                      <button key={s} onClick={() => setLogoBgShape(s)}
+                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-semibold border capitalize transition-all ${
+                          logoBgShape === s ? "bg-[#00D4FF]/10 border-[#00D4FF]/30 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569]"
+                        }`}>{s}</button>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
+
+            {/* Dot Gradient */}
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider">Dot Gradient</label>
+                <button onClick={() => setUseDotGradient(g => !g)}
+                  className={`w-8 h-4 rounded-full transition-all relative ${useDotGradient ? "bg-[#00D4FF]" : "bg-slate-200"}`}>
+                  <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-all ${useDotGradient ? "left-4" : "left-0.5"}`} />
+                </button>
+              </div>
+              {useDotGradient && (
+                <div className="space-y-2">
+                  <div className="flex gap-2 items-center">
+                    <input type="color" value={dotGradientColor2}
+                      onChange={e => setDotGradientColor2(e.target.value)}
+                      className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer" />
+                    <span className="text-[10px] text-[#94A3B8]">Second color</span>
+                    {(["linear","radial"] as const).map(t => (
+                      <button key={t} onClick={() => setDotGradientType(t)}
+                        className={`px-2 py-1 rounded-lg text-[9px] font-semibold border capitalize ${dotGradientType === t ? "bg-[#00D4FF]/10 border-[#00D4FF]/30 text-[#0891B2]" : "bg-slate-50 border-slate-200"}`}>
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Export Size */}
+            <div className="mt-3">
+              <label className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 block">Export Size</label>
+              <div className="flex gap-1.5">
+                {[512,1024,2048,4096].map(s => (
+                  <button key={s} onClick={() => setExportSize(s)}
+                    className={`flex-1 py-1.5 rounded-lg text-[9px] font-bold border transition-all ${
+                      exportSize === s ? "bg-[#00D4FF]/10 border-[#00D4FF]/30 text-[#0891B2]" : "bg-slate-50 border-slate-200 text-[#475569]"
+                    }`}>{s >= 1000 ? `${s/1024}K` : s}</button>
+                ))}
+              </div>
+            </div>
 
             {/* Right — Preview */}
             <div className="p-5 md:p-6 flex flex-col items-center justify-between gap-5">
