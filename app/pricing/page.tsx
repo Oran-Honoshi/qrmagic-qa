@@ -176,23 +176,19 @@ function PricingContent() {
       const Paddle = (window as any).Paddle;
       if (!Paddle) { setError("Payment system not loaded. Please refresh."); setLoading(null); return; }
 
-      // Use transactionId from server — avoids 401 Unauthorized
-      if (data.transactionId) {
-        Paddle.Checkout.open({
-          transactionId: data.transactionId,
-          settings: {
-            displayMode: "overlay",
-            theme: "light",
-          },
-        });
-      } else if (data.checkoutUrl) {
-        // Fallback: redirect to hosted checkout
-        window.location.href = data.checkoutUrl;
-      } else {
-        setError(data.error || "Could not open checkout. Please try again.");
-        setLoading(null);
-        return;
-      }
+      // Pure client-side Paddle.js checkout — avoids 401
+      const checkoutConfig: Record<string, unknown> = {
+        items: [{ priceId: data.priceId, quantity: 1 }],
+        customer: { email: session.email },
+        customData: { userId: session.id },
+        settings: {
+          displayMode: "overlay",
+          theme: "light",
+          successUrl: `${window.location.origin}/dashboard?upgraded=1`,
+        },
+      };
+      if (data.discountId) checkoutConfig.discountId = data.discountId;
+      Paddle.Checkout.open(checkoutConfig);
       setLoading(null);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Unknown error";
