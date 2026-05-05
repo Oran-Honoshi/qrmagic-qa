@@ -116,11 +116,37 @@ function PreviewModal({ code, onClose }: { code: QRCode; onClose: () => void }) 
     import("qr-code-styling").then(({ default: QRCodeStyling }) => {
       const qr = new QRCodeStyling({
         width: 200, height: 200, type: "svg",
-        data: code.value || "https://qrmagic.io",
-        dotsOptions: { color: code.color || "#00D4FF", type: "rounded" },
-        cornersSquareOptions: { color: code.color || "#00D4FF", type: "extra-rounded" },
-        cornersDotOptions: { color: code.color || "#00D4FF" },
+        data: code.value || "https://sqrly.net",
+        image: code.logo || undefined,
+        dotsOptions: {
+          color: code.color || "#00D4FF",
+          type: (code.dot_style || "rounded") as any,
+          ...(code.use_dot_gradient ? {
+            gradient: {
+              type: (code.dot_gradient_type || "linear") as "linear" | "radial",
+              rotation: 0,
+              colorStops: [
+                { offset: 0, color: code.color || "#00D4FF" },
+                { offset: 1, color: code.dot_gradient_color2 || "#8B5CF6" },
+              ],
+            },
+          } : {}),
+        },
+        cornersSquareOptions: {
+          color: code.corner_color || code.color || "#00D4FF",
+          type: (code.corner_style || "extra-rounded") as any,
+        },
+        cornersDotOptions: {
+          color: code.corner_color || code.color || "#00D4FF",
+          type: (code.corner_dot_style || "dot") as any,
+        },
         backgroundOptions: { color: code.bg_color || "#ffffff" },
+        imageOptions: {
+          crossOrigin: "anonymous",
+          margin: 4,
+          imageSize: code.logo_scale || 0.3,
+          hideBackgroundDots: true,
+        },
         qrOptions: { errorCorrectionLevel: "H" },
       });
       containerRef.current!.innerHTML = "";
@@ -574,14 +600,29 @@ export default function CodesPage() {
                       <Download size={14} strokeWidth={1.5} />
                     </button>
                     {openDownloadId === code.id && (
-                    <div className="absolute right-0 bottom-full mb-1 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 py-1 min-w-[110px]">
+                    <div className={`absolute right-0 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 py-1 min-w-[130px] ${
+                      codes.indexOf(code) === 0 ? "top-full mt-1" : "bottom-full mb-1"
+                    }`}>
                       {(["svg","png","jpeg"] as const).map(ext => (
                         <button key={ext} onClick={() => {
                           import("qr-code-styling").then(({ default: QR }) => {
-                            const q = new QR({ width: 300, height: 300, type: "svg",
-                              data: code.value || "https://sqrly.io",
-                              dotsOptions: { color: code.color || "#0F172A", type: "rounded" },
-                              backgroundOptions: { color: "#FFFFFF" },
+                            const q = new QR({ width: 1024, height: 1024, type: "svg",
+                              data: code.value || "https://sqrly.net",
+                              image: code.logo || undefined,
+                              dotsOptions: {
+                                color: code.color || "#0F172A",
+                                type: (code.dot_style || "rounded") as any,
+                              },
+                              cornersSquareOptions: {
+                                color: code.corner_color || code.color || "#0F172A",
+                                type: (code.corner_style || "extra-rounded") as any,
+                              },
+                              cornersDotOptions: {
+                                color: code.corner_color || code.color || "#0F172A",
+                                type: (code.corner_dot_style || "dot") as any,
+                              },
+                              backgroundOptions: { color: code.bg_color || "#FFFFFF" },
+                              imageOptions: { crossOrigin: "anonymous", margin: 4, imageSize: code.logo_scale || 0.3, hideBackgroundDots: true },
                             });
                             q.download({ name: code.name || "sqrly-qr", extension: ext });
                           });
