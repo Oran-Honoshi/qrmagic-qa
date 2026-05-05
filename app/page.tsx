@@ -241,7 +241,7 @@ function DownloadModal({ onClose, onSignup }: { onClose: () => void; onSignup: (
                     className="w-full bg-slate-50 border border-slate-200 focus:border-[#00D4FF] rounded-xl px-3 py-2 text-xs text-[#0F172A] placeholder:text-[#CBD5E1] outline-none resize-none transition-all mb-2" />
                   <motion.button whileTap={{ scale: 0.95 }} onClick={handleSubmitRating}
                     className="w-full py-2 bg-[#0F172A] text-white font-semibold rounded-full text-xs hover:bg-[#1E293B] transition-all">
-                    {rating >= 4 ? "Submit & Leave Google Review ⭐" : "Submit Feedback"}
+                    {rating >= 4 ? "Submit Rating" : "Submit Feedback"}
                   </motion.button>
                 </motion.div>
               )}
