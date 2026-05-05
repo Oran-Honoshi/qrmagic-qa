@@ -221,7 +221,7 @@ function PricingContent() {
           {fromOffer ? (
             <button onClick={() => router.back()}
               className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-slate-200 text-[#475569] rounded-full hover:border-[#00D4FF] hover:text-[#00D4FF] transition-all">
-              <ArrowLeft size={14} strokeWidth={1.5} /> Back to Dashboard
+              <ArrowLeft size={14} strokeWidth={1.5} /> Back
             </button>
           ) : (
             <a href="/auth?mode=signup"

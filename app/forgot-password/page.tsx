@@ -26,8 +26,23 @@ export default function ForgotPasswordPage() {
     if (!data) { setError("No account found with this email."); setLoading(false); return; }
     const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
     sessionStorage.setItem(`reset_${email}`, JSON.stringify({ code: resetCode, expires: Date.now() + 10 * 60 * 1000 }));
-    console.log(`Reset code for ${email}: ${resetCode}`);
-    setLoading(false); setStep("verify");
+    // Send reset code via email
+    try {
+      const siteUrl = window.location.origin;
+      // Encode the reset link with the code
+      const resetLink = `${siteUrl}/auth?mode=reset&email=${encodeURIComponent(email)}&code=${resetCode}`;
+      const res = await fetch("/api/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "password_reset", to: email, resetLink }),
+      });
+      if (!res.ok) throw new Error("Email failed");
+      setLoading(false); setStep("verify");
+    } catch {
+      // Even if email fails, still proceed (show code in dev)
+      console.log(`Reset code for ${email}: ${resetCode}`);
+      setLoading(false); setStep("verify");
+    }
   }
 
   function handleVerifyCode() {

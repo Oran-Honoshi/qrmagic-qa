@@ -143,7 +143,13 @@ function SignupForm({ onSwitch, onSuccess }: { onSwitch: () => void; onSuccess: 
         .insert({ email, name, password: pass, marketing, plan: "free", deleted: false })
         .select().single();
       if (err) throw err;
-      saveSession({ id: data.id, email: data.email, name: data.name, plan: data.plan });
+      saveSession({ id: data.id, email: data.email, name: data.name, plan: data.plan, createdAt: new Date().toISOString() });
+      // Send welcome email (fire and forget)
+      fetch("/api/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "welcome", to: email, name }),
+      }).catch(() => {});
       onSuccess(true);
     } catch { setError("Could not create account. Please try again."); setLoading(false); }
   }
