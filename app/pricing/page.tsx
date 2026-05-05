@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense , useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, Zap, ArrowRight, ArrowLeft, Info, X } from "lucide-react";
@@ -141,6 +141,14 @@ function PricingContent() {
   const [annual, setAnnual] = useState(true);
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (typeof window === "undefined" || (window as any).Paddle) return;
+    const s = document.createElement("script");
+    s.src = "https://cdn.paddle.com/paddle/v2/paddle.js";
+    s.onload = () => (window as any).Paddle?.Initialize({ token: "live_2420b2b74a2e9df0fa9b6368010" });
+    document.head.appendChild(s);
+  }, []);
   const [showCompare, setShowCompare] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -163,18 +171,23 @@ function PricingContent() {
         }),
       });
       const data = await res.json();
-      console.log("Checkout response:", data);
-      if (data.error) {
-        setError(`Checkout error: ${data.error}`);
-        setLoading(null);
-        return;
-      }
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setError("No checkout URL returned. Please try again.");
-        setLoading(null);
-      }
+      if (data.error) { setError(data.error); setLoading(null); return; }
+
+      const Paddle = (window as any).Paddle;
+      if (!Paddle) { setError("Payment system not loaded. Please refresh."); setLoading(null); return; }
+
+      Paddle.Checkout.open({
+        items: [{ priceId: data.priceId, quantity: 1 }],
+        customer: { email: data.email },
+        customData: { userId: data.userId },
+        ...(data.discountId ? { discountId: data.discountId } : {}),
+        settings: {
+          successUrl: data.successUrl,
+          displayMode: "overlay",
+          theme: "light",
+        },
+      });
+      setLoading(null);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Unknown error";
       setError(`Something went wrong: ${msg}`);
