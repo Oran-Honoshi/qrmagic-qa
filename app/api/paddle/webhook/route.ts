@@ -78,19 +78,25 @@ export async function POST(req: NextRequest) {
     // Subscription activated or created — user paid / trial started
     if (eventType === "subscription.activated" || eventType === "subscription.created") {
       const userId = data?.custom_data?.userId;
+      const customerEmail = data?.customer?.email;
       const priceId = data?.items?.[0]?.price?.id;
       const plan = getPlanFromPriceId(priceId);
       const paddleSubId = data?.id;
       const paddleCustomerId = data?.customer_id;
-      const status = data?.status; // "trialing" or "active"
+      const status = data?.status;
+
+      const updateData = {
+        plan,
+        paddle_customer_id: paddleCustomerId,
+        paddle_subscription_id: paddleSubId,
+        subscription_status: status,
+      };
 
       if (userId) {
-        await supabase.from("users").update({
-          plan,
-          paddle_customer_id: paddleCustomerId,
-          paddle_subscription_id: paddleSubId,
-          subscription_status: status,
-        }).eq("id", userId);
+        await supabase.from("users").update(updateData).eq("id", userId);
+      } else if (customerEmail) {
+        // Fallback: match by email when userId not in custom_data
+        await supabase.from("users").update(updateData).eq("email", customerEmail);
       }
     }
 
@@ -110,26 +116,56 @@ export async function POST(req: NextRequest) {
     // Subscription trialing — set plan but mark as trial
     if (eventType === "subscription.trialing") {
       const userId = data?.custom_data?.userId;
+      const customerEmail = data?.customer?.email;
       const priceId = data?.items?.[0]?.price?.id;
       const plan = getPlanFromPriceId(priceId);
+      const paddleSubId = data?.id;
+      const paddleCustomerId = data?.customer_id;
+
+      const updateData = {
+        plan,
+        subscription_status: "trialing",
+        had_trial: true,
+        trial_started_at: new Date().toISOString(),
+        paddle_subscription_id: paddleSubId,
+        paddle_customer_id: paddleCustomerId,
+      };
 
       if (userId) {
-        await supabase.from("users").update({
-          plan,
-          subscription_status: "trialing",
-        }).eq("id", userId);
+        await supabase.from("users").update(updateData).eq("id", userId);
+      } else if (customerEmail) {
+        await supabase.from("users").update(updateData).eq("email", customerEmail);
       }
     }
 
     // Subscription canceled or paused — downgrade to free
-    if (
-      eventType === "subscription.canceled" ||
-      eventType === "subscription.paused"
-    ) {
+    if (eventType === "subscription.canceled") {
+      const paddleSubId = data?.id;
+      // Check if there's a future scheduled end date
+      // If canceled during trial or mid-period, keep access until period ends
+      const scheduledChangeAt = data?.scheduled_change?.effective_at;
+      const now = new Date();
+      const endsInFuture = scheduledChangeAt && new Date(scheduledChangeAt) > now;
+
+      if (endsInFuture) {
+        // Keep plan active, just mark as canceled — access until period end
+        await supabase.from("users").update({
+          subscription_status: "canceled",
+        }).eq("paddle_subscription_id", paddleSubId);
+      } else {
+        // Immediate cancellation — downgrade now
+        await supabase.from("users").update({
+          plan: "free",
+          subscription_status: "canceled",
+        }).eq("paddle_subscription_id", paddleSubId);
+      }
+    }
+
+    if (eventType === "subscription.paused") {
       const paddleSubId = data?.id;
       await supabase.from("users").update({
         plan: "free",
-        subscription_status: eventType === "subscription.canceled" ? "canceled" : "paused",
+        subscription_status: "paused",
       }).eq("paddle_subscription_id", paddleSubId);
     }
 
@@ -147,14 +183,23 @@ export async function POST(req: NextRequest) {
     // Transaction completed — payment confirmed
     if (eventType === "transaction.completed") {
       const userId = data?.custom_data?.userId;
+      const customerEmail = data?.customer?.email;
       const priceId = data?.items?.[0]?.price?.id;
       const plan = getPlanFromPriceId(priceId);
+      const paddleCustomerId = data?.customer_id;
+      const paddleSubId = data?.subscription_id;
+
+      const updateData: Record<string, unknown> = {
+        plan,
+        subscription_status: "active",
+      };
+      if (paddleCustomerId) updateData.paddle_customer_id = paddleCustomerId;
+      if (paddleSubId) updateData.paddle_subscription_id = paddleSubId;
 
       if (userId) {
-        await supabase.from("users").update({
-          plan,
-          subscription_status: "active",
-        }).eq("id", userId);
+        await supabase.from("users").update(updateData).eq("id", userId);
+      } else if (customerEmail) {
+        await supabase.from("users").update(updateData).eq("email", customerEmail);
       }
     }
 

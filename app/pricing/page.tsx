@@ -176,11 +176,20 @@ function PricingContent() {
       const Paddle = (window as any).Paddle;
       if (!Paddle) { setError("Payment system not loaded. Please refresh."); setLoading(null); return; }
 
+      // Handle trial days remaining
+      if (data.noTrial) {
+        setError("⚠️ Your free trial has expired. You'll be charged immediately upon subscribing.");
+        setTimeout(() => setError(""), 6000);
+      } else if (data.trialDays && data.trialDays < 7) {
+        setError(`ℹ️ You have ${data.trialDays} day${data.trialDays !== 1 ? "s" : ""} remaining from your original trial.`);
+        setTimeout(() => setError(""), 6000);
+      }
+
       // Pure client-side Paddle.js checkout — avoids 401
       const checkoutConfig: Record<string, unknown> = {
         items: [{ priceId: data.priceId, quantity: 1 }],
         customer: { email: session.email },
-        customData: { userId: session.id },
+        customData: { userId: session.id, plan: planId, billing: annual ? 'annual' : 'monthly' },
         settings: {
           displayMode: "overlay",
           theme: "light",

@@ -173,7 +173,9 @@ export default function DashboardPage() {
           const isTrialing = (userData as any)?.subscription_status === "trialing";
           if (!isTrialing) return null;
           // Get trial end from created_at + 7 days
-          const createdAt = (userData as any)?.created_at;
+          // Use trial_started_at if available, fall back to created_at
+          const trialStartedAt = (userData as any)?.trial_started_at;
+          const createdAt = trialStartedAt || (userData as any)?.created_at;
           if (!createdAt) return null;
           const trialEnd = new Date(createdAt).getTime() + 7 * 24 * 60 * 60 * 1000;
           const now = Date.now();
