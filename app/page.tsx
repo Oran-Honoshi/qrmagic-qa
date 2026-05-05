@@ -133,15 +133,28 @@ function DownloadModal({ onClose, onSignup }: { onClose: () => void; onSignup: (
   const [hover, setHover] = useState(0);
   const [feedback, setFeedback] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [showPlatforms, setShowPlatforms] = useState(false);
+
+  const PLATFORMS = [
+    { id: "trustpilot", name: "Trustpilot", url: "https://www.trustpilot.com/review/sqrly.net",
+      color: "#00B67A", logo: "★", desc: "Most trusted globally" },
+    { id: "g2", name: "G2", url: "https://www.g2.com/products/sqrly/reviews",
+      color: "#FF492C", logo: "G2", desc: "Top software reviews" },
+  ];
 
   function handleSubmitRating() {
     if (rating === 0) return;
-    // Open Google Business review — replace with your actual Google Place ID
-    const googleReviewUrl = "https://g.page/r/YOUR_GOOGLE_PLACE_ID/review";
     if (rating >= 4) {
-      window.open(googleReviewUrl, "_blank");
+      setShowPlatforms(true);
+    } else {
+      setSubmitted(true);
     }
+  }
+
+  function handlePlatformClick(url: string) {
+    window.open(url, "_blank");
     setSubmitted(true);
+    setShowPlatforms(false);
   }
 
   return (
@@ -173,7 +186,36 @@ function DownloadModal({ onClose, onSignup }: { onClose: () => void; onSignup: (
 
         {/* Rating */}
         <div className="px-6 py-4 border-b border-slate-100">
-          {!submitted ? (
+          {showPlatforms ? (
+            <div className="py-2">
+              <p className="text-sm font-bold text-[#0F172A] text-center mb-1">Thanks! 🎉</p>
+              <p className="text-xs text-[#94A3B8] text-center mb-4">Where would you like to leave your review?</p>
+              <div className="space-y-2">
+                {PLATFORMS.map((p, i) => (
+                  <button key={p.id} onClick={() => handlePlatformClick(p.url)}
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all hover:scale-[1.01] ${
+                      i === 0 ? "border-[#00B67A] bg-[#00B67A]/05" : "border-slate-200 hover:border-[#FF492C]/40"
+                    }`}>
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm flex-shrink-0"
+                      style={{ background: p.color, color: "#fff" }}>
+                      {p.logo}
+                    </div>
+                    <div className="text-left flex-1">
+                      <p className="text-sm font-bold text-[#0F172A]">{p.name}</p>
+                      <p className="text-[10px] text-[#94A3B8]">{p.desc}</p>
+                    </div>
+                    {i === 0 && (
+                      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#00B67A] text-white">Recommended</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => { setSubmitted(true); setShowPlatforms(false); }}
+                className="w-full text-center text-[10px] text-[#94A3B8] hover:text-[#475569] mt-3 transition-colors">
+                Skip for now
+              </button>
+            </div>
+          ) : !submitted ? (
             <>
               <p className="text-xs font-semibold text-[#94A3B8] uppercase tracking-wider mb-3 text-center">
                 Rate your experience
