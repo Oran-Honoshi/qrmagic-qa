@@ -188,7 +188,7 @@ function PricingContent() {
           theme: "light",
           successUrl: `${window.location.origin}/dashboard?upgraded=1`,
           allowLogout: false,
-          showAddDiscounts: false,
+          showAddDiscounts: true,
         },
       };
       if (data.discountId) checkoutConfig.discountId = data.discountId;
