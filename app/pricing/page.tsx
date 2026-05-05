@@ -70,7 +70,7 @@ const PLANS = [
     price: { monthly: 5, annual: 4 },
     period: "/mo",
     tagline: "All that is in Free, adding:",
-    cta: "Start Free Trial",
+    cta: "Upgrade Now",
     href: null,
     featured: true,
     features: [
@@ -91,7 +91,7 @@ const PLANS = [
     price: { monthly: 18, annual: 14 },
     period: "/mo",
     tagline: "All that is in Basic, adding:",
-    cta: "Start Free Trial",
+    cta: "Upgrade Now",
     href: null,
     featured: false,
     features: [
@@ -176,20 +176,13 @@ function PricingContent() {
       const Paddle = (window as any).Paddle;
       if (!Paddle) { setError("Payment system not loaded. Please refresh."); setLoading(null); return; }
 
-      // Handle trial days remaining
-      if (data.noTrial) {
-        setError("⚠️ Your free trial has expired. You'll be charged immediately upon subscribing.");
-        setTimeout(() => setError(""), 6000);
-      } else if (data.trialDays && data.trialDays < 7) {
-        setError(`ℹ️ You have ${data.trialDays} day${data.trialDays !== 1 ? "s" : ""} remaining from your original trial.`);
-        setTimeout(() => setError(""), 6000);
-      }
 
-      // Pure client-side Paddle.js checkout — avoids 401
+
+      // Pure client-side Paddle.js checkout
       const checkoutConfig: Record<string, unknown> = {
         items: [{ priceId: data.priceId, quantity: 1 }],
         customer: { email: session.email },
-        customData: { userId: session.id, plan: planId, billing: annual ? 'annual' : 'monthly' },
+        customData: { userId: session.id, plan: planId, billing: annual ? "annual" : "monthly" },
         settings: {
           displayMode: "overlay",
           theme: "light",
@@ -197,6 +190,10 @@ function PricingContent() {
         },
       };
       if (data.discountId) checkoutConfig.discountId = data.discountId;
+      // Note: Paddle.js v2 doesn't support overriding trial days client-side
+      // Trial days are set by the price config in Paddle dashboard
+      // noTrial users will still see the trial in checkout UI — Paddle enforces
+      // trial eligibility server-side based on customer history
       Paddle.Checkout.open(checkoutConfig);
       setLoading(null);
     } catch (e: unknown) {
@@ -374,7 +371,7 @@ function PricingContent() {
           <div className="grid sm:grid-cols-3 gap-5 mb-10">
             {[
               { q: "Can I cancel anytime?", a: "Yes. Cancel anytime, no questions asked. You keep access until the end of your billing period. No penalties." },
-              { q: "Is there a free trial?", a: "Yes. All paid plans include a 7-day free trial. No credit card required to try Basic or Plus." },
+              { q: "Can I try before I pay?", a: "Yes — the Free plan is yours forever with no credit card required. Upgrade anytime when you need more." },
               { q: "What happens if I downgrade?", a: "Your existing QR codes stay. Dynamic codes over your new plan limit are paused (not deleted) and can be reactivated on upgrade." },
             ].map(({ q, a }) => (
               <div key={q} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">

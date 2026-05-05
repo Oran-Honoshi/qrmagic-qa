@@ -13,9 +13,9 @@ interface UpgradeModalProps {
 const UPGRADE_CONTENT = {
   dynamic_limit: {
     emoji: "⚡",
-    title: "Dynamic QR Limit Reached",
-    body: "You've used all your dynamic QR codes. Upgrade to create more — and edit their destinations anytime without reprinting.",
-    highlight: "Dynamic codes = change destination URL without reprinting",
+    title: "Dynamic QR Codes — Upgrade Feature",
+    body: "Dynamic QR codes let you change the destination URL anytime without reprinting. The free plan includes 1 dynamic code — upgrade for more.",
+    highlight: "Edit destination · track scans · redirect analytics",
     basicFeature: "10 dynamic codes",
     plusFeature: "100 dynamic codes",
   },

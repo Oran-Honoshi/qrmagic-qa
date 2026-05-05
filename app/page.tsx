@@ -1052,10 +1052,10 @@ function Pricing() {
       desc: "No credit card. No watermark.", cta: "Get Started Free", href: "/auth", featured: false,
       features: ["50 static QR codes","1 dynamic QR code","Custom colors","PNG + SVG download","Basic analytics"] },
     { name: "Basic", price: { monthly: 5, annual: 4 }, period: "/mo",
-      desc: "For growing businesses.", cta: "Start Free Trial", href: "/auth?mode=signup", featured: true,
+      desc: "For growing businesses.", cta: "Get Started Free", href: "/auth?mode=signup", featured: true,
       features: ["Unlimited static codes","10 dynamic QR codes","Advanced analytics","Custom frames & logo","Bulk import (50 codes)","Email support"] },
     { name: "Plus", price: { monthly: 18, annual: 14 }, period: "/mo",
-      desc: "For teams and campaigns.", cta: "Start Free Trial", href: "/auth?mode=signup", featured: false,
+      desc: "For teams and campaigns.", cta: "Get Started Free", href: "/auth?mode=signup", featured: false,
       features: ["100 dynamic QR codes","Folder organization","Campaign tracking","Bulk import (500 codes)","Geographic analytics","3 team seats (soon)","Email support"] },
   ];
   return (

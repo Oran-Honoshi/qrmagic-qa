@@ -1104,6 +1104,19 @@ function CreatePageInner() {
         return;
       }
 
+      // Static QR limit check
+      if (!isDynamic) {
+        const staticLimit = plan === "plus" ? Infinity : plan === "basic" ? Infinity : 50;
+        const { count: staticCount } = await supabase
+          .from("qr_codes").select("*", { count: "exact", head: true })
+          .eq("user_id", session.id).eq("status", "static");
+        if ((staticCount || 0) >= staticLimit) {
+          setUpgradeReason("static_limit");
+          setSaving(false);
+          return;
+        }
+      }
+
       if (isDynamic && selectedType === "url") {
         // Generate unique short_id (retry if collision)
         let attempts = 0;

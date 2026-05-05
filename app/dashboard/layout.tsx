@@ -168,16 +168,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {user.plan !== "plus" && (
             <button onClick={() => router.push("/pricing")}
-              className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-[0_4px_12px_rgba(0,255,136,0.3)] ${
-                (user as any).subscription_status === "trialing"
-                  ? "bg-[#00FF88] text-[#0F172A] hover:bg-[#00CC6E] animate-pulse"
-                  : "bg-[#00FF88] text-[#0F172A] hover:bg-[#00CC6E]"
-              } ${collapsed ? "px-0" : "px-3"}`}>
+              className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-[0_4px_12px_rgba(0,255,136,0.3)] "bg-[#00FF88] text-[#0F172A] hover:bg-[#00CC6E]" ${collapsed ? "px-0" : "px-3"}`}>
               {!collapsed && <>
                 <Zap size={13} />
-                {(user as any).subscription_status === "trialing"
-                  ? "Purchase Now"
-                  : user.plan === "basic" ? "Upgrade to Plus" : "Upgrade"}
+                {user.plan === "basic" ? "Upgrade to Plus" : "Upgrade"}
               </>}
               {collapsed && <Zap size={15} />}
             </button>
