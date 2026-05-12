@@ -40,7 +40,9 @@ function getWelcomeHtml(name: string) {
     <a href="https://sqrly.net/dashboard" style="display:block;background:#00FF88;color:#0F172A;font-weight:800;font-size:15px;text-align:center;padding:16px;border-radius:12px;text-decoration:none;">Create Your First QR Code →</a>
   </div>
   <div style="padding:24px 40px;border-top:1px solid #f1f5f9;text-align:center;">
-    <p style="color:#94A3B8;font-size:12px;margin:0;">© 2026 Sqrly · <a href="https://sqrly.net" style="color:#94A3B8;">sqrly.net</a></p>
+    <p style="color:#475569;font-size:13px;font-weight:600;margin:0 0 12px;">Enjoying Sqrly? We&apos;d love your feedback ⭐</p>
+    <a href="https://www.trustpilot.com/review/sqrly.net" style="display:inline-block;background:#00B67A;color:#ffffff;font-weight:700;font-size:13px;padding:10px 24px;border-radius:8px;text-decoration:none;">Leave a Review on Trustpilot</a>
+    <p style="color:#94A3B8;font-size:11px;margin:16px 0 0;">© 2026 Sqrly · <a href="https://sqrly.net" style="color:#94A3B8;">sqrly.net</a></p>
   </div>
 </div>
 </body></html>`;
