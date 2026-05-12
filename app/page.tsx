@@ -134,6 +134,15 @@ function DownloadModal({ onClose, onSignup }: { onClose: () => void; onSignup: (
   const [feedback, setFeedback] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [showPlatforms, setShowPlatforms] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  function copyReview() {
+    if (!feedback) return;
+    navigator.clipboard.writeText(feedback).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  }
 
   const PLATFORMS = [
     { id: "trustpilot", name: "Trustpilot", url: "https://www.trustpilot.com/review/sqrly.net",
@@ -190,6 +199,23 @@ function DownloadModal({ onClose, onSignup }: { onClose: () => void; onSignup: (
             <div className="py-2">
               <p className="text-sm font-bold text-[#0F172A] text-center mb-1">Thanks! 🎉</p>
               <p className="text-xs text-[#94A3B8] text-center mb-4">Where would you like to leave your review?</p>
+
+              {/* Copy review text if they wrote something */}
+              {feedback && (
+                <div className="mb-4 bg-slate-50 border border-slate-200 rounded-xl p-3">
+                  <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">Your review</p>
+                  <p className="text-xs text-[#475569] leading-relaxed mb-3 italic">&ldquo;{feedback}&rdquo;</p>
+                  <button onClick={copyReview}
+                    className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold border transition-all ${
+                      copied
+                        ? "bg-[#00FF88]/10 border-[#00FF88]/30 text-[#00994F]"
+                        : "bg-white border-slate-200 text-[#475569] hover:border-[#00D4FF] hover:text-[#0891B2]"
+                    }`}>
+                    {copied ? "✓ Copied! Now paste it in your review" : "📋 Copy review text to paste"}
+                  </button>
+                  <p className="text-[9px] text-[#94A3B8] text-center mt-1.5">Click a platform below, then paste your review</p>
+                </div>
+              )}
               <div className="space-y-2">
                 {PLATFORMS.map((p, i) => (
                   <button key={p.id} onClick={() => handlePlatformClick(p.url)}
